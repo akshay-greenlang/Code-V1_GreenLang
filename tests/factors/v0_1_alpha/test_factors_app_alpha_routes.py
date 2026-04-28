@@ -40,6 +40,9 @@ _ALPHA_ALLOWED = {
     "/v1/healthz",
     "/v1/factors",
     "/v1/factors/{urn:path}",
+    # Phase 2 / WS2 (2026-04-27): canonical alias resolver — same shape
+    # as /v1/factors/{urn} with `urn` as the primary id.
+    "/v1/factors/by-alias/{legacy_id:path}",
     "/v1/sources",
     "/v1/packs",
     "/api/v1/{path:path}",  # 410-Gone deprecation catch-all (alpha-only)

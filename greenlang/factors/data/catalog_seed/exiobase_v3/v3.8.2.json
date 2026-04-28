@@ -1,7 +1,7 @@
 {
   "source_id": "exiobase_v3",
   "source_version": "3.8.2",
-  "ingested_at": "2026-04-24T07:12:23+00:00",
+  "ingested_at": "2026-04-27T09:44:09+00:00",
   "license_class": "academic_research",
   "license_name": "CC-BY-4.0",
   "redistribution_class": "open",
@@ -87,7 +87,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:J62:EU:v3.8.2:v1",
@@ -125,8 +125,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -215,7 +215,7 @@
           "Region DE",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:J62:DE:v3.8.2:v1",
@@ -231,8 +231,8 @@
           "EF:EXIOBASE:J63:DE:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -321,7 +321,7 @@
           "Region FR",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:J62:FR:v3.8.2:v1",
@@ -332,8 +332,8 @@
           "EF:EXIOBASE:29:FR:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -422,11 +422,11 @@
           "Region SE",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -515,11 +515,11 @@
           "Region FI",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -608,7 +608,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -646,8 +646,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -736,7 +736,7 @@
           "Region DE",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:DE:v3.8.2:v1",
@@ -752,8 +752,8 @@
           "EF:EXIOBASE:J63:DE:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -842,7 +842,7 @@
           "Region FR",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:FR:v3.8.2:v1",
@@ -853,8 +853,8 @@
           "EF:EXIOBASE:29:FR:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -943,11 +943,11 @@
           "Region IE",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1036,14 +1036,14 @@
           "Region NL",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:20:NL:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1132,7 +1132,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -1170,8 +1170,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1259,15 +1259,15 @@
           "Region IN",
           "USD basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:81:IN:v3.8.2:usd:v1",
           "EF:EXIOBASE:J62:IN:v3.8.2:usd:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1355,15 +1355,15 @@
           "Region US",
           "USD basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:81:US:v3.8.2:usd:v1",
           "EF:EXIOBASE:J62:US:v3.8.2:usd:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1452,7 +1452,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -1490,8 +1490,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1580,15 +1580,15 @@
           "Region IT",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:55:IT:v3.8.2:v1",
           "EF:EXIOBASE:24:IT:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1677,11 +1677,11 @@
           "Region PT",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1770,14 +1770,14 @@
           "Region PL",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:35:PL:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1866,11 +1866,11 @@
           "Region RO",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1959,7 +1959,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -1997,8 +1997,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2087,15 +2087,15 @@
           "Region ES",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:43:ES:v3.8.2:v1",
           "EF:EXIOBASE:10:ES:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2184,15 +2184,15 @@
           "Region IT",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:14:IT:v3.8.2:v1",
           "EF:EXIOBASE:24:IT:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2281,7 +2281,7 @@
           "Region FR",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:FR:v3.8.2:v1",
@@ -2292,8 +2292,8 @@
           "EF:EXIOBASE:29:FR:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2382,7 +2382,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -2420,8 +2420,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2510,7 +2510,7 @@
           "Region DE",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:DE:v3.8.2:v1",
@@ -2526,8 +2526,8 @@
           "EF:EXIOBASE:J63:DE:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2616,7 +2616,7 @@
           "Region FR",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:FR:v3.8.2:v1",
@@ -2627,8 +2627,8 @@
           "EF:EXIOBASE:29:FR:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2717,7 +2717,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -2755,8 +2755,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2845,7 +2845,7 @@
           "Region DE",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:DE:v3.8.2:v1",
@@ -2861,8 +2861,8 @@
           "EF:EXIOBASE:J63:DE:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2951,7 +2951,7 @@
           "Region FR",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:FR:v3.8.2:v1",
@@ -2962,8 +2962,8 @@
           "EF:EXIOBASE:29:FR:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3052,15 +3052,15 @@
           "Region ES",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:55:ES:v3.8.2:v1",
           "EF:EXIOBASE:10:ES:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3149,7 +3149,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -3187,8 +3187,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3276,15 +3276,15 @@
           "Region IN",
           "USD basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:J63:IN:v3.8.2:usd:v1",
           "EF:EXIOBASE:J62:IN:v3.8.2:usd:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3372,15 +3372,15 @@
           "Region US",
           "USD basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:J63:US:v3.8.2:usd:v1",
           "EF:EXIOBASE:J62:US:v3.8.2:usd:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3469,7 +3469,7 @@
           "Region DE",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:DE:v3.8.2:v1",
@@ -3485,8 +3485,8 @@
           "EF:EXIOBASE:J63:DE:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3575,7 +3575,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -3613,8 +3613,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3703,7 +3703,7 @@
           "Region DE",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:DE:v3.8.2:v1",
@@ -3719,8 +3719,8 @@
           "EF:EXIOBASE:J63:DE:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3809,14 +3809,14 @@
           "Region NL",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:J62:NL:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3905,7 +3905,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -3943,8 +3943,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4033,7 +4033,7 @@
           "Region FR",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:FR:v3.8.2:v1",
@@ -4044,8 +4044,8 @@
           "EF:EXIOBASE:29:FR:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4134,15 +4134,15 @@
           "Region ES",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:55:ES:v3.8.2:v1",
           "EF:EXIOBASE:43:ES:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4231,7 +4231,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -4269,8 +4269,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4359,7 +4359,7 @@
           "Region DE",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:DE:v3.8.2:v1",
@@ -4375,8 +4375,8 @@
           "EF:EXIOBASE:J63:DE:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4465,15 +4465,15 @@
           "Region IT",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:14:IT:v3.8.2:v1",
           "EF:EXIOBASE:55:IT:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4562,7 +4562,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -4600,8 +4600,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4690,7 +4690,7 @@
           "Region DE",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:DE:v3.8.2:v1",
@@ -4706,8 +4706,8 @@
           "EF:EXIOBASE:J63:DE:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4796,7 +4796,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -4834,8 +4834,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4924,7 +4924,7 @@
           "Region DE",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:DE:v3.8.2:v1",
@@ -4940,8 +4940,8 @@
           "EF:EXIOBASE:J63:DE:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5030,7 +5030,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -5068,8 +5068,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5158,7 +5158,7 @@
           "Region DE",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:DE:v3.8.2:v1",
@@ -5174,8 +5174,8 @@
           "EF:EXIOBASE:J63:DE:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5264,7 +5264,7 @@
           "Region FR",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:FR:v3.8.2:v1",
@@ -5275,8 +5275,8 @@
           "EF:EXIOBASE:10:FR:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5365,7 +5365,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -5403,8 +5403,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5493,7 +5493,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -5531,8 +5531,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5621,7 +5621,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -5659,8 +5659,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5749,7 +5749,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -5787,8 +5787,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5877,7 +5877,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -5915,8 +5915,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6005,7 +6005,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -6043,8 +6043,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6133,7 +6133,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -6171,8 +6171,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6261,7 +6261,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -6299,8 +6299,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6389,7 +6389,7 @@
           "Region DE",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:DE:v3.8.2:v1",
@@ -6405,8 +6405,8 @@
           "EF:EXIOBASE:J63:DE:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6495,14 +6495,14 @@
           "Region PL",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:14:PL:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6591,7 +6591,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -6629,8 +6629,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6719,7 +6719,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -6757,8 +6757,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6847,7 +6847,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -6885,8 +6885,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6975,7 +6975,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -7013,8 +7013,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7103,7 +7103,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -7141,8 +7141,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7231,7 +7231,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -7269,8 +7269,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7359,7 +7359,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -7397,8 +7397,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7487,7 +7487,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -7525,8 +7525,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7615,7 +7615,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -7653,8 +7653,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7743,7 +7743,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -7781,8 +7781,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7871,7 +7871,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -7909,8 +7909,8 @@
           "EF:EXIOBASE:87:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7999,7 +7999,7 @@
           "Region EU",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:EU:v3.8.2:v1",
@@ -8037,8 +8037,8 @@
           "EF:EXIOBASE:86:EU:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8126,15 +8126,15 @@
           "Region IN",
           "USD basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:J63:IN:v3.8.2:usd:v1",
           "EF:EXIOBASE:81:IN:v3.8.2:usd:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8222,15 +8222,15 @@
           "Region US",
           "USD basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:J63:US:v3.8.2:usd:v1",
           "EF:EXIOBASE:81:US:v3.8.2:usd:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8318,11 +8318,11 @@
           "Region GB",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8411,7 +8411,7 @@
           "Region DE",
           "EUR basis"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "EXIOBASE Consortium (TU Wien / NTNU / UTwente), EXIOBASE v3.8.2 multi-regional environmentally-extended input-output model.",
         "alternates_considered": [
           "EF:EXIOBASE:1712:DE:v3.8.2:v1",
@@ -8427,8 +8427,8 @@
           "EF:EXIOBASE:35:DE:v3.8.2:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",

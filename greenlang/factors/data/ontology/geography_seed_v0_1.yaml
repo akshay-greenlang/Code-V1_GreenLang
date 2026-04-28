@@ -1,0 +1,678 @@
+# =============================================================================
+# GreenLang Factors v0.1 Alpha — Geography ontology seed
+# =============================================================================
+# Source authority:
+#   - ISO 3166-1 alpha-2 country codes (ISO 3166 Maintenance Agency)
+#   - EPA eGRID 2024 subregion list
+#     https://www.epa.gov/egrid/egrid-summary-tables
+#   - ENTSO-E bidding zone list (European Network of Transmission System
+#     Operators for Electricity)
+#     https://www.entsoe.eu/data/map/
+#   - NERC Balancing Authority list (North American Electric Reliability
+#     Corporation)
+#     https://www.nerc.com/pa/RAPA/ra/Pages/default.aspx
+#   - UN M.49 / OECD / ASEAN / EU-27 sub-region lists
+#   - Major drainage basins per UNEP-WCMC (illustrative only — NOT
+#     attached to any v0.1 alpha factor record)
+#
+# CTO Phase 2 brief (2026-04-27): Phase 2 ontology seed — geography.
+# Source-of-truth for v0.1 alpha. Every URN MUST be lowercase and MUST
+# parse via greenlang.factors.ontology.urn.parse.
+#
+# Tag conventions:
+#   - 'phase2_v0_1' — every Phase 2 seed row carries this tag.
+#   - 'iso-3166-1-alpha-2' / 'egrid-2024' / 'entsoe-bidding-zone' /
+#     'nerc-ba' / 'un-m49' / 'unep-wcmc-basin' — provenance markers.
+#   - 'illustrative' — for ontology rows not yet referenced by any v0.1
+#     factor record (e.g., basin/tenant rows).
+#
+# This file is consumed by greenlang.factors.data.ontology.loaders
+# .geography_loader.load_geography. Re-running the loader is idempotent
+# (INSERT ... ON CONFLICT (urn) DO NOTHING).
+#
+# All entries must satisfy the V501 widened geography type CHECK enum:
+#   global | country | subregion | state_or_province | grid_zone |
+#   bidding_zone | balancing_authority | basin | tenant
+# =============================================================================
+
+version: "0.1"
+seed_source: "phase2_v0_1"
+schema_authority: "config/schemas/factor_record_v0_1.schema.json"
+geographies:
+
+  # ---------------------------------------------------------------------------
+  # GLOBAL
+  # ---------------------------------------------------------------------------
+  - urn: "urn:gl:geo:global:world"
+    type: "global"
+    iso_code: null
+    name: "World (global aggregate)"
+    parent_urn: null
+    centroid_lat: 0.0
+    centroid_lon: 0.0
+    tags: ["phase2_v0_1", "un-m49"]
+
+  # ---------------------------------------------------------------------------
+  # COUNTRIES (ISO-3166-1 alpha-2). Centroids are nominal admin-area
+  # centroids per CIA World Factbook. Used by alpha source registry.
+  # ---------------------------------------------------------------------------
+  - urn: "urn:gl:geo:country:in"
+    type: "country"
+    iso_code: "IN"
+    name: "India"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 22.3511
+    centroid_lon: 78.6677
+    tags: ["phase2_v0_1", "iso-3166-1-alpha-2", "alpha-source-india-cea"]
+
+  - urn: "urn:gl:geo:country:us"
+    type: "country"
+    iso_code: "US"
+    name: "United States"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 39.8283
+    centroid_lon: -98.5795
+    tags: ["phase2_v0_1", "iso-3166-1-alpha-2", "alpha-source-epa-egrid", "alpha-source-epa-ghg-hub"]
+
+  - urn: "urn:gl:geo:country:gb"
+    type: "country"
+    iso_code: "GB"
+    name: "United Kingdom"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 55.3781
+    centroid_lon: -3.4360
+    tags: ["phase2_v0_1", "iso-3166-1-alpha-2", "alpha-source-defra"]
+
+  - urn: "urn:gl:geo:country:de"
+    type: "country"
+    iso_code: "DE"
+    name: "Germany"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 51.1657
+    centroid_lon: 10.4515
+    tags: ["phase2_v0_1", "iso-3166-1-alpha-2", "alpha-source-cbam"]
+
+  - urn: "urn:gl:geo:country:fr"
+    type: "country"
+    iso_code: "FR"
+    name: "France"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 46.2276
+    centroid_lon: 2.2137
+    tags: ["phase2_v0_1", "iso-3166-1-alpha-2"]
+
+  - urn: "urn:gl:geo:country:cn"
+    type: "country"
+    iso_code: "CN"
+    name: "China"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 35.8617
+    centroid_lon: 104.1954
+    tags: ["phase2_v0_1", "iso-3166-1-alpha-2"]
+
+  - urn: "urn:gl:geo:country:jp"
+    type: "country"
+    iso_code: "JP"
+    name: "Japan"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 36.2048
+    centroid_lon: 138.2529
+    tags: ["phase2_v0_1", "iso-3166-1-alpha-2"]
+
+  - urn: "urn:gl:geo:country:br"
+    type: "country"
+    iso_code: "BR"
+    name: "Brazil"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: -14.2350
+    centroid_lon: -51.9253
+    tags: ["phase2_v0_1", "iso-3166-1-alpha-2"]
+
+  - urn: "urn:gl:geo:country:au"
+    type: "country"
+    iso_code: "AU"
+    name: "Australia"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: -25.2744
+    centroid_lon: 133.7751
+    tags: ["phase2_v0_1", "iso-3166-1-alpha-2"]
+
+  - urn: "urn:gl:geo:country:za"
+    type: "country"
+    iso_code: "ZA"
+    name: "South Africa"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: -30.5595
+    centroid_lon: 22.9375
+    tags: ["phase2_v0_1", "iso-3166-1-alpha-2"]
+
+  - urn: "urn:gl:geo:country:mx"
+    type: "country"
+    iso_code: "MX"
+    name: "Mexico"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 23.6345
+    centroid_lon: -102.5528
+    tags: ["phase2_v0_1", "iso-3166-1-alpha-2"]
+
+  - urn: "urn:gl:geo:country:ca"
+    type: "country"
+    iso_code: "CA"
+    name: "Canada"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 56.1304
+    centroid_lon: -106.3468
+    tags: ["phase2_v0_1", "iso-3166-1-alpha-2"]
+
+  - urn: "urn:gl:geo:country:nl"
+    type: "country"
+    iso_code: "NL"
+    name: "Netherlands"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 52.1326
+    centroid_lon: 5.2913
+    tags: ["phase2_v0_1", "iso-3166-1-alpha-2"]
+
+  - urn: "urn:gl:geo:country:it"
+    type: "country"
+    iso_code: "IT"
+    name: "Italy"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 41.8719
+    centroid_lon: 12.5674
+    tags: ["phase2_v0_1", "iso-3166-1-alpha-2"]
+
+  - urn: "urn:gl:geo:country:es"
+    type: "country"
+    iso_code: "ES"
+    name: "Spain"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 40.4637
+    centroid_lon: -3.7492
+    tags: ["phase2_v0_1", "iso-3166-1-alpha-2"]
+
+  - urn: "urn:gl:geo:country:pl"
+    type: "country"
+    iso_code: "PL"
+    name: "Poland"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 51.9194
+    centroid_lon: 19.1451
+    tags: ["phase2_v0_1", "iso-3166-1-alpha-2"]
+
+  - urn: "urn:gl:geo:country:sg"
+    type: "country"
+    iso_code: "SG"
+    name: "Singapore"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 1.3521
+    centroid_lon: 103.8198
+    tags: ["phase2_v0_1", "iso-3166-1-alpha-2"]
+
+  - urn: "urn:gl:geo:country:kr"
+    type: "country"
+    iso_code: "KR"
+    name: "Korea, Republic of"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 35.9078
+    centroid_lon: 127.7669
+    tags: ["phase2_v0_1", "iso-3166-1-alpha-2"]
+
+  # ---------------------------------------------------------------------------
+  # SUBREGIONS (UN M.49 / OECD / ASEAN / EU-27 / LATAM aggregates).
+  # parent_urn is the global aggregate; we don't model country -> subregion
+  # FK because UN M.49 allows multi-membership.
+  # ---------------------------------------------------------------------------
+  - urn: "urn:gl:geo:subregion:eu-27"
+    type: "subregion"
+    iso_code: null
+    name: "European Union (EU-27)"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 50.8503
+    centroid_lon: 4.3517
+    tags: ["phase2_v0_1", "un-m49", "alpha-source-cbam"]
+
+  - urn: "urn:gl:geo:subregion:asean"
+    type: "subregion"
+    iso_code: null
+    name: "ASEAN (Association of Southeast Asian Nations)"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 1.3521
+    centroid_lon: 103.8198
+    tags: ["phase2_v0_1", "un-m49"]
+
+  - urn: "urn:gl:geo:subregion:oecd"
+    type: "subregion"
+    iso_code: null
+    name: "OECD (Organisation for Economic Co-operation and Development)"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 48.8566
+    centroid_lon: 2.3522
+    tags: ["phase2_v0_1", "oecd"]
+
+  - urn: "urn:gl:geo:subregion:latam"
+    type: "subregion"
+    iso_code: null
+    name: "Latin America"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: -14.2350
+    centroid_lon: -51.9253
+    tags: ["phase2_v0_1", "un-m49"]
+
+  # ---------------------------------------------------------------------------
+  # STATES / PROVINCES (sub-national, US + India). Schema's geography_urn
+  # regex requires the literal type string 'state_or_province'.
+  # ---------------------------------------------------------------------------
+  - urn: "urn:gl:geo:state_or_province:us-tx"
+    type: "state_or_province"
+    iso_code: "US"
+    name: "Texas (US)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 31.0
+    centroid_lon: -100.0
+    tags: ["phase2_v0_1", "iso-3166-2:us-tx"]
+
+  - urn: "urn:gl:geo:state_or_province:us-ca"
+    type: "state_or_province"
+    iso_code: "US"
+    name: "California (US)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 36.7783
+    centroid_lon: -119.4179
+    tags: ["phase2_v0_1", "iso-3166-2:us-ca"]
+
+  - urn: "urn:gl:geo:state_or_province:us-ny"
+    type: "state_or_province"
+    iso_code: "US"
+    name: "New York (US)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 42.1657
+    centroid_lon: -74.9481
+    tags: ["phase2_v0_1", "iso-3166-2:us-ny"]
+
+  - urn: "urn:gl:geo:state_or_province:in-mh"
+    type: "state_or_province"
+    iso_code: "IN"
+    name: "Maharashtra (India)"
+    parent_urn: "urn:gl:geo:country:in"
+    centroid_lat: 19.7515
+    centroid_lon: 75.7139
+    tags: ["phase2_v0_1", "iso-3166-2:in-mh"]
+
+  - urn: "urn:gl:geo:state_or_province:in-ka"
+    type: "state_or_province"
+    iso_code: "IN"
+    name: "Karnataka (India)"
+    parent_urn: "urn:gl:geo:country:in"
+    centroid_lat: 15.3173
+    centroid_lon: 75.7139
+    tags: ["phase2_v0_1", "iso-3166-2:in-ka"]
+
+  - urn: "urn:gl:geo:state_or_province:in-tn"
+    type: "state_or_province"
+    iso_code: "IN"
+    name: "Tamil Nadu (India)"
+    parent_urn: "urn:gl:geo:country:in"
+    centroid_lat: 11.1271
+    centroid_lon: 78.6569
+    tags: ["phase2_v0_1", "iso-3166-2:in-tn"]
+
+  - urn: "urn:gl:geo:state_or_province:in-gj"
+    type: "state_or_province"
+    iso_code: "IN"
+    name: "Gujarat (India)"
+    parent_urn: "urn:gl:geo:country:in"
+    centroid_lat: 22.2587
+    centroid_lon: 71.1924
+    tags: ["phase2_v0_1", "iso-3166-2:in-gj"]
+
+  # ---------------------------------------------------------------------------
+  # GRID ZONES — EPA eGRID 2024 subregions.
+  # Reference: EPA eGRID2024 subregion table (final release).
+  # parent_urn = country:us (eGRID covers United States only).
+  # ---------------------------------------------------------------------------
+  - urn: "urn:gl:geo:grid_zone:egrid-rfcw"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID RFC West (RFCW)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 41.5
+    centroid_lon: -85.0
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-rfce"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID RFC East (RFCE)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 40.5
+    centroid_lon: -77.0
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-serc"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID SERC Reliability Corporation (SRMW/SRSO/SRTV/SRVC composite)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 33.0
+    centroid_lon: -85.0
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-wecc"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID Western Electricity Coordinating Council (WECC)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 40.0
+    centroid_lon: -115.0
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-mrow"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID Midwest Reliability Org West (MROW)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 44.0
+    centroid_lon: -97.0
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-mroe"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID Midwest Reliability Org East (MROE)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 45.0
+    centroid_lon: -89.0
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-azne"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID WECC Northwest (AZNE)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 45.0
+    centroid_lon: -120.0
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-aznw"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID WECC Southwest (AZNW)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 34.0
+    centroid_lon: -112.0
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-rmpa"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID WECC Rockies (RMPA)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 39.0
+    centroid_lon: -106.0
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-spno"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID SPP North (SPNO)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 39.0
+    centroid_lon: -98.0
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-spso"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID SPP South (SPSO)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 33.5
+    centroid_lon: -97.0
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-frcc"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID Florida Reliability Coordinating Council (FRCC)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 28.0
+    centroid_lon: -82.0
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-nyup"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID NPCC NYC/Westchester (NYUP)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 43.0
+    centroid_lon: -75.5
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-nycw"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID NPCC New York City/Westchester (NYCW)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 40.7
+    centroid_lon: -74.0
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-nyli"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID NPCC Long Island (NYLI)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 40.8
+    centroid_lon: -73.0
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-nwpp"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID WECC Northwest Power Pool (NWPP)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 44.0
+    centroid_lon: -120.0
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-camx"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID WECC California (CAMX)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 36.7783
+    centroid_lon: -119.4179
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-aknm"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID ASCC Miscellaneous Alaska (AKMS)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 64.2
+    centroid_lon: -152.0
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-akgm"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID ASCC Alaska Grid (AKGD)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 61.2
+    centroid_lon: -149.9
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-hims"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID HICC Miscellaneous Hawaii (HIMS)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 20.7
+    centroid_lon: -156.5
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  - urn: "urn:gl:geo:grid_zone:egrid-hioa"
+    type: "grid_zone"
+    iso_code: "US"
+    name: "eGRID HICC Oahu (HIOA)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 21.4
+    centroid_lon: -157.95
+    tags: ["phase2_v0_1", "egrid-2024", "alpha-source-epa-egrid"]
+
+  # ---------------------------------------------------------------------------
+  # BIDDING ZONES — ENTSO-E (European wholesale electricity markets).
+  # Reference: ENTSO-E bidding zone configuration (2024 snapshot).
+  # ---------------------------------------------------------------------------
+  - urn: "urn:gl:geo:bidding_zone:de-lu"
+    type: "bidding_zone"
+    iso_code: "DE"
+    name: "Germany-Luxembourg bidding zone (DE-LU)"
+    parent_urn: "urn:gl:geo:subregion:eu-27"
+    centroid_lat: 51.0
+    centroid_lon: 9.0
+    tags: ["phase2_v0_1", "entsoe-bidding-zone"]
+
+  - urn: "urn:gl:geo:bidding_zone:fr"
+    type: "bidding_zone"
+    iso_code: "FR"
+    name: "France bidding zone (FR)"
+    parent_urn: "urn:gl:geo:country:fr"
+    centroid_lat: 46.2276
+    centroid_lon: 2.2137
+    tags: ["phase2_v0_1", "entsoe-bidding-zone"]
+
+  - urn: "urn:gl:geo:bidding_zone:gb"
+    type: "bidding_zone"
+    iso_code: "GB"
+    name: "Great Britain bidding zone (GB)"
+    parent_urn: "urn:gl:geo:country:gb"
+    centroid_lat: 53.0
+    centroid_lon: -2.0
+    tags: ["phase2_v0_1", "entsoe-bidding-zone"]
+
+  - urn: "urn:gl:geo:bidding_zone:es"
+    type: "bidding_zone"
+    iso_code: "ES"
+    name: "Spain bidding zone (ES)"
+    parent_urn: "urn:gl:geo:country:es"
+    centroid_lat: 40.4637
+    centroid_lon: -3.7492
+    tags: ["phase2_v0_1", "entsoe-bidding-zone"]
+
+  - urn: "urn:gl:geo:bidding_zone:nl"
+    type: "bidding_zone"
+    iso_code: "NL"
+    name: "Netherlands bidding zone (NL)"
+    parent_urn: "urn:gl:geo:country:nl"
+    centroid_lat: 52.1326
+    centroid_lon: 5.2913
+    tags: ["phase2_v0_1", "entsoe-bidding-zone"]
+
+  - urn: "urn:gl:geo:bidding_zone:it-no"
+    type: "bidding_zone"
+    iso_code: "IT"
+    name: "Italy North bidding zone (IT-NO)"
+    parent_urn: "urn:gl:geo:country:it"
+    centroid_lat: 45.4642
+    centroid_lon: 9.1900
+    tags: ["phase2_v0_1", "entsoe-bidding-zone"]
+
+  - urn: "urn:gl:geo:bidding_zone:it-cs"
+    type: "bidding_zone"
+    iso_code: "IT"
+    name: "Italy Centre-South bidding zone (IT-CS)"
+    parent_urn: "urn:gl:geo:country:it"
+    centroid_lat: 41.9028
+    centroid_lon: 12.4964
+    tags: ["phase2_v0_1", "entsoe-bidding-zone"]
+
+  # ---------------------------------------------------------------------------
+  # BALANCING AUTHORITIES — North American (NERC).
+  # ---------------------------------------------------------------------------
+  - urn: "urn:gl:geo:balancing_authority:caiso"
+    type: "balancing_authority"
+    iso_code: "US"
+    name: "California ISO (CAISO)"
+    parent_urn: "urn:gl:geo:state_or_province:us-ca"
+    centroid_lat: 38.5816
+    centroid_lon: -121.4944
+    tags: ["phase2_v0_1", "nerc-ba"]
+
+  - urn: "urn:gl:geo:balancing_authority:pjm"
+    type: "balancing_authority"
+    iso_code: "US"
+    name: "PJM Interconnection (PJM)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 39.9526
+    centroid_lon: -75.1652
+    tags: ["phase2_v0_1", "nerc-ba"]
+
+  - urn: "urn:gl:geo:balancing_authority:ercot"
+    type: "balancing_authority"
+    iso_code: "US"
+    name: "Electric Reliability Council of Texas (ERCOT)"
+    parent_urn: "urn:gl:geo:state_or_province:us-tx"
+    centroid_lat: 30.2672
+    centroid_lon: -97.7431
+    tags: ["phase2_v0_1", "nerc-ba"]
+
+  - urn: "urn:gl:geo:balancing_authority:miso"
+    type: "balancing_authority"
+    iso_code: "US"
+    name: "Midcontinent ISO (MISO)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 39.7684
+    centroid_lon: -86.1581
+    tags: ["phase2_v0_1", "nerc-ba"]
+
+  - urn: "urn:gl:geo:balancing_authority:nyiso"
+    type: "balancing_authority"
+    iso_code: "US"
+    name: "New York ISO (NYISO)"
+    parent_urn: "urn:gl:geo:state_or_province:us-ny"
+    centroid_lat: 42.7
+    centroid_lon: -73.8
+    tags: ["phase2_v0_1", "nerc-ba"]
+
+  - urn: "urn:gl:geo:balancing_authority:isone"
+    type: "balancing_authority"
+    iso_code: "US"
+    name: "ISO New England (ISO-NE)"
+    parent_urn: "urn:gl:geo:country:us"
+    centroid_lat: 42.3601
+    centroid_lon: -71.0589
+    tags: ["phase2_v0_1", "nerc-ba"]
+
+  # ---------------------------------------------------------------------------
+  # BASINS — illustrative drainage basins (per UNEP-WCMC). NOT addressable
+  # by any v0.1 alpha factor record (the FROZEN factor schema's
+  # geography_urn regex does not include 'basin'); these rows exist in the
+  # ontology for v0.5+ extension paths and water/biodiversity workflows.
+  # ---------------------------------------------------------------------------
+  - urn: "urn:gl:geo:basin:amazon"
+    type: "basin"
+    iso_code: null
+    name: "Amazon River basin"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: -3.4653
+    centroid_lon: -62.2159
+    tags: ["phase2_v0_1", "unep-wcmc-basin", "illustrative"]
+
+  - urn: "urn:gl:geo:basin:congo"
+    type: "basin"
+    iso_code: null
+    name: "Congo River basin"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: -1.3
+    centroid_lon: 21.8
+    tags: ["phase2_v0_1", "unep-wcmc-basin", "illustrative"]
+
+  - urn: "urn:gl:geo:basin:mekong"
+    type: "basin"
+    iso_code: null
+    name: "Mekong River basin"
+    parent_urn: "urn:gl:geo:subregion:asean"
+    centroid_lat: 12.6
+    centroid_lon: 104.0
+    tags: ["phase2_v0_1", "unep-wcmc-basin", "illustrative"]

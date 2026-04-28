@@ -111,3 +111,28 @@ The 6 alpha-source parsers currently emit records with `EF:...` factor_id format
 | Legal | Licence-tag enum is enforceable; SPDX vs proprietary distinction is sound |
 
 Once approved, this file becomes the binding contract. Any change requires a new `$id` (v0.2+) or a v1.0 GA cut.
+
+---
+
+## Amendments
+
+Strictly additive within v0.x per the versioning policy above; the `$id`
+remains pinned at `https://schemas.greenlang.io/factors/factor_record_v0_1.schema.json`.
+
+### 2026-04-27 — Phase 2 contract fields (additive)
+
+Adds five OPTIONAL fields to the public contract; no existing record
+needs migration. Tracks CHANGELOG anchor `## v0.1 - 2026-04-27 - additive`.
+
+| Field | Type | Notes |
+|---|---|---|
+| `activity_taxonomy_urn` | string \| null | URN of the activity taxonomy entry. Optional in v0.1; required from v0.2. Resolves to `factors_v0_1.activity.urn` (V502). |
+| `confidence` | number \| null | Subjective methodology-lead confidence score in `[0, 1]`. Distinct from `uncertainty` (which describes the value distribution). |
+| `created_at` | string (date-time) \| null | Wall-clock timestamp when the record was first staged for review. Distinct from `published_at`. |
+| `updated_at` | string (date-time) \| null | Wall-clock timestamp of the most recent metadata edit pre-publish. Immutable after `published_at` is set. |
+| `superseded_by_urn` | string \| null | Reverse pointer to the URN that supersedes this record. Inverse of `supersedes_urn`. |
+
+Required-fields list unchanged (still 21 entries). `additionalProperties`
+policy unchanged (`false`). `$id` unchanged. Pydantic mirror at
+`greenlang/factors/schemas/factor_record_v0_1.py` updated in lock-step;
+SQL backing column adds land in V506.

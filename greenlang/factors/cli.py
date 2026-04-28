@@ -652,6 +652,10 @@ def main(argv: list[str] | None = None) -> int:
     _add_resolve_parser(sub)
     _add_explain_parser(sub)
 
+    # Phase 2 / WS8 — publish-time gate validator (seven ordered gates).
+    from greenlang.factors.cli_validate import build_validate_parser
+    build_validate_parser(sub)
+
     args = p.parse_args(argv)
     logger.info("CLI command=%s", args.cmd)
     return int(args.func(args))

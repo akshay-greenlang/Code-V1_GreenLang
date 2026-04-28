@@ -1,7 +1,7 @@
 {
   "source_id": "egrid_subregion",
   "source_version": "2022.1",
-  "ingested_at": "2026-04-24T07:12:23+00:00",
+  "ingested_at": "2026-04-27T09:44:10+00:00",
   "license_class": "public_us_government",
   "license_name": "US-Public-Domain",
   "redistribution_class": "open",
@@ -70,8 +70,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -83,7 +83,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -148,8 +148,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -161,7 +161,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -226,8 +226,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -239,7 +239,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -304,8 +304,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -317,7 +317,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -382,8 +382,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -395,7 +395,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -460,8 +460,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -473,7 +473,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -538,8 +538,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -551,7 +551,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -616,8 +616,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -629,7 +629,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -694,8 +694,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -707,7 +707,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -772,8 +772,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -785,7 +785,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -850,8 +850,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -863,7 +863,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -928,8 +928,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -941,7 +941,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -1006,8 +1006,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1019,7 +1019,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -1084,8 +1084,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1097,7 +1097,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -1162,8 +1162,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1175,7 +1175,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -1240,8 +1240,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1253,7 +1253,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -1318,8 +1318,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1331,7 +1331,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -1396,8 +1396,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1409,7 +1409,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -1474,8 +1474,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1487,7 +1487,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -1552,8 +1552,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1565,7 +1565,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -1630,8 +1630,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1643,7 +1643,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -1708,8 +1708,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1721,7 +1721,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -1786,8 +1786,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1799,7 +1799,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -1864,8 +1864,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1877,7 +1877,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -1942,8 +1942,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1955,7 +1955,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -2020,8 +2020,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2033,7 +2033,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -2098,8 +2098,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2022",
       "release_version": "egrid-2022",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2111,7 +2111,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -2176,8 +2176,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2189,7 +2189,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -2254,8 +2254,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2267,7 +2267,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -2332,8 +2332,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2345,7 +2345,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -2410,8 +2410,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2423,7 +2423,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -2488,8 +2488,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2501,7 +2501,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -2566,8 +2566,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2579,7 +2579,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -2644,8 +2644,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2657,7 +2657,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -2722,8 +2722,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2735,7 +2735,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -2800,8 +2800,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2813,7 +2813,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -2878,8 +2878,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2891,7 +2891,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -2956,8 +2956,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2969,7 +2969,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -3034,8 +3034,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3047,7 +3047,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -3112,8 +3112,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3125,7 +3125,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -3190,8 +3190,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3203,7 +3203,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -3268,8 +3268,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3281,7 +3281,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -3346,8 +3346,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3359,7 +3359,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -3424,8 +3424,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3437,7 +3437,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -3502,8 +3502,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3515,7 +3515,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -3580,8 +3580,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3593,7 +3593,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -3658,8 +3658,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3671,7 +3671,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -3736,8 +3736,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3749,7 +3749,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -3814,8 +3814,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3827,7 +3827,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -3892,8 +3892,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3905,7 +3905,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -3970,8 +3970,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3983,7 +3983,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -4048,8 +4048,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4061,7 +4061,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -4126,8 +4126,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4139,7 +4139,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -4204,8 +4204,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2024",
       "release_version": "egrid-2024",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4217,7 +4217,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -4282,8 +4282,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4295,7 +4295,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -4360,8 +4360,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4373,7 +4373,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -4438,8 +4438,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4451,7 +4451,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -4516,8 +4516,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4529,7 +4529,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -4594,8 +4594,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4607,7 +4607,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -4672,8 +4672,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4685,7 +4685,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -4750,8 +4750,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4763,7 +4763,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -4828,8 +4828,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4841,7 +4841,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -4906,8 +4906,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4919,7 +4919,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -4984,8 +4984,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4997,7 +4997,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -5062,8 +5062,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5075,7 +5075,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -5140,8 +5140,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5153,7 +5153,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -5218,8 +5218,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5231,7 +5231,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -5296,8 +5296,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5309,7 +5309,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -5374,8 +5374,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5387,7 +5387,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -5452,8 +5452,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5465,7 +5465,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -5530,8 +5530,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5543,7 +5543,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -5608,8 +5608,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5621,7 +5621,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -5686,8 +5686,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5699,7 +5699,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -5764,8 +5764,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5777,7 +5777,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -5842,8 +5842,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5855,7 +5855,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -5920,8 +5920,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5933,7 +5933,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -5998,8 +5998,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6011,7 +6011,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -6076,8 +6076,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6089,7 +6089,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -6154,8 +6154,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6167,7 +6167,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -6232,8 +6232,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6245,7 +6245,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     },
@@ -6310,8 +6310,8 @@
       "source_id": "egrid_subregion",
       "source_release": "2026",
       "release_version": "egrid-2026",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6323,7 +6323,7 @@
       "license_class": "public_us_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "U.S. EPA eGRID2022 subregion emission rates (gold-pattern ID extension)."
       }
     }

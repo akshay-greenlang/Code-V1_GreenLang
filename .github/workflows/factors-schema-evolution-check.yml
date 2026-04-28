@@ -1,0 +1,61 @@
+# GreenLang Factors - Schema evolution CI gate
+#
+# Authority: CTO Phase 2 brief 2026-04-27, Section 2.6 (Schema Evolution / WS9).
+# Owner    : GL-Factors Engineering (WS9-B).
+#
+# Purpose: every change to config/schemas/factor_record_*.schema.json MUST be
+# accompanied by a matching entry in docs/factors/schema/CHANGELOG.md whose
+# compatibility label is at least as severe as the conservative classifier's
+# verdict. The gate refuses to merge schema changes that lack documentation.
+
+name: factors-schema-evolution-check
+
+on:
+  pull_request:
+    paths:
+      - 'config/schemas/factor_record_*.schema.json'
+      - 'docs/factors/schema/**'
+  push:
+    branches: [master]
+    paths:
+      - 'config/schemas/factor_record_*.schema.json'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  schema-evolution-check:
+    name: schema-evolution-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code (full history)
+        uses: actions/checkout@v4
+        with:
+          # We need the full history so `git diff <base>..HEAD` resolves.
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install jsonschema
+        run: pip install jsonschema
+
+      - name: Determine base ref
+        id: base
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "ref=origin/${{ github.base_ref }}" >> $GITHUB_OUTPUT
+          else
+            echo "ref=HEAD~1" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run schema-evolution gate
+        run: |
+          python scripts/ci/check_schema_migration_notes.py \
+            --base-ref ${{ steps.base.outputs.ref }} \
+            --head-ref HEAD

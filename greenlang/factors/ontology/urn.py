@@ -27,6 +27,8 @@ Kind contract (kind -> required components -> output form)
                      ``urn:gl:unit:<symbol>``
 * ``activity``     : ``slug``
                      ``urn:gl:activity:<slug>``
+                     OR (Phase 2 taxonomy form): ``taxonomy``, ``code``
+                     ``urn:gl:activity:<taxonomy>:<code-slug>``
 * ``community``    : ``slug``
                      ``urn:gl:community:<slug>``
 * ``partner``      : ``tenant``, ``pack_id``, ``version`` (int>=1)
@@ -71,6 +73,7 @@ __all__ = [
     "URN_PREFIX",
     "ALLOWED_KINDS",
     "ALLOWED_GEO_TYPES",
+    "ALLOWED_ACTIVITY_TAXONOMIES",
 ]
 
 
@@ -110,13 +113,45 @@ ALLOWED_GEO_TYPES: Tuple[str, ...] = (
     "balancing_authority",
     "state",
     "province",
+    # ``state_or_province`` is the canonical type used by the FROZEN
+    # ``factor_record_v0_1.schema.json`` (geography_urn regex) and by the
+    # V500 Postgres CHECK on ``factors_v0_1.geography.type``. Phase 2
+    # ontology seed (``geography_seed_v0_1.yaml``) emits URNs of this
+    # form for sub-national administrative regions (e.g.,
+    # ``urn:gl:geo:state_or_province:us-tx``). Additive — does not
+    # remove the legacy ``state`` / ``province`` types.
+    "state_or_province",
     "region",
     "basin",
     "tenant",
     "global",
 )
 
+# Phase 2 (WS5) — allowed taxonomy slugs for the optional taxonomy/code
+# segmentation of an activity URN. Lower-case-only. CTO list.
+ALLOWED_ACTIVITY_TAXONOMIES: Tuple[str, ...] = (
+    "ipcc",
+    "ghgp",
+    "hs-cn",
+    "cpc",
+    "nace",
+    "naics",
+    "sic",
+    "pact",
+    "freight",
+    "cbam",
+    "pcf",
+    "refrigerants",
+    "agriculture",
+    "waste",
+    "land-use",
+)
+
 _SLUG_RE = re.compile(r"^[a-z0-9](?:[a-z0-9.\-]*[a-z0-9])?$")
+# Activity taxonomy code: allows dot, underscore, hyphen in interior. Must
+# start with [a-z0-9]; trailing char is unrestricted within the allowed
+# class, so single-char codes are permitted (e.g. cpc:0). Phase 2 (WS5).
+_ACTIVITY_CODE_RE = re.compile(r"^[a-z0-9][a-z0-9._\-]*$")
 _NAMESPACE_RE = re.compile(r"^[a-z0-9](?:[a-z0-9._\-]*[a-z0-9])?$")
 _FACTOR_ID_RE = re.compile(r"^[a-zA-Z0-9](?:[a-zA-Z0-9._:\-]*[a-zA-Z0-9])?$")
 _GEO_ID_RE = re.compile(r"^[a-z0-9](?:[a-z0-9.\-]*[a-z0-9])?$")
@@ -146,6 +181,12 @@ class GLUrn(BaseModel):
     geo_type: Optional[str] = None
     symbol: Optional[str] = None
     tenant: Optional[str] = None
+    # Phase 2 (WS5) — optional activity taxonomy + code segmentation.
+    # Populated only for `urn:gl:activity:<taxonomy>:<code-slug>` form.
+    # The legacy `urn:gl:activity:<slug>` form continues to populate
+    # ``slug`` and leaves these as None.
+    taxonomy: Optional[str] = None
+    code: Optional[str] = None
 
     def render(self) -> str:
         """Render this URN to its canonical string form."""
@@ -367,14 +408,38 @@ def parse(s: str) -> GLUrn:
         return GLUrn(kind="unit", symbol=symbol)
 
     if kind == "activity":
-        slug = body
-        if ":" in slug:
-            raise InvalidUrnError(
-                f"URN activity must have no further ':' after slug: {s!r}"
-            )
-        _check_no_empty_segments((slug,), kind, s)
-        _validate_slug(slug, "slug", s)
-        return GLUrn(kind="activity", slug=slug)
+        # Phase 2 (WS5): activity URN may have either form:
+        #   1. legacy: urn:gl:activity:<slug>            -> slug
+        #   2. taxonomy form: urn:gl:activity:<taxonomy>:<code-slug>
+        #                                                 -> taxonomy + code
+        # We disambiguate by counting colons in the body. The taxonomy
+        # form has exactly ONE additional colon. More than one colon is
+        # invalid for either form.
+        colon_count = body.count(":")
+        if colon_count == 0:
+            slug = body
+            _check_no_empty_segments((slug,), kind, s)
+            _validate_slug(slug, "slug", s)
+            return GLUrn(kind="activity", slug=slug)
+        if colon_count == 1:
+            taxonomy, code = body.split(":", 1)
+            _check_no_empty_segments((taxonomy, code), kind, s)
+            if taxonomy not in ALLOWED_ACTIVITY_TAXONOMIES:
+                raise InvalidUrnError(
+                    f"URN activity taxonomy={taxonomy!r} is not one of "
+                    f"{ALLOWED_ACTIVITY_TAXONOMIES}: {s!r}"
+                )
+            if not _ACTIVITY_CODE_RE.match(code):
+                raise InvalidUrnError(
+                    f"URN activity code={code!r} is not a valid taxonomy "
+                    f"code (lowercase a-z 0-9 hyphen dot underscore "
+                    f"only): {s!r}"
+                )
+            return GLUrn(kind="activity", taxonomy=taxonomy, code=code)
+        raise InvalidUrnError(
+            f"URN activity must have form 'urn:gl:activity:<slug>' or "
+            f"'urn:gl:activity:<taxonomy>:<code>': {s!r}"
+        )
 
     if kind == "community":
         slug = body
@@ -417,11 +482,20 @@ _KIND_REQUIRED: Dict[str, Tuple[str, ...]] = {
     "methodology": ("slug",),
     "geo": ("geo_type", "id"),
     "unit": ("symbol",),
+    # ``activity`` accepts EITHER ``slug`` (legacy) OR (``taxonomy``,
+    # ``code``) (Phase 2 WS5). Build() special-cases the validation; this
+    # tuple lists the legacy form's fields.
     "activity": ("slug",),
     "community": ("slug",),
     "partner": ("tenant", "pack_id", "version"),
     "enterprise": ("tenant", "pack_id", "version"),
 }
+
+# Phase 2 (WS5) — accepted component sets for the activity kind.
+_ACTIVITY_BUILD_FORMS: Tuple[Tuple[str, ...], ...] = (
+    ("slug",),
+    ("taxonomy", "code"),
+)
 
 
 def _coerce_version(value: Any, original_kind: str) -> int:
@@ -455,19 +529,50 @@ def build(kind: str, **components: Any) -> str:
         raise InvalidUrnError(
             f"Unknown URN kind {kind!r}; expected one of {ALLOWED_KINDS}"
         )
-    required = _KIND_REQUIRED[kind]
-    missing = [r for r in required if components.get(r) in (None, "")]
-    if missing:
-        raise InvalidUrnError(
-            f"URN {kind!r} missing required components: {missing} "
-            f"(got {sorted(components.keys())})"
-        )
-    extra = sorted(set(components.keys()) - set(required))
-    if extra:
-        raise InvalidUrnError(
-            f"URN {kind!r} got unexpected components: {extra} "
-            f"(allowed: {list(required)})"
-        )
+
+    # ------------------------------------------------------------------
+    # Phase 2 (WS5): activity is the only kind that accepts more than one
+    # set of required components (``slug`` OR ``(taxonomy, code)``). We
+    # resolve the active form from the supplied component keys before
+    # the generic missing/extra checks below.
+    # ------------------------------------------------------------------
+    if kind == "activity":
+        provided = {
+            k for k, v in components.items() if v not in (None, "")
+        }
+        # Pick the form whose required keys are entirely present.
+        active_form: Optional[Tuple[str, ...]] = None
+        for form in _ACTIVITY_BUILD_FORMS:
+            if set(form).issubset(provided):
+                active_form = form
+                break
+        if active_form is None:
+            raise InvalidUrnError(
+                f"URN 'activity' missing required components: must "
+                f"supply either 'slug' OR ('taxonomy', 'code') "
+                f"(got {sorted(components.keys())})"
+            )
+        extra = sorted(set(components.keys()) - set(active_form))
+        if extra:
+            raise InvalidUrnError(
+                f"URN 'activity' got unexpected components: {extra} "
+                f"(allowed: {list(active_form)})"
+            )
+        required = active_form
+    else:
+        required = _KIND_REQUIRED[kind]
+        missing = [r for r in required if components.get(r) in (None, "")]
+        if missing:
+            raise InvalidUrnError(
+                f"URN {kind!r} missing required components: {missing} "
+                f"(got {sorted(components.keys())})"
+            )
+        extra = sorted(set(components.keys()) - set(required))
+        if extra:
+            raise InvalidUrnError(
+                f"URN {kind!r} got unexpected components: {extra} "
+                f"(allowed: {list(required)})"
+            )
 
     if kind == "factor":
         version = _coerce_version(components["version"], kind)
@@ -492,7 +597,13 @@ def build(kind: str, **components: Any) -> str:
     elif kind == "unit":
         candidate = f"urn:gl:unit:{components['symbol']}"
     elif kind == "activity":
-        candidate = f"urn:gl:activity:{components['slug']}"
+        if "taxonomy" in components and "code" in components:
+            candidate = (
+                f"urn:gl:activity:{components['taxonomy']}:"
+                f"{components['code']}"
+            )
+        else:
+            candidate = f"urn:gl:activity:{components['slug']}"
     elif kind == "community":
         candidate = f"urn:gl:community:{components['slug']}"
     elif kind in ("partner", "enterprise"):
@@ -525,6 +636,9 @@ def _render(u: GLUrn) -> str:
     if u.kind == "unit":
         return f"urn:gl:unit:{u.symbol}"
     if u.kind == "activity":
+        # Phase 2 (WS5): two render forms.
+        if u.taxonomy is not None and u.code is not None:
+            return f"urn:gl:activity:{u.taxonomy}:{u.code}"
         return f"urn:gl:activity:{u.slug}"
     if u.kind == "community":
         return f"urn:gl:community:{u.slug}"

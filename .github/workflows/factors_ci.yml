@@ -66,10 +66,33 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install -e ".[factors-test]"
 
+      # Phase 2 Block 1 gate — runs FIRST so a Pydantic-mirror /
+      # frozen-schema drift fails fast with a dedicated red signal.
+      # Owner: gl-spec-guardian. CTO Phase 2 §2.1.
+      - name: Phase 2 Block 1 gate (schema + Pydantic mirror)
+        run: |
+          pytest tests/factors/v0_1_alpha/phase2/test_schema_validates_alpha_catalog.py \
+                 tests/factors/v0_1_alpha/phase2/test_pydantic_mirrors_jsonschema.py \
+                 -q --junitxml=junit-factors-phase2-block1.xml
+
       - name: Run v0.1 alpha tests
         run: |
           pytest tests/factors/v0_1_alpha -q \
             --junitxml=junit-factors-alpha.xml
+
+      # Phase 2 acceptance gate (CTO §2.7) — runs the 10 minimum required
+      # suites enumerated in docs/factors/PHASE_2_PLAN.md §2.7 via the
+      # aggregate runner; emits a colour-coded matrix and exits non-zero
+      # if any CTO row fails. WS8 IN-FLIGHT rows are tolerated until WS8
+      # ships (--allow-in-flight); flip this to default behaviour after
+      # WS8 lands.
+      - name: Phase 2 acceptance (CTO §2.7)
+        id: phase2-acceptance
+        run: |
+          python scripts/factors/run_phase2_acceptance.py \
+            --no-color \
+            --json-out junit-factors-phase2-acceptance.json \
+            --allow-in-flight
 
       - name: Upload test artifact
         if: always()
@@ -79,3 +102,64 @@ jobs:
           path: junit-factors-alpha.xml
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Upload Phase 2 Block 1 gate artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: factors-phase2-block1-junit-py${{ matrix.python-version }}
+          path: junit-factors-phase2-block1.xml
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload Phase 2 acceptance matrix artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: factors-phase2-acceptance-py${{ matrix.python-version }}
+          path: junit-factors-phase2-acceptance.json
+          if-no-files-found: warn
+          retention-days: 14
+
+  phase2-acceptance:
+    name: Phase 2 acceptance (CTO §2.7) standalone gate
+    runs-on: ubuntu-latest
+    needs: factors-alpha-test
+    timeout-minutes: 10
+    env:
+      GL_ENV: test
+      GL_LOG_LEVEL: WARNING
+      GL_FACTORS_RELEASE_PROFILE: "alpha-v0.1"
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+          cache-dependency-path: 'pyproject.toml'
+
+      - name: Install factors-test extras
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -e ".[factors-test]"
+
+      - name: Run aggregate Phase 2 acceptance matrix
+        run: |
+          python scripts/factors/run_phase2_acceptance.py \
+            --no-color \
+            --json-out phase2-acceptance.json \
+            --allow-in-flight
+
+      - name: Upload acceptance matrix
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase2-acceptance-matrix
+          path: phase2-acceptance.json
+          if-no-files-found: warn
+          retention-days: 30

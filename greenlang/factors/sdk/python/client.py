@@ -1046,6 +1046,42 @@ class FactorsClient:
         )
         return AlphaFactor.model_validate(resp.data)
 
+    def get_by_alias(self, legacy_id: str) -> Optional[AlphaFactor]:
+        """GET /v1/factors/by-alias/{legacy_id} — resolve legacy id (Phase 2).
+
+        Resolves a legacy ``EF:...`` (or custom) factor identifier to its
+        canonical record via the ``factor_aliases`` table. Returns the
+        same canonical :class:`AlphaFactor` payload as :meth:`get_factor`
+        — ``urn`` is the primary id, ``factor_id_alias`` is a sibling.
+
+        Args:
+            legacy_id: Legacy identifier (e.g. ``"EF:US:grid:eGRID:2024:v1"``).
+
+        Returns:
+            The :class:`AlphaFactor` whose URN the alias points at, or
+            ``None`` when no alias matches the supplied legacy id.
+
+        Raises:
+            ValueError: when ``legacy_id`` is empty / not a string.
+            FactorsAPIError: on non-404 server errors.
+        """
+        if not isinstance(legacy_id, str) or not legacy_id:
+            raise ValueError(
+                f"get_by_alias() requires a non-empty legacy_id; got {legacy_id!r}."
+            )
+        encoded = quote(legacy_id, safe="")
+        try:
+            resp = self._get(
+                f"/factors/by-alias/{encoded}",
+                extra_headers={"User-Agent": _ALPHA_USER_AGENT},
+            )
+        except FactorsAPIError as exc:
+            # 404 = no alias match. Return None so callers can `if x is None`.
+            if getattr(exc, "status_code", None) == 404:
+                return None
+            raise
+        return AlphaFactor.model_validate(resp.data)
+
     def match(
         self,
         activity_description: str,
@@ -1950,6 +1986,29 @@ class AsyncFactorsClient:
             params=params or None,
             extra_headers={"User-Agent": _ALPHA_USER_AGENT},
         )
+        return AlphaFactor.model_validate(resp.data)
+
+    async def get_by_alias(self, legacy_id: str) -> Optional[AlphaFactor]:
+        """GET /v1/factors/by-alias/{legacy_id} — resolve legacy id (Phase 2, async).
+
+        Async twin of :meth:`FactorsClient.get_by_alias`. Returns ``None``
+        on 404 so callers can ``if x is None`` cleanly; non-404 server
+        errors raise :class:`FactorsAPIError`.
+        """
+        if not isinstance(legacy_id, str) or not legacy_id:
+            raise ValueError(
+                f"get_by_alias() requires a non-empty legacy_id; got {legacy_id!r}."
+            )
+        encoded = quote(legacy_id, safe="")
+        try:
+            resp = await self._get(
+                f"/factors/by-alias/{encoded}",
+                extra_headers={"User-Agent": _ALPHA_USER_AGENT},
+            )
+        except FactorsAPIError as exc:
+            if getattr(exc, "status_code", None) == 404:
+                return None
+            raise
         return AlphaFactor.model_validate(resp.data)
 
     async def match(

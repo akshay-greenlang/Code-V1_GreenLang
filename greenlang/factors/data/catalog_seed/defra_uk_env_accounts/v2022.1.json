@@ -1,7 +1,7 @@
 {
   "source_id": "defra_uk_env_accounts",
   "source_version": "2022.1",
-  "ingested_at": "2026-04-24T07:12:23+00:00",
+  "ingested_at": "2026-04-27T09:44:09+00:00",
   "license_class": "uk_open_government",
   "license_name": "OGL-UK-v3",
   "redistribution_class": "open",
@@ -86,7 +86,7 @@
           "SIC 2007 code 01 (Crop and animal production, hunting and related service activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:02:UK:2022:v1",
@@ -175,8 +175,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -264,7 +264,7 @@
           "SIC 2007 code 02 (Forestry and logging)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -353,8 +353,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -442,7 +442,7 @@
           "SIC 2007 code 03 (Fishing and aquaculture)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -531,8 +531,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -620,7 +620,7 @@
           "SIC 2007 code 05 (Mining of coal and lignite)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -709,8 +709,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -798,7 +798,7 @@
           "SIC 2007 code 06 (Extraction of crude petroleum and natural gas)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -887,8 +887,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -976,7 +976,7 @@
           "SIC 2007 code 07 (Mining of metal ores)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -1065,8 +1065,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1154,7 +1154,7 @@
           "SIC 2007 code 08 (Other mining and quarrying)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -1243,8 +1243,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1332,7 +1332,7 @@
           "SIC 2007 code 10 (Manufacture of food products)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -1421,8 +1421,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1510,7 +1510,7 @@
           "SIC 2007 code 11 (Manufacture of beverages)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -1599,8 +1599,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1688,7 +1688,7 @@
           "SIC 2007 code 12 (Manufacture of tobacco products)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -1777,8 +1777,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1866,7 +1866,7 @@
           "SIC 2007 code 13 (Manufacture of textiles)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -1955,8 +1955,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2044,7 +2044,7 @@
           "SIC 2007 code 14 (Manufacture of wearing apparel)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -2133,8 +2133,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2222,7 +2222,7 @@
           "SIC 2007 code 15 (Manufacture of leather and related products)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -2311,8 +2311,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2400,7 +2400,7 @@
           "SIC 2007 code 16 (Manufacture of wood and of products of wood and cork)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -2489,8 +2489,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2578,7 +2578,7 @@
           "SIC 2007 code 17 (Manufacture of paper and paper products)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -2667,8 +2667,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2756,7 +2756,7 @@
           "SIC 2007 code 18 (Printing and reproduction of recorded media)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -2845,8 +2845,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2934,7 +2934,7 @@
           "SIC 2007 code 19 (Manufacture of coke and refined petroleum products)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -3023,8 +3023,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3112,7 +3112,7 @@
           "SIC 2007 code 20 (Manufacture of chemicals and chemical products)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -3201,8 +3201,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3290,7 +3290,7 @@
           "SIC 2007 code 21 (Manufacture of basic pharmaceutical products and pharmaceutical preparations)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -3379,8 +3379,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3468,7 +3468,7 @@
           "SIC 2007 code 22 (Manufacture of rubber and plastic products)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -3557,8 +3557,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3646,7 +3646,7 @@
           "SIC 2007 code 23 (Manufacture of other non-metallic mineral products)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -3735,8 +3735,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3824,7 +3824,7 @@
           "SIC 2007 code 24 (Manufacture of basic metals)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -3913,8 +3913,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4002,7 +4002,7 @@
           "SIC 2007 code 25 (Manufacture of fabricated metal products, except machinery)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -4091,8 +4091,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4180,7 +4180,7 @@
           "SIC 2007 code 26 (Manufacture of computer, electronic and optical products)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -4269,8 +4269,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4358,7 +4358,7 @@
           "SIC 2007 code 27 (Manufacture of electrical equipment)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -4447,8 +4447,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4536,7 +4536,7 @@
           "SIC 2007 code 28 (Manufacture of machinery and equipment n.e.c.)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -4625,8 +4625,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4714,7 +4714,7 @@
           "SIC 2007 code 29 (Manufacture of motor vehicles, trailers and semi-trailers)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -4803,8 +4803,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4892,7 +4892,7 @@
           "SIC 2007 code 30 (Manufacture of other transport equipment)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -4981,8 +4981,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5070,7 +5070,7 @@
           "SIC 2007 code 31 (Manufacture of furniture)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -5159,8 +5159,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5248,7 +5248,7 @@
           "SIC 2007 code 32 (Other manufacturing)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -5337,8 +5337,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5426,7 +5426,7 @@
           "SIC 2007 code 33 (Repair and installation of machinery and equipment)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -5515,8 +5515,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5604,7 +5604,7 @@
           "SIC 2007 code 35 (Electricity, gas, steam and air conditioning supply)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -5693,8 +5693,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5782,7 +5782,7 @@
           "SIC 2007 code 36 (Water collection, treatment and supply)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -5871,8 +5871,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5960,7 +5960,7 @@
           "SIC 2007 code 37 (Sewerage)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -6049,8 +6049,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6138,7 +6138,7 @@
           "SIC 2007 code 38 (Waste collection, treatment and disposal activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -6227,8 +6227,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6316,7 +6316,7 @@
           "SIC 2007 code 39 (Remediation activities and other waste management services)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -6405,8 +6405,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6494,7 +6494,7 @@
           "SIC 2007 code 41 (Construction of buildings)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -6583,8 +6583,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6672,7 +6672,7 @@
           "SIC 2007 code 42 (Civil engineering)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -6761,8 +6761,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6850,7 +6850,7 @@
           "SIC 2007 code 43 (Specialised construction activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -6939,8 +6939,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7028,7 +7028,7 @@
           "SIC 2007 code 45 (Wholesale and retail trade and repair of motor vehicles)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -7117,8 +7117,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7206,7 +7206,7 @@
           "SIC 2007 code 46 (Wholesale trade, except of motor vehicles and motorcycles)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -7295,8 +7295,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7384,7 +7384,7 @@
           "SIC 2007 code 47 (Retail trade, except of motor vehicles and motorcycles)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -7473,8 +7473,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7562,7 +7562,7 @@
           "SIC 2007 code 49 (Land transport and transport via pipelines)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -7651,8 +7651,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7740,7 +7740,7 @@
           "SIC 2007 code 50 (Water transport)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -7829,8 +7829,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7918,7 +7918,7 @@
           "SIC 2007 code 51 (Air transport)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -8007,8 +8007,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8096,7 +8096,7 @@
           "SIC 2007 code 52 (Warehousing and support activities for transportation)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -8185,8 +8185,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8274,7 +8274,7 @@
           "SIC 2007 code 53 (Postal and courier activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -8363,8 +8363,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8452,7 +8452,7 @@
           "SIC 2007 code 55 (Accommodation)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -8541,8 +8541,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8630,7 +8630,7 @@
           "SIC 2007 code 56 (Food and beverage service activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -8719,8 +8719,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8808,7 +8808,7 @@
           "SIC 2007 code 58 (Publishing activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -8897,8 +8897,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8986,7 +8986,7 @@
           "SIC 2007 code 59 (Motion picture, video and television programme production)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -9075,8 +9075,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -9164,7 +9164,7 @@
           "SIC 2007 code 60 (Programming and broadcasting activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -9253,8 +9253,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -9342,7 +9342,7 @@
           "SIC 2007 code 61 (Telecommunications)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -9431,8 +9431,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -9520,7 +9520,7 @@
           "SIC 2007 code 62 (Computer programming, consultancy and related activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -9609,8 +9609,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -9698,7 +9698,7 @@
           "SIC 2007 code 63 (Information service activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -9787,8 +9787,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -9876,7 +9876,7 @@
           "SIC 2007 code 64 (Financial service activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -9965,8 +9965,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -10054,7 +10054,7 @@
           "SIC 2007 code 65 (Insurance, reinsurance and pension funding)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -10143,8 +10143,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -10232,7 +10232,7 @@
           "SIC 2007 code 66 (Activities auxiliary to financial services and insurance activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -10321,8 +10321,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -10410,7 +10410,7 @@
           "SIC 2007 code 68 (Real estate activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -10499,8 +10499,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -10588,7 +10588,7 @@
           "SIC 2007 code 69 (Legal and accounting activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -10677,8 +10677,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -10766,7 +10766,7 @@
           "SIC 2007 code 70 (Activities of head offices; management consultancy activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -10855,8 +10855,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -10944,7 +10944,7 @@
           "SIC 2007 code 71 (Architectural and engineering activities; technical testing and analysis)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -11033,8 +11033,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -11122,7 +11122,7 @@
           "SIC 2007 code 72 (Scientific research and development)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -11211,8 +11211,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -11300,7 +11300,7 @@
           "SIC 2007 code 73 (Advertising and market research)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -11389,8 +11389,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -11478,7 +11478,7 @@
           "SIC 2007 code 74 (Other professional, scientific and technical activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -11567,8 +11567,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -11656,7 +11656,7 @@
           "SIC 2007 code 75 (Veterinary activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -11745,8 +11745,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -11834,7 +11834,7 @@
           "SIC 2007 code 77 (Rental and leasing activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -11923,8 +11923,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -12012,7 +12012,7 @@
           "SIC 2007 code 78 (Employment activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -12101,8 +12101,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -12190,7 +12190,7 @@
           "SIC 2007 code 79 (Travel agency, tour operator reservation service and related activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -12279,8 +12279,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -12368,7 +12368,7 @@
           "SIC 2007 code 80 (Security and investigation activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -12457,8 +12457,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -12546,7 +12546,7 @@
           "SIC 2007 code 81 (Services to buildings and landscape activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -12635,8 +12635,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -12724,7 +12724,7 @@
           "SIC 2007 code 82 (Office administrative, office support and other business support activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -12813,8 +12813,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -12902,7 +12902,7 @@
           "SIC 2007 code 84 (Public administration and defence; compulsory social security)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -12991,8 +12991,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -13080,7 +13080,7 @@
           "SIC 2007 code 85 (Education)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -13169,8 +13169,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -13258,7 +13258,7 @@
           "SIC 2007 code 86 (Human health activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -13347,8 +13347,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -13436,7 +13436,7 @@
           "SIC 2007 code 87 (Residential care activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -13525,8 +13525,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -13614,7 +13614,7 @@
           "SIC 2007 code 88 (Social work activities without accommodation)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -13703,8 +13703,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -13792,7 +13792,7 @@
           "SIC 2007 code 90 (Creative, arts and entertainment activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -13881,8 +13881,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -13970,7 +13970,7 @@
           "SIC 2007 code 91 (Libraries, archives, museums and other cultural activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -14059,8 +14059,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -14148,7 +14148,7 @@
           "SIC 2007 code 92 (Gambling and betting activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -14237,8 +14237,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -14326,7 +14326,7 @@
           "SIC 2007 code 93 (Sports activities and amusement and recreation activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -14415,8 +14415,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -14504,7 +14504,7 @@
           "SIC 2007 code 94 (Activities of membership organisations)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -14593,8 +14593,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -14682,7 +14682,7 @@
           "SIC 2007 code 95 (Repair of computers and personal and household goods)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -14771,8 +14771,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -14860,7 +14860,7 @@
           "SIC 2007 code 96 (Other personal service activities)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -14949,8 +14949,8 @@
           "EF:DEFRA_IO:97:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -15038,7 +15038,7 @@
           "SIC 2007 code 97 (Activities of households as employers of domestic personnel)",
           "GBP spend basis, UK purchased-goods proxy"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Office for National Statistics / DEFRA, UK Environmental Accounts.",
         "alternates_considered": [
           "EF:DEFRA_IO:01:UK:2022:v1",
@@ -15127,8 +15127,8 @@
           "EF:DEFRA_IO:96:UK:2022:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",

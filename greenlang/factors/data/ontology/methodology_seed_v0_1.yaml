@@ -1,0 +1,384 @@
+# =============================================================================
+# GreenLang Factors v0.1 Alpha — Methodology ontology seed
+# =============================================================================
+# Source authority:
+#   - GHG Protocol Corporate Accounting and Reporting Standard (revised
+#     edition, March 2004) and the Corporate Value Chain (Scope 3)
+#     Accounting and Reporting Standard (2011), with the 2013 Technical
+#     Guidance for Calculating Scope 3 Emissions.
+#     https://ghgprotocol.org/corporate-standard
+#   - IPCC 2006 Guidelines for National Greenhouse Gas Inventories,
+#     Volume 2 (Energy) — Tier 1/2/3 stationary, mobile, fugitive.
+#     https://www.ipcc-nggip.iges.or.jp/public/2006gl/
+#   - EU CBAM Regulation 2023/956 + Implementing Regulation 2023/1773 —
+#     Annex III default values + Annex IV actual values.
+#     https://taxation-customs.ec.europa.eu/cbam_en
+#   - EPA eGRID 2024 — subregion CO2-equivalent emission rates
+#     methodology.
+#     https://www.epa.gov/egrid
+#   - India Central Electricity Authority — CO2 Baseline Database for the
+#     Indian Power Sector (latest user guide).
+#     https://cea.nic.in/cdm-co2-baseline-database/
+#   - GLEC Framework v3.0 (Global Logistics Emissions Council, Smart
+#     Freight Centre, 2023).
+#     https://www.smartfreightcentre.org/en/our-programs/global-logistics-emissions-council/
+#   - ISO 14083:2023 "Greenhouse gases — Quantification and reporting of
+#     greenhouse gas emissions arising from transport chain operations".
+#   - PCAF "The Global GHG Accounting and Reporting Standard for the
+#     Financial Industry" v1.0 (2020).
+#     https://carbonaccountingfinancials.com/
+#   - Ecoinvent v3.x system models documentation (cutoff, APOS,
+#     consequential).
+#     https://ecoinvent.org/the-ecoinvent-database/system-models/
+#
+# CTO Phase 2 brief (2026-04-27): Phase 2 ontology seed — methodology.
+# Source-of-truth for v0.1 alpha. Every URN MUST be lowercase and MUST
+# parse via greenlang.factors.ontology.urn.parse. Each row matches the
+# V500 'methodology' table columns:
+#   urn (UNIQUE), name, framework, tier (NULLABLE), approach (CHECK enum:
+#   activity-based | spend-based | supplier-specific | hybrid |
+#   measurement-based | NULL), boundary_template (TEXT), allocation_rules
+#   (TEXT, NULLABLE), notes (TEXT, NULLABLE).
+#
+# Approach enum (V500 CHECK):
+#   - activity-based:    quantity * factor (most common)
+#   - spend-based:       monetary * factor (PCAF, EEIO)
+#   - supplier-specific: primary supplier data
+#   - hybrid:            mix of activity + spend or supplier-specific
+#   - measurement-based: direct CEMS/sampling (IPCC Tier 3)
+#   - NULL:              unspecified at registry level
+# =============================================================================
+
+version: "0.1"
+seed_source: "phase2_v0_1"
+schema_authority: "config/schemas/factor_record_v0_1.schema.json"
+methodologies:
+
+  # ---------------------------------------------------------------------------
+  # GHG Protocol Corporate Standard — Scope 1 / Scope 2 / Scope 3 Cat 1-15
+  # ---------------------------------------------------------------------------
+
+  - urn: "urn:gl:methodology:ghgp-corporate-scope1"
+    name: "GHG Protocol Corporate Standard — Scope 1 (Direct emissions)"
+    framework: "GHGP"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Operational control"
+    allocation_rules: null
+    notes: "Direct emissions from owned/controlled sources: stationary combustion, mobile, fugitive, process. Cradle-to-gate at the reporting boundary."
+
+  - urn: "urn:gl:methodology:ghgp-corporate-scope2-location"
+    name: "GHG Protocol Scope 2 — Location-based"
+    framework: "GHGP"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Location-based grid average"
+    allocation_rules: null
+    notes: "Scope 2 Guidance (2015): location-based method uses average emission factors of the grid where consumption occurs."
+
+  - urn: "urn:gl:methodology:ghgp-corporate-scope2-market"
+    name: "GHG Protocol Scope 2 — Market-based"
+    framework: "GHGP"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Market-based contractual instruments"
+    allocation_rules: "Contractual instruments hierarchy (Quality Criteria) — energy attribute certificates first, supplier-specific factors second, residual mix last."
+    notes: "Scope 2 Guidance (2015): market-based method reflects emissions from electricity that companies have purposefully chosen via contracts."
+
+  - urn: "urn:gl:methodology:ghgp-corporate-scope3-cat-1"
+    name: "GHG Protocol Scope 3 Category 1 — Purchased goods and services"
+    framework: "GHGP"
+    tier: null
+    approach: "hybrid"
+    boundary_template: "Cradle-to-gate of upstream goods/services"
+    allocation_rules: "Mass / economic / system expansion per ISO 14044."
+    notes: "Scope 3 Standard §5.2; Technical Guidance Cat 1 — supplier-specific, hybrid, average-data, or spend-based."
+
+  - urn: "urn:gl:methodology:ghgp-corporate-scope3-cat-2"
+    name: "GHG Protocol Scope 3 Category 2 — Capital goods"
+    framework: "GHGP"
+    tier: null
+    approach: "hybrid"
+    boundary_template: "Cradle-to-gate of capital goods (one-time, full footprint in year of acquisition)"
+    allocation_rules: "No amortisation in year of acquisition (per Scope 3 Standard)."
+    notes: "Distinct from depreciation accounting — full upstream footprint reported in the year purchased."
+
+  - urn: "urn:gl:methodology:ghgp-corporate-scope3-cat-3"
+    name: "GHG Protocol Scope 3 Category 3 — Fuel- and energy-related activities not in Scope 1/2"
+    framework: "GHGP"
+    tier: null
+    approach: "hybrid"
+    boundary_template: "Upstream fuel cycle (well-to-tank) + T&D losses"
+    allocation_rules: null
+    notes: "Includes upstream emissions of purchased fuels and electricity, T&D losses, and generation of purchased fuels consumed in T&D."
+
+  - urn: "urn:gl:methodology:ghgp-corporate-scope3-cat-4"
+    name: "GHG Protocol Scope 3 Category 4 — Upstream transportation and distribution"
+    framework: "GHGP"
+    tier: null
+    approach: "hybrid"
+    boundary_template: "Inbound logistics + outbound logistics paid for by reporter"
+    allocation_rules: "Distance-based (tkm) or fuel-based; weight × distance preferred per GLEC."
+    notes: "Cradle-to-gate transport between Tier 1 suppliers and the reporter; covers fleet-paid plus 3PL."
+
+  - urn: "urn:gl:methodology:ghgp-corporate-scope3-cat-5"
+    name: "GHG Protocol Scope 3 Category 5 — Waste generated in operations"
+    framework: "GHGP"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Waste treatment by third parties"
+    allocation_rules: null
+    notes: "Disposal/treatment of solid and wastewater streams; cradle-to-grave of treatment infrastructure."
+
+  - urn: "urn:gl:methodology:ghgp-corporate-scope3-cat-6"
+    name: "GHG Protocol Scope 3 Category 6 — Business travel"
+    framework: "GHGP"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Employee transportation in non-owned vehicles for business purposes"
+    allocation_rules: "Distance-based factors (passenger-km) by mode."
+    notes: "Covers air, rail, taxi, hotel; well-to-wheel."
+
+  - urn: "urn:gl:methodology:ghgp-corporate-scope3-cat-7"
+    name: "GHG Protocol Scope 3 Category 7 — Employee commuting"
+    framework: "GHGP"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Home-to-work transportation in non-owned vehicles"
+    allocation_rules: null
+    notes: "Includes telework adjustments per the 2022 GHGP Survey Guidance."
+
+  - urn: "urn:gl:methodology:ghgp-corporate-scope3-cat-8"
+    name: "GHG Protocol Scope 3 Category 8 — Upstream leased assets"
+    framework: "GHGP"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Reporter is lessee; leased asset operations"
+    allocation_rules: null
+    notes: "If lessee uses operational control, may already be in Scope 1/2; only the residual is Cat 8."
+
+  - urn: "urn:gl:methodology:ghgp-corporate-scope3-cat-9"
+    name: "GHG Protocol Scope 3 Category 9 — Downstream transportation and distribution"
+    framework: "GHGP"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Distribution paid for by the customer"
+    allocation_rules: null
+    notes: "Covers post-sale logistics not paid for by the reporter."
+
+  - urn: "urn:gl:methodology:ghgp-corporate-scope3-cat-10"
+    name: "GHG Protocol Scope 3 Category 10 — Processing of sold products"
+    framework: "GHGP"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Intermediate-product processing by downstream customers"
+    allocation_rules: null
+    notes: "Applies to companies selling intermediate products that downstream customers further process."
+
+  - urn: "urn:gl:methodology:ghgp-corporate-scope3-cat-11"
+    name: "GHG Protocol Scope 3 Category 11 — Use of sold products"
+    framework: "GHGP"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Product-lifetime use phase emissions (direct + indirect)"
+    allocation_rules: "Lifetime energy consumption × grid factor × expected lifetime."
+    notes: "Most material category for energy-using products and fossil fuels."
+
+  - urn: "urn:gl:methodology:ghgp-corporate-scope3-cat-12"
+    name: "GHG Protocol Scope 3 Category 12 — End-of-life treatment of sold products"
+    framework: "GHGP"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Waste-treatment of sold products at EOL"
+    allocation_rules: null
+    notes: "Disposal/recycling fate of products sold by the reporter."
+
+  - urn: "urn:gl:methodology:ghgp-corporate-scope3-cat-13"
+    name: "GHG Protocol Scope 3 Category 13 — Downstream leased assets"
+    framework: "GHGP"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Reporter is lessor; leased-out asset operations"
+    allocation_rules: null
+    notes: "If reporter retains operational control, asset emissions already in Scope 1/2."
+
+  - urn: "urn:gl:methodology:ghgp-corporate-scope3-cat-14"
+    name: "GHG Protocol Scope 3 Category 14 — Franchises"
+    framework: "GHGP"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Operations of franchisees not under reporter's operational control"
+    allocation_rules: null
+    notes: "Reporter is franchisor; franchisee Scope 1/2 reported here."
+
+  - urn: "urn:gl:methodology:ghgp-corporate-scope3-cat-15"
+    name: "GHG Protocol Scope 3 Category 15 — Investments"
+    framework: "GHGP"
+    tier: null
+    approach: "hybrid"
+    boundary_template: "Equity investments / debt investments / project finance / managed services"
+    allocation_rules: "Per PCAF Global GHG Accounting Standard for Financial Industry; share of investee Scope 1+2 (and Scope 3 where material)."
+    notes: "Cross-references PCAF for financed-emissions methodology."
+
+  # ---------------------------------------------------------------------------
+  # IPCC 2006 Guidelines — Tier 1/2/3 stationary, mobile, fugitive
+  # ---------------------------------------------------------------------------
+
+  - urn: "urn:gl:methodology:ipcc-tier-1-stationary-combustion"
+    name: "IPCC 2006 Tier 1 — Stationary Combustion"
+    framework: "IPCC"
+    tier: "1"
+    approach: "activity-based"
+    boundary_template: "Fuel × default emission factor"
+    allocation_rules: null
+    notes: "IPCC 2006 Vol 2 Ch 2 Tier 1 — uses default emission factors per fuel type; lowest tier."
+
+  - urn: "urn:gl:methodology:ipcc-tier-2-stationary"
+    name: "IPCC 2006 Tier 2 — Stationary Combustion"
+    framework: "IPCC"
+    tier: "2"
+    approach: "activity-based"
+    boundary_template: "Fuel × country-specific or technology-specific emission factor"
+    allocation_rules: null
+    notes: "IPCC 2006 Vol 2 Ch 2 Tier 2 — uses country-specific factors; higher accuracy than Tier 1."
+
+  - urn: "urn:gl:methodology:ipcc-tier-3-stationary"
+    name: "IPCC 2006 Tier 3 — Stationary Combustion"
+    framework: "IPCC"
+    tier: "3"
+    approach: "measurement-based"
+    boundary_template: "Continuous Emissions Monitoring System (CEMS) or detailed model"
+    allocation_rules: null
+    notes: "IPCC 2006 Vol 2 Ch 2 Tier 3 — direct measurement of stack emissions or plant-specific dynamic modelling. Highest accuracy."
+
+  - urn: "urn:gl:methodology:ipcc-tier-1-mobile"
+    name: "IPCC 2006 Tier 1 — Mobile Combustion"
+    framework: "IPCC"
+    tier: "1"
+    approach: "activity-based"
+    boundary_template: "Fuel × default emission factor (road / off-road / aviation / shipping / rail)"
+    allocation_rules: null
+    notes: "IPCC 2006 Vol 2 Ch 3 Tier 1."
+
+  - urn: "urn:gl:methodology:ipcc-tier-1-fugitive"
+    name: "IPCC 2006 Tier 1 — Fugitive Emissions"
+    framework: "IPCC"
+    tier: "1"
+    approach: "activity-based"
+    boundary_template: "Activity factor × default emission factor (oil & gas / coal mining / refrigerants)"
+    allocation_rules: null
+    notes: "IPCC 2006 Vol 2 Ch 4 Tier 1; mass balance and emission factor approaches."
+
+  # ---------------------------------------------------------------------------
+  # EU CBAM — default values (Annex III) and actual values (Annex IV).
+  # ---------------------------------------------------------------------------
+
+  - urn: "urn:gl:methodology:eu-cbam-default"
+    name: "EU CBAM — Default values (Annex III)"
+    framework: "EU-CBAM"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Embedded direct emissions of CBAM goods (cement, iron-steel, aluminium, fertilisers, hydrogen, electricity)"
+    allocation_rules: "Default values from Annex III table by CN code; updated periodically by the Commission."
+    notes: "Used during the transitional reporting period (Oct 2023 - Dec 2025) and as fallback in definitive period when actual values are unavailable."
+
+  - urn: "urn:gl:methodology:eu-cbam-actual"
+    name: "EU CBAM — Actual values (Annex IV monitoring methodology)"
+    framework: "EU-CBAM"
+    tier: null
+    approach: "measurement-based"
+    boundary_template: "Embedded direct + (where mandated) indirect emissions of CBAM goods, monitored at the production installation"
+    allocation_rules: "Annex IV monitoring methodology — calculation-based or measurement-based at installation level; allocation per process route."
+    notes: "Required during the definitive period (from Jan 2026) for declarants."
+
+  # ---------------------------------------------------------------------------
+  # EPA eGRID — US grid-mix subregion methodology
+  # ---------------------------------------------------------------------------
+
+  - urn: "urn:gl:methodology:epa-egrid-subregion-2024"
+    name: "EPA eGRID 2024 — Subregion location-based methodology"
+    framework: "EPA-eGRID"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Annual generation-mix CO2-equivalent rate for a NERC-aligned eGRID subregion"
+    allocation_rules: "Generation-weighted average across plants within the subregion."
+    notes: "Used as the canonical Scope 2 location-based factor for US grid electricity in v0.1 alpha."
+
+  # ---------------------------------------------------------------------------
+  # India CEA — national grid baseline
+  # ---------------------------------------------------------------------------
+
+  - urn: "urn:gl:methodology:india-cea-baseline"
+    name: "India CEA CO2 Baseline Database — National grid (location-based)"
+    framework: "India-CEA"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "National Indian grid generation-weighted average CO2 emission factor"
+    allocation_rules: "Build-margin / operating-margin / combined-margin per CDM ACM0002 (CEA reports the combined margin)."
+    notes: "Authoritative grid factor for India for Scope 2 location-based reporting."
+
+  # ---------------------------------------------------------------------------
+  # GLEC / ISO 14083 — freight
+  # ---------------------------------------------------------------------------
+
+  - urn: "urn:gl:methodology:glec-framework-v3"
+    name: "GLEC Framework v3.0 — Freight emissions accounting"
+    framework: "GLEC"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Well-to-wheel transport-chain emissions per ISO 14083 alignment"
+    allocation_rules: "Mass × distance (tkm) or volume × distance; allocation across shippers per Annex 6."
+    notes: "Industry-led framework; aligned with ISO 14083:2023 since v3.0."
+
+  - urn: "urn:gl:methodology:iso-14083-2023"
+    name: "ISO 14083:2023 — GHG quantification of transport chain operations"
+    framework: "ISO"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Hub Operation Categories (HOCs) + Transport Operation Categories (TOCs); well-to-wheel"
+    allocation_rules: "Mass-based, volume-based, or TEU-based; documented per shipment."
+    notes: "Successor to EN 16258:2012; the ISO standard for transport-chain GHG accounting."
+
+  # ---------------------------------------------------------------------------
+  # PCAF — financed emissions
+  # ---------------------------------------------------------------------------
+
+  - urn: "urn:gl:methodology:pcaf-financed-emissions-v1"
+    name: "PCAF Global GHG Accounting Standard for the Financial Industry v1.0"
+    framework: "PCAF"
+    tier: null
+    approach: "spend-based"
+    boundary_template: "Attribution of financed emissions to the FI's portfolio share"
+    allocation_rules: "Outstanding amount / EVIC (listed equity, business loans), outstanding / property value (mortgages), etc. — per asset class."
+    notes: "Six asset classes covered in v1.0: listed equity, business loans, project finance, commercial real estate, mortgages, motor vehicle loans."
+
+  # ---------------------------------------------------------------------------
+  # Ecoinvent — system models
+  # ---------------------------------------------------------------------------
+
+  - urn: "urn:gl:methodology:ecoinvent-cutoff"
+    name: "Ecoinvent — Cut-off (allocation, recycled content) system model"
+    framework: "Ecoinvent"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Cradle-to-gate; recycling burdens cut off at the moment of waste generation"
+    allocation_rules: "Recycled content approach — secondary materials enter the system free of upstream burdens."
+    notes: "Default ecoinvent system model; widely adopted in product LCA. system_model='cutoff'."
+
+  - urn: "urn:gl:methodology:ecoinvent-apos"
+    name: "Ecoinvent — APOS (Allocation at the Point of Substitution) system model"
+    framework: "Ecoinvent"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Cradle-to-gate; co-product allocation at the point of substitution"
+    allocation_rules: "Allocation factors applied to co-products based on physical/economic substitution."
+    notes: "Replaces ecoinvent's earlier 'allocation, default' model. system_model='apos'."
+
+  - urn: "urn:gl:methodology:ecoinvent-consequential"
+    name: "Ecoinvent — Consequential (long-term marginal) system model"
+    framework: "Ecoinvent"
+    tier: null
+    approach: "activity-based"
+    boundary_template: "Cradle-to-gate; marginal-supplier substitution effects"
+    allocation_rules: "System expansion via long-term marginal suppliers; co-products avoid the marginal alternative."
+    notes: "For decision-oriented LCA. system_model='consequential'."

@@ -1,7 +1,7 @@
 {
   "source_id": "cbam_default_values",
   "source_version": "2024.1",
-  "ingested_at": "2026-04-24T07:12:23+00:00",
+  "ingested_at": "2026-04-27T09:44:09+00:00",
   "license_class": "public_eu",
   "license_name": "EU-Publication",
   "redistribution_class": "open",
@@ -84,7 +84,7 @@
           "embedded emissions",
           "CN code 7208"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:iron:CN:2024:v1",
@@ -93,8 +93,8 @@
           "EF:CBAM:fertilizer:CN:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -180,7 +180,7 @@
           "embedded emissions",
           "CN code 7208"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:iron:IN:2024:v1",
@@ -189,8 +189,8 @@
           "EF:CBAM:fertilizer:IN:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -276,7 +276,7 @@
           "embedded emissions",
           "CN code 7208"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:aluminium:TR:2024:v1",
@@ -285,8 +285,8 @@
           "EF:CBAM:electricity:TR:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -372,7 +372,7 @@
           "embedded emissions",
           "CN code 7208"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:iron:RU:2024:v1",
@@ -381,8 +381,8 @@
           "EF:CBAM:hydrogen:RU:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -468,7 +468,7 @@
           "embedded emissions",
           "CN code 7208"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:iron:UA:2024:v1",
@@ -476,8 +476,8 @@
           "EF:CBAM:electricity:UA:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -563,15 +563,15 @@
           "embedded emissions",
           "CN code 7208"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:iron:BR:2024:v1",
           "EF:CBAM:cement:BR:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -657,11 +657,11 @@
           "embedded emissions",
           "CN code 7208"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -747,11 +747,11 @@
           "embedded emissions",
           "CN code 7208"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -837,15 +837,15 @@
           "embedded emissions",
           "CN code 7208"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:iron:US:2024:v1",
           "EF:CBAM:aluminium:US:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -931,14 +931,14 @@
           "embedded emissions",
           "CN code 7208"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:cement:VN:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -1024,11 +1024,11 @@
           "embedded emissions",
           "CN code 7208"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -1114,11 +1114,11 @@
           "embedded emissions",
           "CN code 7208"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -1203,7 +1203,7 @@
           "CBAM default direct 1.8 + indirect 0.35",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:CN:2024:v1",
@@ -1212,8 +1212,8 @@
           "EF:CBAM:fertilizer:CN:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -1298,7 +1298,7 @@
           "CBAM default direct 2.1 + indirect 0.45",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:IN:2024:v1",
@@ -1307,8 +1307,8 @@
           "EF:CBAM:fertilizer:IN:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -1393,7 +1393,7 @@
           "CBAM default direct 1.65 + indirect 0.3",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:RU:2024:v1",
@@ -1402,8 +1402,8 @@
           "EF:CBAM:hydrogen:RU:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -1488,15 +1488,15 @@
           "CBAM default direct 1.55 + indirect 0.1",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:BR:2024:v1",
           "EF:CBAM:cement:BR:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -1581,15 +1581,15 @@
           "CBAM default direct 1.5 + indirect 0.2",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:US:2024:v1",
           "EF:CBAM:aluminium:US:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -1674,7 +1674,7 @@
           "CBAM default direct 1.7 + indirect 0.35",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:UA:2024:v1",
@@ -1682,8 +1682,8 @@
           "EF:CBAM:electricity:UA:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -1768,7 +1768,7 @@
           "CBAM default direct 2.4 + indirect 12.5",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:CN:2024:v1",
@@ -1777,8 +1777,8 @@
           "EF:CBAM:fertilizer:CN:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -1863,7 +1863,7 @@
           "CBAM default direct 2.65 + indirect 15.4",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:IN:2024:v1",
@@ -1872,8 +1872,8 @@
           "EF:CBAM:fertilizer:IN:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -1958,7 +1958,7 @@
           "CBAM default direct 1.85 + indirect 1.1",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:RU:2024:v1",
@@ -1967,8 +1967,8 @@
           "EF:CBAM:hydrogen:RU:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -2053,14 +2053,14 @@
           "CBAM default direct 2.1 + indirect 7.2",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:hydrogen:AE:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -2145,11 +2145,11 @@
           "CBAM default direct 2.05 + indirect 11.8",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -2234,11 +2234,11 @@
           "CBAM default direct 1.7 + indirect 0.05",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -2323,14 +2323,14 @@
           "CBAM default direct 1.85 + indirect 0.1",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:hydrogen:NO:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -2415,14 +2415,14 @@
           "CBAM default direct 1.75 + indirect 0.25",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:hydrogen:CA:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -2507,15 +2507,15 @@
           "CBAM default direct 2.1 + indirect 4.3",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:US:2024:v1",
           "EF:CBAM:iron:US:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -2600,11 +2600,11 @@
           "CBAM default direct 2.0 + indirect 6.8",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -2689,7 +2689,7 @@
           "CBAM default direct 2.15 + indirect 5.1",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:TR:2024:v1",
@@ -2698,8 +2698,8 @@
           "EF:CBAM:electricity:TR:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -2784,7 +2784,7 @@
           "CBAM default direct 0.72 + indirect 0.12",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:CN:2024:v1",
@@ -2793,8 +2793,8 @@
           "EF:CBAM:fertilizer:CN:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -2879,7 +2879,7 @@
           "CBAM default direct 0.68 + indirect 0.1",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:IN:2024:v1",
@@ -2888,8 +2888,8 @@
           "EF:CBAM:fertilizer:IN:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -2974,14 +2974,14 @@
           "CBAM default direct 0.75 + indirect 0.08",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:fertilizer:EG:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -3066,7 +3066,7 @@
           "CBAM default direct 0.65 + indirect 0.06",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:TR:2024:v1",
@@ -3075,8 +3075,8 @@
           "EF:CBAM:electricity:TR:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -3161,14 +3161,14 @@
           "CBAM default direct 0.7 + indirect 0.1",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:VN:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -3253,11 +3253,11 @@
           "CBAM default direct 0.72 + indirect 0.09",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -3342,15 +3342,15 @@
           "CBAM default direct 0.68 + indirect 0.07",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:fertilizer:MA:2024:v1",
           "EF:CBAM:electricity:MA:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -3435,7 +3435,7 @@
           "CBAM default direct 0.71 + indirect 0.13",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:UA:2024:v1",
@@ -3443,8 +3443,8 @@
           "EF:CBAM:electricity:UA:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -3529,15 +3529,15 @@
           "CBAM default direct 0.6 + indirect 0.05",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:BR:2024:v1",
           "EF:CBAM:iron:BR:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -3622,7 +3622,7 @@
           "CBAM default direct 1.9 + indirect 0.35",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:RU:2024:v1",
@@ -3631,8 +3631,8 @@
           "EF:CBAM:hydrogen:RU:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -3717,14 +3717,14 @@
           "CBAM default direct 2.05 + indirect 0.25",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:cement:EG:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -3809,15 +3809,15 @@
           "CBAM default direct 1.85 + indirect 0.3",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:cement:MA:2024:v1",
           "EF:CBAM:electricity:MA:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -3902,14 +3902,14 @@
           "CBAM default direct 1.95 + indirect 0.3",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:hydrogen:DZ:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -3994,7 +3994,7 @@
           "CBAM default direct 2.15 + indirect 0.65",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:IN:2024:v1",
@@ -4003,8 +4003,8 @@
           "EF:CBAM:cement:IN:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -4089,7 +4089,7 @@
           "CBAM default direct 2.25 + indirect 0.55",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:CN:2024:v1",
@@ -4098,8 +4098,8 @@
           "EF:CBAM:cement:CN:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -4184,7 +4184,7 @@
           "CBAM default direct 1.88 + indirect 0.22",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:TR:2024:v1",
@@ -4193,8 +4193,8 @@
           "EF:CBAM:electricity:TR:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -4279,14 +4279,14 @@
           "CBAM default direct 1.6 + indirect 0.2",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:hydrogen:SA:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -4371,14 +4371,14 @@
           "CBAM default direct 9.5 + indirect 0.4",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:fertilizer:SA:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -4463,7 +4463,7 @@
           "CBAM default direct 10.8 + indirect 0.8",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:RU:2024:v1",
@@ -4472,8 +4472,8 @@
           "EF:CBAM:fertilizer:RU:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -4558,14 +4558,14 @@
           "CBAM default direct 8.2 + indirect 0.05",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:aluminium:NO:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -4650,14 +4650,14 @@
           "CBAM default direct 9.8 + indirect 0.5",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:aluminium:AE:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -4742,14 +4742,14 @@
           "CBAM default direct 9.2 + indirect 0.35",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:fertilizer:DZ:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -4834,14 +4834,14 @@
           "CBAM default direct 8.5 + indirect 0.2",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:aluminium:CA:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -4926,11 +4926,11 @@
           "CBAM default direct 1.1 + indirect 0.0",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -5015,7 +5015,7 @@
           "CBAM default direct 0.85 + indirect 0.0",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:UA:2024:v1",
@@ -5023,8 +5023,8 @@
           "EF:CBAM:cement:UA:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -5109,7 +5109,7 @@
           "CBAM default direct 0.6 + indirect 0.0",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:steel:TR:2024:v1",
@@ -5118,8 +5118,8 @@
           "EF:CBAM:fertilizer:TR:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -5204,11 +5204,11 @@
           "CBAM default direct 1.25 + indirect 0.0",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -5293,11 +5293,11 @@
           "CBAM default direct 0.95 + indirect 0.0",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -5382,11 +5382,11 @@
           "CBAM default direct 0.7 + indirect 0.0",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -5471,15 +5471,15 @@
           "CBAM default direct 0.8 + indirect 0.0",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values.",
         "alternates_considered": [
           "EF:CBAM:cement:MA:2024:v1",
           "EF:CBAM:fertilizer:MA:2024:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",
@@ -5564,11 +5564,11 @@
           "CBAM default direct 0.25 + indirect 0.0",
           "embedded emissions"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "European Commission, CBAM Implementing Regulation (EU) 2023/1773 Annex IV default embedded-emission values."
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "EU_CBAM",

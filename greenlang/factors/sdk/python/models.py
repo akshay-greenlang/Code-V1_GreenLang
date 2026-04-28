@@ -1070,6 +1070,45 @@ class AlphaFactor(BaseModel):
     published_at: datetime = Field(..., description="When the factor was published.")
     extraction: Extraction = Field(..., description="Extraction provenance block.")
     review: Review = Field(..., description="Review-state block.")
+    # V506 additive contract fields (2026-04-27 schema amendment) — all
+    # OPTIONAL. Records that pre-date the amendment expose them as None.
+    activity_taxonomy_urn: Optional[str] = Field(
+        None,
+        description=(
+            "URN of the activity taxonomy entry. Optional in v0.1; "
+            "required from v0.2."
+        ),
+    )
+    confidence: Optional[float] = Field(
+        None,
+        ge=0.0,
+        le=1.0,
+        description=(
+            "Methodology-lead confidence score in [0, 1]. Distinct from "
+            "uncertainty (which describes the value distribution)."
+        ),
+    )
+    created_at: Optional[datetime] = Field(
+        None,
+        description=(
+            "Wall-clock timestamp when the record was first staged for "
+            "review. Distinct from published_at."
+        ),
+    )
+    updated_at: Optional[datetime] = Field(
+        None,
+        description=(
+            "Wall-clock timestamp of the most recent metadata edit "
+            "pre-publish. Immutable after published_at is set."
+        ),
+    )
+    superseded_by_urn: Optional[str] = Field(
+        None,
+        description=(
+            "Reverse pointer: when set, this factor has been superseded "
+            "by the named URN. Inverse of supersedes_urn."
+        ),
+    )
 
 
 class HealthResponse(BaseModel):

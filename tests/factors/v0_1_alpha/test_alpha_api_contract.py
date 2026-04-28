@@ -56,6 +56,10 @@ ALPHA_OPENAPI_PATHS = {
     "/v1/healthz",
     "/v1/factors",
     "/v1/factors/{urn}",
+    # Phase 2 / WS2 (2026-04-27): canonical alias resolver. Returns the
+    # same FactorV0_1 shape as /v1/factors/{urn}, with `urn` as the
+    # primary id and `factor_id_alias` as a sibling.
+    "/v1/factors/by-alias/{legacy_id}",
     "/v1/sources",
     "/v1/packs",
 }
@@ -377,6 +381,10 @@ def test_api_v1_legacy_path_returns_410_with_alpha_endpoints_list(alpha_client):
         "/v1/healthz",
         "/v1/factors",
         "/v1/factors/{urn}",
+        # Phase 2 / WS2 (2026-04-27): alias resolver added to the public
+        # endpoint catalogue. The router exposes the same FactorV0_1
+        # response shape as /v1/factors/{urn}.
+        "/v1/factors/by-alias/{legacy_id}",
         "/v1/sources",
         "/v1/packs",
     }

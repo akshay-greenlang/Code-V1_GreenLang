@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.greenlang.io/factors/factor_record_v0_1.schema.json",
   "title": "GreenLang Factor Record v0.1 Alpha (FROZEN)",
-  "description": "FROZEN alpha contract for GreenLang Factors v0.1 Alpha (FY27 Q1). Narrower than factor_record_v1.schema.json. Every record produced by the 6 alpha-source parsers (IPCC AR6, DEFRA 2025, EPA GHG Hub 2025, EPA eGRID 2024, India CEA latest, EU CBAM defaults) MUST validate against this schema. Frozen 2026-04-25. Versioning policy: additive within v0.x; field removal/rename is a breaking change requiring a new $id (v0.2+). v1.0 GA will use a separate $id and is not substitutable for v0.1.",
+  "description": "FROZEN alpha contract for GreenLang Factors v0.1 Alpha (FY27 Q1). Narrower than factor_record_v1.schema.json. Every record produced by the 6 alpha-source parsers (IPCC AR6, DEFRA 2025, EPA GHG Hub 2025, EPA eGRID 2024, India CEA latest, EU CBAM defaults) MUST validate against this schema. Frozen 2026-04-25. Versioning policy: additive within v0.x; field removal/rename is a breaking change requiring a new $id (v0.2+). v1.0 GA will use a separate $id and is not substitutable for v0.1. — Amended 2026-04-27 (additive: activity_taxonomy_urn, confidence, created_at, updated_at, superseded_by_urn)",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -175,6 +175,32 @@
       "type": ["string", "null"],
       "pattern": "^urn:gl:factor:[a-z0-9][a-z0-9-]*(:[A-Za-z0-9._-]+){2,4}:v[1-9][0-9]*$",
       "description": "URN of the prior factor this record replaces. Set on revisions."
+    },
+    "superseded_by_urn": {
+      "type": ["string", "null"],
+      "pattern": "^urn:gl:factor:[a-z0-9][a-z0-9-]*(:[a-z0-9][a-z0-9._-]*){2,4}:v[1-9][0-9]*$",
+      "description": "Reverse pointer: when set, this factor has been superseded by the named URN. Inverse of supersedes_urn. Set on the prior factor when a correction is issued."
+    },
+    "activity_taxonomy_urn": {
+      "type": ["string", "null"],
+      "pattern": "^urn:gl:activity:[a-z0-9][a-z0-9-]*(:[a-z0-9][a-z0-9._-]*)?$",
+      "description": "URN of the activity taxonomy entry. Optional in v0.1; required from v0.2. Resolves to factors_v0_1.activity.urn."
+    },
+    "confidence": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Optional confidence score in [0,1]. Methodology lead's subjective confidence in the factor's accuracy. Distinct from uncertainty (which describes the value distribution)."
+    },
+    "created_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Wall-clock timestamp when the record was first staged for review. Distinct from published_at (when it became visible in production)."
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Wall-clock timestamp of the most recent metadata edit pre-publish. Immutable after published_at is set; tracking edits during the staging window only."
     },
     "published_at": {
       "type": "string",

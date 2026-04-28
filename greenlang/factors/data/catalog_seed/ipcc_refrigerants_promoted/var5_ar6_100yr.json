@@ -1,7 +1,7 @@
 {
   "source_id": "ipcc_refrigerants_promoted",
   "source_version": "ar5_ar6_100yr",
-  "ingested_at": "2026-04-24T07:12:23+00:00",
+  "ingested_at": "2026-04-27T09:44:10+00:00",
   "license_class": "public_international",
   "license_name": "IPCC-Guideline",
   "redistribution_class": "open",
@@ -71,8 +71,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar5_100",
       "release_version": "ipcc-ar5",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -85,7 +85,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_32:GLOBAL:ipcc_ar5_100:v1",
@@ -168,8 +168,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar6_100",
       "release_version": "ipcc-ar6",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -182,7 +182,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_32:GLOBAL:ipcc_ar6_100:v1",
@@ -265,8 +265,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar5_100",
       "release_version": "ipcc-ar5",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -279,7 +279,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
@@ -362,8 +362,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar6_100",
       "release_version": "ipcc-ar6",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -376,7 +376,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
@@ -459,8 +459,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar5_100",
       "release_version": "ipcc-ar5",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -473,7 +473,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
@@ -556,8 +556,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar6_100",
       "release_version": "ipcc-ar6",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -570,7 +570,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
@@ -653,8 +653,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar5_100",
       "release_version": "ipcc-ar5",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -667,7 +667,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
@@ -750,8 +750,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar6_100",
       "release_version": "ipcc-ar6",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -764,7 +764,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
@@ -847,8 +847,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar5_100",
       "release_version": "ipcc-ar5",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -861,7 +861,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
@@ -944,8 +944,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar6_100",
       "release_version": "ipcc-ar6",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -958,7 +958,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
@@ -1041,8 +1041,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar5_100",
       "release_version": "ipcc-ar5",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1055,7 +1055,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
@@ -1138,8 +1138,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar6_100",
       "release_version": "ipcc-ar6",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1152,7 +1152,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
@@ -1235,8 +1235,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar5_100",
       "release_version": "ipcc-ar5",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1249,7 +1249,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
@@ -1332,8 +1332,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar6_100",
       "release_version": "ipcc-ar6",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1346,7 +1346,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
@@ -1429,8 +1429,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar5_100",
       "release_version": "ipcc-ar5",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1443,7 +1443,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
@@ -1526,8 +1526,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar6_100",
       "release_version": "ipcc-ar6",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1540,7 +1540,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
@@ -1623,8 +1623,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar5_100",
       "release_version": "ipcc-ar5",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1637,7 +1637,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
@@ -1720,8 +1720,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar6_100",
       "release_version": "ipcc-ar6",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1734,7 +1734,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
@@ -1817,8 +1817,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar5_100",
       "release_version": "ipcc-ar5",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1831,7 +1831,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
@@ -1914,8 +1914,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar6_100",
       "release_version": "ipcc-ar6",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1928,7 +1928,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
@@ -2011,8 +2011,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar5_100",
       "release_version": "ipcc-ar5",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2025,7 +2025,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
@@ -2108,8 +2108,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar6_100",
       "release_version": "ipcc-ar6",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2122,7 +2122,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
@@ -2205,8 +2205,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar5_100",
       "release_version": "ipcc-ar5",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2219,7 +2219,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
@@ -2302,8 +2302,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar6_100",
       "release_version": "ipcc-ar6",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2316,7 +2316,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
@@ -2399,8 +2399,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar5_100",
       "release_version": "ipcc-ar5",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2413,7 +2413,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
@@ -2496,8 +2496,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar6_100",
       "release_version": "ipcc-ar6",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2510,7 +2510,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
@@ -2593,8 +2593,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar5_100",
       "release_version": "ipcc-ar5",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2607,7 +2607,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
@@ -2690,8 +2690,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar6_100",
       "release_version": "ipcc-ar6",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2704,7 +2704,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
@@ -2787,8 +2787,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar5_100",
       "release_version": "ipcc-ar5",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2801,7 +2801,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
@@ -2884,8 +2884,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar6_100",
       "release_version": "ipcc-ar6",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2898,7 +2898,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",
@@ -2981,8 +2981,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar5_100",
       "release_version": "ipcc-ar5",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2995,7 +2995,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar5_100:v1",
@@ -3078,8 +3078,8 @@
       "source_id": "ipcc_refrigerants_promoted",
       "source_release": "ipcc_ar6_100",
       "release_version": "ipcc-ar6",
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:10+00:00",
+      "updated_at": "2026-04-27T09:44:10+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3092,7 +3092,7 @@
       "license_class": "public_international",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:10+00:00",
         "attribution_text": "IPCC AR5 Working Group I Chapter 8 and AR6 Working Group I Chapter 7 \u2014 100-year GWP values for halogenated gases.",
         "alternates_considered": [
           "EF:IPCC:r_22:GLOBAL:ipcc_ar6_100:v1",

@@ -1,7 +1,7 @@
 {
   "source_id": "desnz_ghg_conversion",
   "source_version": "2024.1",
-  "ingested_at": "2026-04-24T07:12:22+00:00",
+  "ingested_at": "2026-04-27T09:44:09+00:00",
   "license_class": "uk_open_government",
   "license_name": "OGL-UK-v3",
   "redistribution_class": "open",
@@ -57,8 +57,8 @@
         "natural_gas"
       ],
       "notes": "Stationary combustion, net CV basis",
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -71,7 +71,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_cubic_meter:UK:2024:v1",
@@ -320,8 +320,8 @@
         "natural_gas"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -334,7 +334,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -583,8 +583,8 @@
         "natural_gas"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -597,7 +597,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -846,8 +846,8 @@
         "natural_gas_mineral"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -860,7 +860,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -1109,8 +1109,8 @@
         "lng"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1123,7 +1123,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -1372,8 +1372,8 @@
         "lng"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1386,7 +1386,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -1635,8 +1635,8 @@
         "cng"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1649,7 +1649,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -1898,8 +1898,8 @@
         "lpg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1912,7 +1912,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -2161,8 +2161,8 @@
         "lpg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2175,7 +2175,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -2424,8 +2424,8 @@
         "lpg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2438,7 +2438,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -2687,8 +2687,8 @@
         "butane"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2701,7 +2701,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -2950,8 +2950,8 @@
         "butane"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2964,7 +2964,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -3213,8 +3213,8 @@
         "butane"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3227,7 +3227,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -3476,8 +3476,8 @@
         "propane"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3490,7 +3490,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -3739,8 +3739,8 @@
         "propane"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3753,7 +3753,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -4002,8 +4002,8 @@
         "propane"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4016,7 +4016,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -4265,8 +4265,8 @@
         "petrol_average"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4279,7 +4279,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -4528,8 +4528,8 @@
         "petrol_average"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4542,7 +4542,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -4791,8 +4791,8 @@
         "diesel_average"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4805,7 +4805,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -5054,8 +5054,8 @@
         "diesel_average"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5068,7 +5068,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -5317,8 +5317,8 @@
         "diesel_ulsd"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5331,7 +5331,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -5580,8 +5580,8 @@
         "kerosene"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5594,7 +5594,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -5843,8 +5843,8 @@
         "kerosene"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5857,7 +5857,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -6106,8 +6106,8 @@
         "gas_oil"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6120,7 +6120,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -6369,8 +6369,8 @@
         "gas_oil"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6383,7 +6383,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -6632,8 +6632,8 @@
         "fuel_oil"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6646,7 +6646,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -6895,8 +6895,8 @@
         "fuel_oil"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6909,7 +6909,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -7158,8 +7158,8 @@
         "burning_oil"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7172,7 +7172,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -7421,8 +7421,8 @@
         "residual_fuel_oil"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7435,7 +7435,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -7684,8 +7684,8 @@
         "naphtha"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7698,7 +7698,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -7947,8 +7947,8 @@
         "aviation_spirit"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -7961,7 +7961,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -8210,8 +8210,8 @@
         "aviation_turbine_fuel"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8224,7 +8224,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -8473,8 +8473,8 @@
         "marine_gas_oil"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8487,7 +8487,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -8736,8 +8736,8 @@
         "marine_fuel_oil"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -8750,7 +8750,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -8999,8 +8999,8 @@
         "coal_industrial"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -9013,7 +9013,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -9262,8 +9262,8 @@
         "coal_electricity"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -9276,7 +9276,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -9525,8 +9525,8 @@
         "coking_coal"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -9539,7 +9539,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -9788,8 +9788,8 @@
         "petroleum_coke"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -9802,7 +9802,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -10051,8 +10051,8 @@
         "peat"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -10065,7 +10065,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -10314,8 +10314,8 @@
         "coal_domestic"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -10328,7 +10328,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -10577,8 +10577,8 @@
         "lubricants"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -10591,7 +10591,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -10840,8 +10840,8 @@
         "refinery_miscellaneous"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -10854,7 +10854,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -11103,8 +11103,8 @@
         "waste_oils"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -11117,7 +11117,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -11366,8 +11366,8 @@
         "other_petroleum_gas"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -11380,7 +11380,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -11629,8 +11629,8 @@
         "bioethanol"
       ],
       "notes": "Biogenic CO2=1.538",
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -11643,7 +11643,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -11892,8 +11892,8 @@
         "biodiesel_me"
       ],
       "notes": "Biogenic CO2=2.509",
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -11906,7 +11906,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -12155,8 +12155,8 @@
         "biomethane"
       ],
       "notes": "Biogenic CO2=0.1828",
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -12169,7 +12169,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -12418,8 +12418,8 @@
         "biogas"
       ],
       "notes": "Biogenic CO2=0.1829",
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -12432,7 +12432,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -12681,8 +12681,8 @@
         "wood_logs"
       ],
       "notes": "Biogenic CO2=1564.0",
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -12695,7 +12695,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -12944,8 +12944,8 @@
         "wood_pellets"
       ],
       "notes": "Biogenic CO2=1569.0",
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -12958,7 +12958,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -13207,8 +13207,8 @@
         "wood_chips"
       ],
       "notes": "Biogenic CO2=1558.0",
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -13221,7 +13221,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -13470,8 +13470,8 @@
         "biofuels_grass"
       ],
       "notes": "Biogenic CO2=1469.0",
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -13484,7 +13484,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -13733,8 +13733,8 @@
         "bioethanol_hvo"
       ],
       "notes": "Biogenic CO2=2.497",
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -13747,7 +13747,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -13996,8 +13996,8 @@
         "grid_average"
       ],
       "notes": "UK national grid average kg CO2e / kWh 2024",
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -14010,7 +14010,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -14259,8 +14259,8 @@
         "generation_only"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -14273,7 +14273,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -14522,8 +14522,8 @@
         "transmission_distribution"
       ],
       "notes": "UK T&D losses",
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -14536,7 +14536,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -14785,8 +14785,8 @@
         "renewable_generation"
       ],
       "notes": "100% renewable supply",
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -14799,7 +14799,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -15048,8 +15048,8 @@
         "district_heat_steam"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -15062,7 +15062,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -15311,8 +15311,8 @@
         "district_cooling"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -15325,7 +15325,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -15574,8 +15574,8 @@
         "district_heat_biomass"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -15588,7 +15588,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -15837,8 +15837,8 @@
         "natural_gas_wtt"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -15851,7 +15851,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -16100,8 +16100,8 @@
         "lng_wtt"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -16114,7 +16114,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -16363,8 +16363,8 @@
         "diesel_wtt"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -16377,7 +16377,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -16626,8 +16626,8 @@
         "petrol_wtt"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -16640,7 +16640,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -16889,8 +16889,8 @@
         "lpg_wtt"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -16903,7 +16903,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -17152,8 +17152,8 @@
         "electricity_wtt"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -17166,7 +17166,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -17415,8 +17415,8 @@
         "coal_wtt"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -17429,7 +17429,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -17678,8 +17678,8 @@
         "kerosene_wtt"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -17692,7 +17692,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -17941,8 +17941,8 @@
         "heavy_fuel_oil_wtt"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -17955,7 +17955,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -18205,8 +18205,8 @@
         "hgv_rigid_avg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -18219,7 +18219,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -18469,8 +18469,8 @@
         "hgv_articulated_avg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -18483,7 +18483,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -18733,8 +18733,8 @@
         "hgv_all_avg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -18747,7 +18747,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -18997,8 +18997,8 @@
         "van_up_to_1_75t"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -19011,7 +19011,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -19261,8 +19261,8 @@
         "van_1_75_to_3_5t"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -19275,7 +19275,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -19525,8 +19525,8 @@
         "van_diesel_avg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -19539,7 +19539,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -19789,8 +19789,8 @@
         "rail_freight_avg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -19803,7 +19803,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -20053,8 +20053,8 @@
         "rail_freight_diesel"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -20067,7 +20067,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -20317,8 +20317,8 @@
         "sea_container"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -20331,7 +20331,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -20581,8 +20581,8 @@
         "sea_bulk_carrier"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -20595,7 +20595,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -20845,8 +20845,8 @@
         "sea_general_cargo"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -20859,7 +20859,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -21109,8 +21109,8 @@
         "sea_tanker"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -21123,7 +21123,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -21373,8 +21373,8 @@
         "freight_flight_shorthaul"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -21387,7 +21387,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -21637,8 +21637,8 @@
         "freight_flight_longhaul"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -21651,7 +21651,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -21901,8 +21901,8 @@
         "courier_van"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -21915,7 +21915,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -22164,8 +22164,8 @@
         "car_avg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -22178,7 +22178,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -22427,8 +22427,8 @@
         "car_petrol_avg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -22441,7 +22441,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -22690,8 +22690,8 @@
         "car_diesel_avg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -22704,7 +22704,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -22953,8 +22953,8 @@
         "car_hybrid_avg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -22967,7 +22967,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -23216,8 +23216,8 @@
         "car_bev_avg"
       ],
       "notes": "UK grid mix tank-to-wheel",
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -23230,7 +23230,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -23479,8 +23479,8 @@
         "car_phev_avg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -23493,7 +23493,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -23742,8 +23742,8 @@
         "motorbike_avg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -23756,7 +23756,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -24005,8 +24005,8 @@
         "bus_local"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -24019,7 +24019,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -24268,8 +24268,8 @@
         "coach_long_distance"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -24282,7 +24282,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -24531,8 +24531,8 @@
         "rail_national"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -24545,7 +24545,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -24794,8 +24794,8 @@
         "rail_international"
       ],
       "notes": "Eurostar etc.",
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -24808,7 +24808,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -25057,8 +25057,8 @@
         "rail_underground"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -25071,7 +25071,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -25320,8 +25320,8 @@
         "flight_domestic"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -25334,7 +25334,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -25583,8 +25583,8 @@
         "flight_shorthaul_econ"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -25597,7 +25597,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -25846,8 +25846,8 @@
         "flight_shorthaul_biz"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -25860,7 +25860,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -26109,8 +26109,8 @@
         "flight_longhaul_econ"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -26123,7 +26123,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -26372,8 +26372,8 @@
         "flight_longhaul_prem_econ"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -26386,7 +26386,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -26635,8 +26635,8 @@
         "flight_longhaul_biz"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -26649,7 +26649,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -26898,8 +26898,8 @@
         "flight_longhaul_first"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -26912,7 +26912,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -27161,8 +27161,8 @@
         "ferry_foot_passenger"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -27175,7 +27175,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -27424,8 +27424,8 @@
         "ferry_car_passenger"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -27438,7 +27438,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -27687,8 +27687,8 @@
         "taxi_regular"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -27701,7 +27701,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -27950,8 +27950,8 @@
         "hotel_uk_overnight"
       ],
       "notes": "kg CO2e per room-night UK",
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -27964,7 +27964,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -28213,8 +28213,8 @@
         "hotel_global_avg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -28227,7 +28227,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -28476,8 +28476,8 @@
         "hotel_france"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -28490,7 +28490,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -28739,8 +28739,8 @@
         "hotel_germany"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -28753,7 +28753,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -29002,8 +29002,8 @@
         "hotel_spain"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -29016,7 +29016,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -29265,8 +29265,8 @@
         "hotel_italy"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -29279,7 +29279,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -29528,8 +29528,8 @@
         "hotel_netherlands"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -29542,7 +29542,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -29791,8 +29791,8 @@
         "hotel_sweden"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -29805,7 +29805,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -30054,8 +30054,8 @@
         "hotel_norway"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -30068,7 +30068,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -30317,8 +30317,8 @@
         "hotel_us"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -30331,7 +30331,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -30580,8 +30580,8 @@
         "hotel_china"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -30594,7 +30594,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -30843,8 +30843,8 @@
         "hotel_india"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -30857,7 +30857,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -31106,8 +31106,8 @@
         "hotel_japan"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -31120,7 +31120,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -31369,8 +31369,8 @@
         "hotel_south_korea"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -31383,7 +31383,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -31632,8 +31632,8 @@
         "hotel_brazil"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -31646,7 +31646,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -31895,8 +31895,8 @@
         "hotel_mexico"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -31909,7 +31909,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -32158,8 +32158,8 @@
         "hotel_canada"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -32172,7 +32172,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -32421,8 +32421,8 @@
         "hotel_singapore"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -32435,7 +32435,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -32684,8 +32684,8 @@
         "hotel_uae"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -32698,7 +32698,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -32947,8 +32947,8 @@
         "hotel_saudi_arabia"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -32961,7 +32961,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -33210,8 +33210,8 @@
         "hotel_south_africa"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -33224,7 +33224,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -33473,8 +33473,8 @@
         "hotel_egypt"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -33487,7 +33487,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -33736,8 +33736,8 @@
         "hotel_thailand"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -33750,7 +33750,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -33999,8 +33999,8 @@
         "hotel_indonesia"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -34013,7 +34013,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -34262,8 +34262,8 @@
         "hotel_vietnam"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -34276,7 +34276,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -34525,8 +34525,8 @@
         "hotel_malaysia"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -34539,7 +34539,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -34788,8 +34788,8 @@
         "hotel_australia"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -34802,7 +34802,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -35051,8 +35051,8 @@
         "hotel_new_zealand"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -35065,7 +35065,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -35314,8 +35314,8 @@
         "hotel_argentina"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -35328,7 +35328,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -35577,8 +35577,8 @@
         "hotel_chile"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -35591,7 +35591,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -35840,8 +35840,8 @@
         "hotel_global_business"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -35854,7 +35854,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -36103,8 +36103,8 @@
         "water_supply"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -36117,7 +36117,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -36366,8 +36366,8 @@
         "water_treatment"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -36380,7 +36380,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -36629,8 +36629,8 @@
         "paper_landfill"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -36643,7 +36643,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -36892,8 +36892,8 @@
         "paper_recycle"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -36906,7 +36906,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -37155,8 +37155,8 @@
         "paper_composting"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -37169,7 +37169,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -37418,8 +37418,8 @@
         "food_composting"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -37432,7 +37432,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -37681,8 +37681,8 @@
         "food_anaerobic_digestion"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -37695,7 +37695,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -37944,8 +37944,8 @@
         "food_landfill"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -37958,7 +37958,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -38207,8 +38207,8 @@
         "glass_recycle"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -38221,7 +38221,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -38470,8 +38470,8 @@
         "glass_landfill"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -38484,7 +38484,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -38733,8 +38733,8 @@
         "metal_recycle"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -38747,7 +38747,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -38996,8 +38996,8 @@
         "metal_landfill"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -39010,7 +39010,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -39259,8 +39259,8 @@
         "plastics_recycle"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -39273,7 +39273,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -39522,8 +39522,8 @@
         "plastics_landfill"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -39536,7 +39536,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -39785,8 +39785,8 @@
         "plastics_incineration"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -39799,7 +39799,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -40048,8 +40048,8 @@
         "mixed_msw_landfill"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -40062,7 +40062,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -40311,8 +40311,8 @@
         "mixed_msw_incineration"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -40325,7 +40325,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -40574,8 +40574,8 @@
         "construction_landfill"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -40588,7 +40588,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -40837,8 +40837,8 @@
         "construction_recycle"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -40851,7 +40851,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -41100,8 +41100,8 @@
         "wood_landfill"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -41114,7 +41114,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -41363,8 +41363,8 @@
         "wood_recycle"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -41377,7 +41377,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -41626,8 +41626,8 @@
         "textiles_recycle"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -41640,7 +41640,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -41889,8 +41889,8 @@
         "wastewater_treatment"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -41903,7 +41903,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -42153,8 +42153,8 @@
         "steel_primary"
       ],
       "notes": "Embodied carbon, cradle-to-gate",
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -42167,7 +42167,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -42417,8 +42417,8 @@
         "steel_recycled"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -42431,7 +42431,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -42681,8 +42681,8 @@
         "aluminium_primary"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -42695,7 +42695,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -42945,8 +42945,8 @@
         "aluminium_recycled"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -42959,7 +42959,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -43209,8 +43209,8 @@
         "concrete"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -43223,7 +43223,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -43473,8 +43473,8 @@
         "cement"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -43487,7 +43487,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -43737,8 +43737,8 @@
         "glass"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -43751,7 +43751,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -44001,8 +44001,8 @@
         "bricks"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -44015,7 +44015,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -44265,8 +44265,8 @@
         "plasterboard"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -44279,7 +44279,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -44529,8 +44529,8 @@
         "plastics_avg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -44543,7 +44543,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -44793,8 +44793,8 @@
         "paper_virgin"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -44807,7 +44807,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -45057,8 +45057,8 @@
         "cardboard"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -45071,7 +45071,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -45321,8 +45321,8 @@
         "asphalt"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -45335,7 +45335,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -45585,8 +45585,8 @@
         "timber_sawn"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -45599,7 +45599,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -45849,8 +45849,8 @@
         "gypsum"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -45863,7 +45863,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -46113,8 +46113,8 @@
         "mineral_wool_insulation"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -46127,7 +46127,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -46377,8 +46377,8 @@
         "polyurethane_foam"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -46391,7 +46391,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -46641,8 +46641,8 @@
         "copper_primary"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -46655,7 +46655,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -46905,8 +46905,8 @@
         "copper_recycled"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -46919,7 +46919,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -47169,8 +47169,8 @@
         "stainless_steel"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -47183,7 +47183,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -47433,8 +47433,8 @@
         "pvc"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -47447,7 +47447,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -47697,8 +47697,8 @@
         "pet"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -47711,7 +47711,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -47961,8 +47961,8 @@
         "polyethylene"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -47975,7 +47975,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -48225,8 +48225,8 @@
         "polypropylene"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -48239,7 +48239,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -48489,8 +48489,8 @@
         "polystyrene"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -48503,7 +48503,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -48753,8 +48753,8 @@
         "rubber"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -48767,7 +48767,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -49017,8 +49017,8 @@
         "leather"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -49031,7 +49031,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -49281,8 +49281,8 @@
         "cotton"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -49295,7 +49295,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -49545,8 +49545,8 @@
         "textiles_avg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -49559,7 +49559,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -49809,8 +49809,8 @@
         "food_avg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -49823,7 +49823,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -50073,8 +50073,8 @@
         "beef_avg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -50087,7 +50087,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -50337,8 +50337,8 @@
         "dairy_milk"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -50351,7 +50351,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -50601,8 +50601,8 @@
         "pork_avg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -50615,7 +50615,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -50865,8 +50865,8 @@
         "poultry_avg"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -50879,7 +50879,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -51129,8 +51129,8 @@
         "wheat_flour"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -51143,7 +51143,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",
@@ -51393,8 +51393,8 @@
         "rice"
       ],
       "notes": null,
-      "created_at": "2026-04-24T07:12:22+00:00",
-      "updated_at": "2026-04-24T07:12:22+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -51407,7 +51407,7 @@
       "license_class": "uk_open_government",
       "redistribution_class": "open",
       "validation_flags": {
-        "bootstrap_ingested_at": "2026-04-24T07:12:22+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "Contains public sector information licensed under the Open Government Licence v3.0 \u2014 UK Department for Energy Security and Net Zero, GHG conversion factors 2024.",
         "alternates_considered": [
           "EF:DESNZ:s1_natural_gas_kwh_net_cv:UK:2024:v1",

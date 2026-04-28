@@ -92,6 +92,14 @@ class FactorV0_1(_AlphaBase):
     extraction: Dict[str, Any] = Field(default_factory=dict)
     review: Dict[str, Any] = Field(default_factory=dict)
     tags: List[str] = Field(default_factory=list)
+    # V506 additive contract fields (2026-04-27 schema amendment) — all
+    # OPTIONAL. Records that pre-date the amendment surface them as
+    # None / null in the API response.
+    activity_taxonomy_urn: Optional[str] = None
+    confidence: Optional[float] = None
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+    superseded_by_urn: Optional[str] = None
 
 
 class FactorListResponse(_AlphaBase):

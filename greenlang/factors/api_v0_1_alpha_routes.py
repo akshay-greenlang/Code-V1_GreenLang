@@ -75,6 +75,7 @@ ALPHA_ENDPOINTS_PUBLIC = [
     "/v1/healthz",
     "/v1/factors",
     "/v1/factors/{urn}",
+    "/v1/factors/by-alias/{legacy_id}",
     "/v1/sources",
     "/v1/packs",
 ]
@@ -508,6 +509,102 @@ def _decode_cursor(cursor: Optional[str]) -> int:
         return max(1, int(cursor))
     except ValueError:
         return 1
+
+
+# ---------------------------------------------------------------------------
+# /v1/factors/by-alias/{legacy_id}  — Phase 2 / WS2 alias resolver
+#
+# IMPORTANT: declared BEFORE the ``/factors/{urn:path}`` catch-all so the
+# explicit ``by-alias`` prefix wins the route-matching contest. FastAPI
+# matches in declaration order; if the urn:path converter were declared
+# first it would swallow ``/factors/by-alias/...`` strings as opaque URN
+# values and the alias resolver would never run.
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/factors/by-alias/{legacy_id:path}",
+    response_model=FactorV0_1,
+    summary="Get one factor by legacy alias (Phase 2 / WS2)",
+    description=(
+        "Resolve a legacy ``EF:...`` (or custom) factor identifier to its "
+        "canonical record via the ``factor_aliases`` table. Returns the "
+        "same shape as ``/v1/factors/{urn}``; the response carries the "
+        "canonical ``urn`` as the primary id and ``factor_id_alias`` as "
+        "a sibling.\n\n"
+        "404 with a stable JSON error body if no alias matches the legacy "
+        "id. The alias path is only available against the real "
+        "``alpha_factor_repo`` (Phase 2 V501); the legacy "
+        "``factors_service`` fallback returns 404 because alias resolution "
+        "is not part of that contract."
+    ),
+    responses={
+        404: {
+            "model": ErrorResponse,
+            "description": "No alias matched the supplied legacy id.",
+        },
+    },
+)
+def get_factor_by_alias(
+    request: Request,
+    legacy_id: str = Path(
+        ...,
+        description=(
+            "Legacy factor identifier (e.g. ``EF:US:grid:eGRID-SERC:2024:v1``). "
+            "URL-encoded path segments are accepted."
+        ),
+    ),
+) -> FactorV0_1:
+    """Phase 2 / WS2: resolve legacy id -> canonical factor record.
+
+    Calls :meth:`AlphaFactorRepository.find_by_alias`, returning the
+    canonical record verbatim (no coercion). The Phase 1 source-rights
+    gate is applied to the resolved record exactly as it is for direct
+    URN lookups, so commercial / pending sources never leak through the
+    alias path either.
+    """
+    request.state.skip_licensing_scan = True
+    profile_header = {"X-GL-Release-Profile": current_profile().value}
+
+    repo = _alpha_repo(request)
+    if repo is None:
+        # Alias resolution requires the Phase 2 repo; the legacy service
+        # path has no alias index and would silently 404 anyway.
+        return JSONResponse(
+            status_code=404,
+            content={
+                "error": "factor_alias_not_found",
+                "message": (
+                    "Alias resolution requires the Phase 2 repository "
+                    "(alpha_factor_repo). The legacy catalog service does "
+                    "not maintain an alias index."
+                ),
+                "legacy_id": legacy_id,
+            },
+            headers=profile_header,
+        )
+
+    try:
+        rec = repo.find_by_alias(legacy_id)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("alpha_factor_repo.find_by_alias failed: %s", exc)
+        rec = None
+
+    if rec is None:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "error": "factor_alias_not_found",
+                "message": f"No factor alias matched legacy_id={legacy_id!r}.",
+                "legacy_id": legacy_id,
+            },
+            headers=profile_header,
+        )
+
+    denied = _phase1_rights_filter_one(request, rec)
+    if denied is not None:
+        return denied
+    return FactorV0_1.model_validate(rec)
 
 
 # ---------------------------------------------------------------------------

@@ -167,7 +167,10 @@ def install_alpha_e2e_shim(
     if mode == "real":
         from greenlang.factors.repositories import AlphaFactorRepository
 
-        real_repo = AlphaFactorRepository(dsn="sqlite:///:memory:")
+        # legacy mode — Phase 1 provenance gate only; Phase 2 orchestrator covered by tests/factors/v0_1_alpha/phase2/
+        real_repo = AlphaFactorRepository(
+            dsn="sqlite:///:memory:", publish_env="legacy"
+        )
         for record in factors:
             real_repo.publish(record)
         app.state.alpha_factor_repo = real_repo

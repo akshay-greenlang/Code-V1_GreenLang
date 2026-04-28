@@ -38,8 +38,17 @@ from tests.factors.v0_1_alpha._e2e_helpers import good_ipcc_ar6_factor
 
 @pytest.fixture()
 def repo() -> AlphaFactorRepository:
-    """Fresh in-memory repository per test."""
-    r = AlphaFactorRepository(dsn="sqlite:///:memory:")
+    """Fresh in-memory repository per test.
+
+    Uses ``publish_env='legacy'`` so the Phase 1 :class:`AlphaProvenanceGate`
+    runs in isolation; the Phase 2 seven-gate orchestrator is covered by
+    ``tests/factors/v0_1_alpha/phase2/`` (which seeds the ontology +
+    source registry the orchestrator probes). This test module
+    intentionally exercises the legacy gate to lock that surface
+    independent of the orchestrator.
+    """
+    # legacy mode — Phase 1 provenance gate only; Phase 2 orchestrator covered by tests/factors/v0_1_alpha/phase2/
+    r = AlphaFactorRepository(dsn="sqlite:///:memory:", publish_env="legacy")
     yield r
     r.close()
 
@@ -144,7 +153,8 @@ def populated_repo() -> AlphaFactorRepository:
     Mix of source/pack/category/geo + ascending publish times so cursors
     are deterministic.
     """
-    r = AlphaFactorRepository(dsn="sqlite:///:memory:")
+    # legacy mode — Phase 1 provenance gate only; Phase 2 orchestrator covered by tests/factors/v0_1_alpha/phase2/
+    r = AlphaFactorRepository(dsn="sqlite:///:memory:", publish_env="legacy")
     rows: List[Dict[str, Any]] = [
         _record(
             leaf="ng-residential",
@@ -270,7 +280,8 @@ def test_list_factors_sort_is_published_at_desc(
 
 def test_cursor_pagination_100_records_two_pages_no_overlap() -> None:
     """100 records / 50 per page -> 2 pages, all retrieved exactly once."""
-    r = AlphaFactorRepository(dsn="sqlite:///:memory:")
+    # legacy mode — Phase 1 provenance gate only; Phase 2 orchestrator covered by tests/factors/v0_1_alpha/phase2/
+    r = AlphaFactorRepository(dsn="sqlite:///:memory:", publish_env="legacy")
     try:
         # Publish 100 unique records with strictly-monotonic publish times.
         urns_published: List[str] = []
@@ -398,7 +409,8 @@ def test_record_jsonb_column_holds_verbatim_blob() -> None:
     """The on-disk ``record_jsonb`` column equals the published dict
     after json.loads — no field-stripping or coercion.
     """
-    r = AlphaFactorRepository(dsn="sqlite:///:memory:")
+    # legacy mode — Phase 1 provenance gate only; Phase 2 orchestrator covered by tests/factors/v0_1_alpha/phase2/
+    r = AlphaFactorRepository(dsn="sqlite:///:memory:", publish_env="legacy")
     try:
         rec = good_ipcc_ar6_factor()
         r.publish(rec)
@@ -415,7 +427,8 @@ def test_record_jsonb_column_holds_verbatim_blob() -> None:
 
 
 def test_close_is_idempotent() -> None:
-    r = AlphaFactorRepository(dsn="sqlite:///:memory:")
+    # legacy mode — Phase 1 provenance gate only; Phase 2 orchestrator covered by tests/factors/v0_1_alpha/phase2/
+    r = AlphaFactorRepository(dsn="sqlite:///:memory:", publish_env="legacy")
     r.close()
     r.close()  # Should not raise.
 
@@ -424,7 +437,8 @@ def test_filesystem_sqlite_dsn_creates_parent_dir(tmp_path) -> None:
     """A nested sqlite path triggers parent-dir creation."""
     nested = tmp_path / "a" / "b" / "c" / "alpha.db"
     dsn = f"sqlite:///{nested.as_posix()}"
-    r = AlphaFactorRepository(dsn=dsn)
+    # legacy mode — Phase 1 provenance gate only; Phase 2 orchestrator covered by tests/factors/v0_1_alpha/phase2/
+    r = AlphaFactorRepository(dsn=dsn, publish_env="legacy")
     try:
         r.publish(good_ipcc_ar6_factor())
         assert nested.exists()

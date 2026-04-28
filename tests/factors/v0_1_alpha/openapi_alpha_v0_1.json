@@ -84,6 +84,17 @@
       "FactorV0_1": {
         "description": "Single factor record in the v0.1 alpha shape.\n\nKeys mirror the JSON-Schema required list. Values are best-effort\ncoerced from the legacy ``EmissionFactorRecord`` via\n:func:`greenlang.factors.api_v0_1_alpha_routes._coerce_v0_1`. None is\npermitted on every field except ``urn`` so a missing back-fill never\ncrashes ``/v1/factors``.",
         "properties": {
+          "activity_taxonomy_urn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activity Taxonomy Urn"
+          },
           "boundary": {
             "anyOf": [
               {
@@ -113,6 +124,28 @@
             },
             "title": "Citations",
             "type": "array"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
           },
           "description": {
             "anyOf": [
@@ -256,6 +289,17 @@
             ],
             "title": "Source Urn"
           },
+          "superseded_by_urn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Superseded By Urn"
+          },
           "tags": {
             "items": {
               "type": "string"
@@ -273,6 +317,17 @@
               }
             ],
             "title": "Unit Urn"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
           },
           "urn": {
             "description": "Canonical factor URN.",
@@ -823,6 +878,61 @@
           }
         },
         "summary": "List factors (cursor-paginated, filtered)",
+        "tags": [
+          "factors-v0.1-alpha"
+        ]
+      }
+    },
+    "/v1/factors/by-alias/{legacy_id}": {
+      "get": {
+        "description": "Resolve a legacy ``EF:...`` (or custom) factor identifier to its canonical record via the ``factor_aliases`` table. Returns the same shape as ``/v1/factors/{urn}``; the response carries the canonical ``urn`` as the primary id and ``factor_id_alias`` as a sibling.\n\n404 with a stable JSON error body if no alias matches the legacy id. The alias path is only available against the real ``alpha_factor_repo`` (Phase 2 V501); the legacy ``factors_service`` fallback returns 404 because alias resolution is not part of that contract.",
+        "operationId": "get_factor_by_alias_v1_factors_by_alias__legacy_id__get",
+        "parameters": [
+          {
+            "description": "Legacy factor identifier (e.g. ``EF:US:grid:eGRID-SERC:2024:v1``). URL-encoded path segments are accepted.",
+            "in": "path",
+            "name": "legacy_id",
+            "required": true,
+            "schema": {
+              "description": "Legacy factor identifier (e.g. ``EF:US:grid:eGRID-SERC:2024:v1``). URL-encoded path segments are accepted.",
+              "title": "Legacy Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactorV0_1"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "No alias matched the supplied legacy id."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get one factor by legacy alias (Phase 2 / WS2)",
         "tags": [
           "factors-v0.1-alpha"
         ]

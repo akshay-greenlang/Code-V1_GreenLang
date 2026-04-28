@@ -349,7 +349,10 @@ def test_publish_rejects_record_with_mismatched_licence(monkeypatch, tmp_path) -
     from greenlang.factors.rights import LicenceMismatch
 
     db_path = tmp_path / "publish.sqlite"
-    repo = AlphaFactorRepository(dsn=f"sqlite:///{db_path}")
+    # legacy mode — Phase 1 provenance gate only; Phase 2 orchestrator covered by tests/factors/v0_1_alpha/phase2/
+    repo = AlphaFactorRepository(
+        dsn=f"sqlite:///{db_path}", publish_env="legacy"
+    )
     publisher = AlphaPublisher(repo=repo)
 
     # Build a minimally valid v0.1 record (the publisher's provenance
@@ -469,7 +472,11 @@ def test_publish_fails_closed_on_rights_runtime_error(monkeypatch, tmp_path) -> 
         AlphaPublisherError,
     )
 
-    repo = AlphaFactorRepository(dsn=f"sqlite:///{tmp_path / 'fail-closed.sqlite'}")
+    # legacy mode — Phase 1 provenance gate only; Phase 2 orchestrator covered by tests/factors/v0_1_alpha/phase2/
+    repo = AlphaFactorRepository(
+        dsn=f"sqlite:///{tmp_path / 'fail-closed.sqlite'}",
+        publish_env="legacy",
+    )
     publisher = AlphaPublisher(repo=repo)
 
     record = {

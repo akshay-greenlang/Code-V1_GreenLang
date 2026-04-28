@@ -1,0 +1,436 @@
+# =============================================================================
+# GreenLang Factors v0.1 Alpha — Unit ontology seed
+# =============================================================================
+# Source authority:
+#   - ISO 80000-1:2009 "Quantities and units — Part 1: General" (SI base)
+#   - ISO 80000-3:2019 "Space and time" (distance)
+#   - ISO 80000-4:2019 "Mechanics" (mass)
+#   - ISO 80000-5:2019 "Thermodynamics" (energy)
+#   - ISO 80000-9:2019 "Physical chemistry" (mole, molar mass)
+#   - NIST SP 811 (2008) "Guide for the Use of the International System of
+#     Units (SI)" — energy/mass/volume/distance conversions
+#     https://physics.nist.gov/cuu/pdf/sp811.pdf
+#   - GHG Protocol Corporate Standard (Annex on units of measurement) for
+#     composite climate units (kgCO2e/<denominator>).
+#   - ISO 14083:2023 "Greenhouse gases — Quantification and reporting of
+#     greenhouse gas emissions arising from transport chain operations" —
+#     freight-activity units (tkm, passenger-km).
+#   - ISO 4217 currency codes (currency dimension).
+#
+# CTO Phase 2 brief (2026-04-27): Phase 2 ontology seed — units.
+# Source-of-truth for v0.1 alpha. Every URN MUST be lowercase and MUST
+# parse via greenlang.factors.ontology.urn.parse. The V500 Postgres
+# CHECK on factors_v0_1.unit.urn permits a-zA-Z0-9._/- — but the canonical
+# parser is stricter (lowercase only, plus _ ^ %); we comply with the
+# stricter rule.
+#
+# 'conversions' JSONB contract:
+#   conversions[<other-unit-symbol>] = factor such that
+#     1 (this unit) = factor (other unit)
+#   e.g., kwh.conversions["mj"] = 3.6 means 1 kWh = 3.6 MJ.
+#
+# This file is consumed by greenlang.factors.data.ontology.loaders
+# .unit_loader.load_units. Re-running the loader is idempotent
+# (INSERT ... ON CONFLICT (urn) DO NOTHING).
+# =============================================================================
+
+version: "0.1"
+seed_source: "phase2_v0_1"
+schema_authority: "config/schemas/factor_record_v0_1.schema.json"
+units:
+
+  # ===========================================================================
+  # COMPOSITE CLIMATE — kgCO2e per <activity-denominator>. The numerator
+  # is fixed at kgCO2e (AR6 GWP basis enforced separately by the factor
+  # record schema's gwp_basis field).
+  # ===========================================================================
+
+  - urn: "urn:gl:unit:kgco2e/kwh"
+    symbol: "kgCO2e/kWh"
+    dimension: "composite_climate"
+    conversions:
+      "kgco2e/mwh": 1000.0
+      "kgco2e/mj": 0.2778
+      "kgco2e/gj": 277.778
+    iso_reference: "GHG Protocol Corporate Standard, Annex"
+
+  - urn: "urn:gl:unit:kgco2e/mwh"
+    symbol: "kgCO2e/MWh"
+    dimension: "composite_climate"
+    conversions:
+      "kgco2e/kwh": 0.001
+      "kgco2e/gj": 0.2778
+    iso_reference: "GHG Protocol Corporate Standard, Annex"
+
+  - urn: "urn:gl:unit:kgco2e/kg"
+    symbol: "kgCO2e/kg"
+    dimension: "composite_climate"
+    conversions:
+      "kgco2e/t": 1000.0
+    iso_reference: "GHG Protocol Corporate Standard, Annex"
+
+  - urn: "urn:gl:unit:kgco2e/t"
+    symbol: "kgCO2e/t"
+    dimension: "composite_climate"
+    conversions:
+      "kgco2e/kg": 0.001
+    iso_reference: "GHG Protocol Corporate Standard, Annex"
+
+  - urn: "urn:gl:unit:kgco2e/tkm"
+    symbol: "kgCO2e/tkm"
+    dimension: "composite_climate"
+    conversions: {}
+    iso_reference: "ISO 14083:2023 (freight activity)"
+
+  - urn: "urn:gl:unit:kgco2e/l"
+    symbol: "kgCO2e/L"
+    dimension: "composite_climate"
+    conversions:
+      "kgco2e/m3": 1000.0
+    iso_reference: "GHG Protocol Corporate Standard, Annex"
+
+  - urn: "urn:gl:unit:kgco2e/m3"
+    symbol: "kgCO2e/m³"
+    dimension: "composite_climate"
+    conversions:
+      "kgco2e/l": 0.001
+    iso_reference: "GHG Protocol Corporate Standard, Annex"
+
+  - urn: "urn:gl:unit:kgco2e/passenger-km"
+    symbol: "kgCO2e/passenger-km"
+    dimension: "composite_climate"
+    conversions: {}
+    iso_reference: "ISO 14083:2023"
+
+  - urn: "urn:gl:unit:kgco2e/usd"
+    symbol: "kgCO2e/USD"
+    dimension: "composite_climate"
+    conversions: {}
+    iso_reference: "ISO 4217 USD; spend-based methodology (PCAF/EPA EEIO)"
+
+  - urn: "urn:gl:unit:kgco2e/eur"
+    symbol: "kgCO2e/EUR"
+    dimension: "composite_climate"
+    conversions: {}
+    iso_reference: "ISO 4217 EUR; spend-based methodology"
+
+  - urn: "urn:gl:unit:kgco2e/gbp"
+    symbol: "kgCO2e/GBP"
+    dimension: "composite_climate"
+    conversions: {}
+    iso_reference: "ISO 4217 GBP; spend-based methodology"
+
+  - urn: "urn:gl:unit:kgco2e/inr"
+    symbol: "kgCO2e/INR"
+    dimension: "composite_climate"
+    conversions: {}
+    iso_reference: "ISO 4217 INR; spend-based methodology"
+
+  - urn: "urn:gl:unit:kgco2e/mj"
+    symbol: "kgCO2e/MJ"
+    dimension: "composite_climate"
+    conversions:
+      "kgco2e/kwh": 3.6
+      "kgco2e/gj": 1000.0
+    iso_reference: "GHG Protocol Corporate Standard, Annex"
+
+  - urn: "urn:gl:unit:kgco2e/gj"
+    symbol: "kgCO2e/GJ"
+    dimension: "composite_climate"
+    conversions:
+      "kgco2e/mj": 0.001
+      "kgco2e/mwh": 3.6
+    iso_reference: "GHG Protocol Corporate Standard, Annex"
+
+  - urn: "urn:gl:unit:kgco2e/btu"
+    symbol: "kgCO2e/Btu"
+    dimension: "composite_climate"
+    conversions: {}
+    iso_reference: "NIST SP 811 (Btu = 1055.06 J)"
+
+  - urn: "urn:gl:unit:kgco2e/therm"
+    symbol: "kgCO2e/therm"
+    dimension: "composite_climate"
+    conversions: {}
+    iso_reference: "NIST SP 811 (1 therm = 1.055e8 J)"
+
+  - urn: "urn:gl:unit:kgco2e/tonne-km"
+    symbol: "kgCO2e/tonne-km"
+    dimension: "composite_climate"
+    conversions:
+      "kgco2e/tkm": 1.0
+    iso_reference: "ISO 14083:2023 (synonym for tkm)"
+
+  - urn: "urn:gl:unit:kgco2e/km"
+    symbol: "kgCO2e/km"
+    dimension: "composite_climate"
+    conversions: {}
+    iso_reference: "GHG Protocol Corporate Standard (vehicle-distance)"
+
+  # ===========================================================================
+  # MASS — base SI: kg; CGS: g, mg; commercial: t (metric tonne), lb.
+  # NIST SP 811: 1 lb = 0.45359237 kg (exact); 1 t = 1000 kg (exact).
+  # ===========================================================================
+
+  - urn: "urn:gl:unit:kg"
+    symbol: "kg"
+    dimension: "mass"
+    conversions:
+      "g": 1000.0
+      "mg": 1000000.0
+      "t": 0.001
+      "lb": 2.20462262
+    iso_reference: "ISO 80000-4 (mass base unit kg)"
+
+  - urn: "urn:gl:unit:t"
+    symbol: "t"
+    dimension: "mass"
+    conversions:
+      "kg": 1000.0
+      "g": 1000000.0
+      "lb": 2204.62262
+    iso_reference: "ISO 80000-4 (metric tonne, t = 10^3 kg)"
+
+  - urn: "urn:gl:unit:lb"
+    symbol: "lb"
+    dimension: "mass"
+    conversions:
+      "kg": 0.45359237
+      "g": 453.59237
+    iso_reference: "NIST SP 811 (1 lb = 0.45359237 kg, exact)"
+
+  - urn: "urn:gl:unit:g"
+    symbol: "g"
+    dimension: "mass"
+    conversions:
+      "kg": 0.001
+      "mg": 1000.0
+      "t": 0.000001
+    iso_reference: "ISO 80000-4"
+
+  - urn: "urn:gl:unit:mg"
+    symbol: "mg"
+    dimension: "mass"
+    conversions:
+      "g": 0.001
+      "kg": 0.000001
+    iso_reference: "ISO 80000-4"
+
+  # ===========================================================================
+  # ENERGY — base SI: J; commercial: kWh, MWh, MJ, GJ, kJ; legacy: Btu, therm.
+  # NIST SP 811: 1 kWh = 3.6 MJ (exact); 1 Btu = 1055.05585 J;
+  # 1 therm = 1.05505585e8 J = 100000 Btu.
+  # ===========================================================================
+
+  - urn: "urn:gl:unit:kwh"
+    symbol: "kWh"
+    dimension: "energy"
+    conversions:
+      "mwh": 0.001
+      "mj": 3.6
+      "gj": 0.0036
+      "kj": 3600.0
+      "btu": 3412.142
+      "therm": 0.03412142
+    iso_reference: "NIST SP 811 (1 kWh = 3.6 MJ, exact)"
+
+  - urn: "urn:gl:unit:mwh"
+    symbol: "MWh"
+    dimension: "energy"
+    conversions:
+      "kwh": 1000.0
+      "mj": 3600.0
+      "gj": 3.6
+    iso_reference: "NIST SP 811"
+
+  - urn: "urn:gl:unit:mj"
+    symbol: "MJ"
+    dimension: "energy"
+    conversions:
+      "kwh": 0.2778
+      "gj": 0.001
+      "kj": 1000.0
+      "btu": 947.817
+    iso_reference: "ISO 80000-5 (J base unit)"
+
+  - urn: "urn:gl:unit:gj"
+    symbol: "GJ"
+    dimension: "energy"
+    conversions:
+      "mj": 1000.0
+      "mwh": 0.2778
+      "kwh": 277.778
+    iso_reference: "ISO 80000-5"
+
+  - urn: "urn:gl:unit:btu"
+    symbol: "Btu"
+    dimension: "energy"
+    conversions:
+      "kwh": 0.000293071
+      "mj": 0.00105506
+      "kj": 1.05506
+      "therm": 0.00001
+    iso_reference: "NIST SP 811 (1 Btu = 1055.06 J)"
+
+  - urn: "urn:gl:unit:therm"
+    symbol: "therm"
+    dimension: "energy"
+    conversions:
+      "kwh": 29.3071
+      "mj": 105.506
+      "btu": 100000.0
+    iso_reference: "NIST SP 811 (1 therm = 100000 Btu)"
+
+  - urn: "urn:gl:unit:kj"
+    symbol: "kJ"
+    dimension: "energy"
+    conversions:
+      "mj": 0.001
+      "kwh": 0.0002778
+    iso_reference: "ISO 80000-5"
+
+  # ===========================================================================
+  # VOLUME — base SI: m³; commercial: L; US/UK gallons; ft³.
+  # NIST SP 811: 1 m³ = 1000 L (exact); 1 gal-us = 3.785411784 L (exact);
+  # 1 gal-uk = 4.54609 L (exact); 1 ft³ = 0.0283168466 m³.
+  # ===========================================================================
+
+  - urn: "urn:gl:unit:l"
+    symbol: "L"
+    dimension: "volume"
+    conversions:
+      "m3": 0.001
+      "gal-us": 0.264172
+      "gal-uk": 0.219969
+      "ft3": 0.0353147
+    iso_reference: "NIST SP 811 (1 L = 1 dm³ = 0.001 m³)"
+
+  - urn: "urn:gl:unit:m3"
+    symbol: "m³"
+    dimension: "volume"
+    conversions:
+      "l": 1000.0
+      "gal-us": 264.172
+      "gal-uk": 219.969
+      "ft3": 35.3147
+    iso_reference: "ISO 80000-3 (m³ SI volume)"
+
+  - urn: "urn:gl:unit:gal-us"
+    symbol: "gal (US)"
+    dimension: "volume"
+    conversions:
+      "l": 3.785411784
+      "m3": 0.003785411784
+      "gal-uk": 0.832674
+    iso_reference: "NIST SP 811 (1 US gal = 3.785411784 L exact)"
+
+  - urn: "urn:gl:unit:gal-uk"
+    symbol: "gal (UK)"
+    dimension: "volume"
+    conversions:
+      "l": 4.54609
+      "m3": 0.00454609
+      "gal-us": 1.20095
+    iso_reference: "NIST SP 811 (1 UK gal = 4.54609 L exact)"
+
+  - urn: "urn:gl:unit:ft3"
+    symbol: "ft³"
+    dimension: "volume"
+    conversions:
+      "l": 28.3168
+      "m3": 0.0283168466
+    iso_reference: "NIST SP 811"
+
+  # ===========================================================================
+  # DISTANCE — base SI: m; commercial: km, mi.
+  # NIST SP 811: 1 mi = 1.609344 km (exact).
+  # ===========================================================================
+
+  - urn: "urn:gl:unit:km"
+    symbol: "km"
+    dimension: "distance"
+    conversions:
+      "m": 1000.0
+      "mi": 0.621371
+    iso_reference: "ISO 80000-3 (m SI base; km = 10³ m)"
+
+  - urn: "urn:gl:unit:mi"
+    symbol: "mi"
+    dimension: "distance"
+    conversions:
+      "km": 1.609344
+      "m": 1609.344
+    iso_reference: "NIST SP 811 (1 mi = 1.609344 km, exact)"
+
+  - urn: "urn:gl:unit:m"
+    symbol: "m"
+    dimension: "distance"
+    conversions:
+      "km": 0.001
+      "mi": 0.000621371
+    iso_reference: "ISO 80000-3 (m base SI distance)"
+
+  # ===========================================================================
+  # FREIGHT ACTIVITY — composite of mass × distance, or persons × distance.
+  # ===========================================================================
+
+  - urn: "urn:gl:unit:tkm"
+    symbol: "tkm"
+    dimension: "freight_activity"
+    conversions:
+      "tmi": 0.621371
+    iso_reference: "ISO 14083:2023 (tonne-kilometre)"
+
+  - urn: "urn:gl:unit:tmi"
+    symbol: "tmi"
+    dimension: "freight_activity"
+    conversions:
+      "tkm": 1.609344
+    iso_reference: "ISO 14083:2023 (tonne-mile)"
+
+  - urn: "urn:gl:unit:passenger-km"
+    symbol: "passenger-km"
+    dimension: "freight_activity"
+    conversions: {}
+    iso_reference: "ISO 14083:2023 (passenger-kilometre)"
+
+  # ===========================================================================
+  # CURRENCY — for spend-based factors. ISO 4217 alpha-3 codes.
+  # No conversions populated (FX rates are time-varying; tracked separately).
+  # ===========================================================================
+
+  - urn: "urn:gl:unit:usd"
+    symbol: "USD"
+    dimension: "currency"
+    conversions: {}
+    iso_reference: "ISO 4217 USD"
+
+  - urn: "urn:gl:unit:eur"
+    symbol: "EUR"
+    dimension: "currency"
+    conversions: {}
+    iso_reference: "ISO 4217 EUR"
+
+  - urn: "urn:gl:unit:gbp"
+    symbol: "GBP"
+    dimension: "currency"
+    conversions: {}
+    iso_reference: "ISO 4217 GBP"
+
+  - urn: "urn:gl:unit:inr"
+    symbol: "INR"
+    dimension: "currency"
+    conversions: {}
+    iso_reference: "ISO 4217 INR"
+
+  - urn: "urn:gl:unit:jpy"
+    symbol: "JPY"
+    dimension: "currency"
+    conversions: {}
+    iso_reference: "ISO 4217 JPY"
+
+  - urn: "urn:gl:unit:cny"
+    symbol: "CNY"
+    dimension: "currency"
+    conversions: {}
+    iso_reference: "ISO 4217 CNY"

@@ -44,7 +44,8 @@ from tests.factors.v0_1_alpha._e2e_helpers import good_ipcc_ar6_factor
 
 @pytest.fixture()
 def repo() -> AlphaFactorRepository:
-    r = AlphaFactorRepository(dsn="sqlite:///:memory:")
+    # legacy mode — Phase 1 provenance gate only; Phase 2 orchestrator covered by tests/factors/v0_1_alpha/phase2/
+    r = AlphaFactorRepository(dsn="sqlite:///:memory:", publish_env="legacy")
     yield r
     r.close()
 

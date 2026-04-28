@@ -1,7 +1,7 @@
 {
   "source_id": "ipcc_waste_vol5_in",
   "source_version": "2006.1",
-  "ingested_at": "2026-04-24T07:12:23+00:00",
+  "ingested_at": "2026-04-27T09:44:09+00:00",
   "license_class": "ipcc_reference",
   "license_name": "IPCC-Guideline",
   "redistribution_class": "open",
@@ -95,7 +95,7 @@
           "Waste stream: msw_food",
           "DOC=0.15, DOC_F=0.5, MCF=0.8"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -144,8 +144,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -243,7 +243,7 @@
           "Waste stream: msw_garden",
           "DOC=0.2, DOC_F=0.5, MCF=0.8"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -292,8 +292,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -391,7 +391,7 @@
           "Waste stream: msw_paper",
           "DOC=0.4, DOC_F=0.5, MCF=0.8"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -440,8 +440,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -539,7 +539,7 @@
           "Waste stream: msw_wood",
           "DOC=0.43, DOC_F=0.5, MCF=0.8"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -588,8 +588,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -687,7 +687,7 @@
           "Waste stream: msw_textiles",
           "DOC=0.24, DOC_F=0.5, MCF=0.8"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -736,8 +736,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -835,7 +835,7 @@
           "Waste stream: msw_mixed",
           "DOC=0.17, DOC_F=0.5, MCF=0.8"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -884,8 +884,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -983,7 +983,7 @@
           "Waste stream: msw_unmanaged_deep",
           "DOC=0.17, DOC_F=0.5, MCF=0.8"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -1032,8 +1032,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1131,7 +1131,7 @@
           "Waste stream: msw_unmanaged_shallow",
           "DOC=0.17, DOC_F=0.5, MCF=0.4"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -1180,8 +1180,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1279,7 +1279,7 @@
           "Waste stream: msw_uncategorised",
           "DOC=0.17, DOC_F=0.5, MCF=0.6"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -1328,8 +1328,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1427,7 +1427,7 @@
           "Waste stream: sludge",
           "DOC=0.05, DOC_F=0.5, MCF=0.8"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -1476,8 +1476,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1575,7 +1575,7 @@
           "Waste stream: industrial_food_beverage",
           "DOC=0.3, DOC_F=0.5, MCF=0.8"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -1624,8 +1624,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1723,7 +1723,7 @@
           "Waste stream: industrial_paper_pulp",
           "DOC=0.4, DOC_F=0.5, MCF=0.8"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -1772,8 +1772,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -1871,7 +1871,7 @@
           "Waste stream: industrial_textile",
           "DOC=0.24, DOC_F=0.5, MCF=0.8"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -1920,8 +1920,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2019,7 +2019,7 @@
           "Waste stream: industrial_wood_wood_products",
           "DOC=0.43, DOC_F=0.5, MCF=0.8"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -2068,8 +2068,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2167,7 +2167,7 @@
           "Waste stream: construction_demolition",
           "DOC=0.04, DOC_F=0.5, MCF=0.8"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -2216,8 +2216,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2310,7 +2310,7 @@
           "Waste stream: msw",
           "Fossil fraction: 0.39"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -2359,8 +2359,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2453,7 +2453,7 @@
           "Waste stream: msw_open_burning",
           "Fossil fraction: 0.39"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -2502,8 +2502,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2596,7 +2596,7 @@
           "Waste stream: hazardous_waste",
           "Fossil fraction: 0.9"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -2645,8 +2645,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2739,7 +2739,7 @@
           "Waste stream: clinical_waste",
           "Fossil fraction: 0.6"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -2788,8 +2788,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -2882,7 +2882,7 @@
           "Waste stream: sewage_sludge",
           "Fossil fraction: 0.0"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -2931,8 +2931,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3025,7 +3025,7 @@
           "Waste stream: industrial_waste",
           "Fossil fraction: 0.8"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -3074,8 +3074,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3168,7 +3168,7 @@
           "Waste stream: plastic",
           "Fossil fraction: 1.0"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -3217,8 +3217,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3311,7 +3311,7 @@
           "Waste stream: tyres",
           "Fossil fraction: 1.0"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -3360,8 +3360,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3451,7 +3451,7 @@
           "IPCC 2006 GL Vol 5 Ch 4 biological treatment defaults",
           "Waste stream: compost_msw"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -3500,8 +3500,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3591,7 +3591,7 @@
           "IPCC 2006 GL Vol 5 Ch 4 biological treatment defaults",
           "Waste stream: compost_garden"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -3640,8 +3640,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3731,7 +3731,7 @@
           "IPCC 2006 GL Vol 5 Ch 4 biological treatment defaults",
           "Waste stream: compost_food"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -3780,8 +3780,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -3871,7 +3871,7 @@
           "IPCC 2006 GL Vol 5 Ch 4 biological treatment defaults",
           "Waste stream: anaerobic_digestion_msw"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -3920,8 +3920,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4011,7 +4011,7 @@
           "IPCC 2006 GL Vol 5 Ch 4 biological treatment defaults",
           "Waste stream: anaerobic_digestion_industrial"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -4060,8 +4060,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4151,7 +4151,7 @@
           "IPCC 2006 GL Vol 5 Ch 4 biological treatment defaults",
           "Waste stream: anaerobic_digestion_manure"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -4200,8 +4200,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4291,7 +4291,7 @@
           "IPCC 2006 GL Vol 5 Ch 4 biological treatment defaults",
           "Waste stream: mechanical_biological_treatment"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -4340,8 +4340,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4437,7 +4437,7 @@
           "Stream: domestic_aerobic_centralised",
           "MCF=0.0, B0=0.6"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -4486,8 +4486,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4583,7 +4583,7 @@
           "Stream: domestic_aerobic_decentralised",
           "MCF=0.2, B0=0.6"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -4632,8 +4632,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4729,7 +4729,7 @@
           "Stream: domestic_anaerobic_reactor",
           "MCF=0.8, B0=0.6"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -4778,8 +4778,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -4875,7 +4875,7 @@
           "Stream: domestic_anaerobic_lagoon_deep",
           "MCF=0.8, B0=0.6"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -4924,8 +4924,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5021,7 +5021,7 @@
           "Stream: domestic_anaerobic_lagoon_shallow",
           "MCF=0.2, B0=0.6"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -5070,8 +5070,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5167,7 +5167,7 @@
           "Stream: domestic_septic",
           "MCF=0.5, B0=0.6"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -5216,8 +5216,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5313,7 +5313,7 @@
           "Stream: domestic_latrine",
           "MCF=0.1, B0=0.6"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -5362,8 +5362,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5459,7 +5459,7 @@
           "Stream: domestic_open_drain_stagnant",
           "MCF=0.5, B0=0.6"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -5508,8 +5508,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5605,7 +5605,7 @@
           "Stream: industrial_dairy",
           "MCF=0.8, B0=0.25"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -5654,8 +5654,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5751,7 +5751,7 @@
           "Stream: industrial_meat_poultry",
           "MCF=0.8, B0=0.25"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -5800,8 +5800,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -5897,7 +5897,7 @@
           "Stream: industrial_pulp_paper",
           "MCF=0.8, B0=0.25"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -5946,8 +5946,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6043,7 +6043,7 @@
           "Stream: industrial_sugar_refining",
           "MCF=0.8, B0=0.25"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -6092,8 +6092,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6189,7 +6189,7 @@
           "Stream: industrial_chemicals",
           "MCF=0.8, B0=0.25"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -6238,8 +6238,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_textile:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",
@@ -6335,7 +6335,7 @@
           "Stream: industrial_textile",
           "MCF=0.8, B0=0.25"
         ],
-        "bootstrap_ingested_at": "2026-04-24T07:12:23+00:00",
+        "bootstrap_ingested_at": "2026-04-27T09:44:09+00:00",
         "attribution_text": "IPCC 2006 Guidelines for National GHG Inventories, Volume 5 (Waste), default values parameterised for India (tropical-wet climate zone).",
         "legal_review_note": "provisional pending IPCC legal opinion: factual default values carry no copyright restriction per the numerical-fact doctrine; see docs/legal/source_rights_matrix.md row ipcc_waste_vol5_in.",
         "alternates_considered": [
@@ -6384,8 +6384,8 @@
           "EF:IPCC_WASTE:wastewater_industrial_chemicals:IN:2006:v1"
         ]
       },
-      "created_at": "2026-04-24T07:12:23+00:00",
-      "updated_at": "2026-04-24T07:12:23+00:00",
+      "created_at": "2026-04-27T09:44:09+00:00",
+      "updated_at": "2026-04-27T09:44:09+00:00",
       "created_by": "greenlang_factors_etl",
       "compliance_frameworks": [
         "GHG_Protocol",

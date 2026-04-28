@@ -1,0 +1,1120 @@
+# =============================================================================
+# GreenLang Factors v0.1 Alpha — Activity Taxonomy Seed
+# =============================================================================
+# Phase 2 / WS5 — canonical reference data for the
+# `factors_v0_1.activity` table created by V502.
+#
+# URN form: urn:gl:activity:<taxonomy>:<code-slug>
+#   - taxonomy: one of the 15 enums defined in
+#     `greenlang.factors.ontology.urn.ALLOWED_ACTIVITY_TAXONOMIES`.
+#   - code-slug: lowercase a-z 0-9 hyphen dot underscore, no colons.
+#     Source codes containing '.' (e.g. IPCC '1.A.1.a') are rendered
+#     using '-' as the separator: `1-a-1-a`. The original code is kept
+#     verbatim in the `code` column.
+#
+# v0.1 scope: reference data only. The frozen factor_record_v0_1 schema
+# does NOT yet require an activity_taxonomy_urn FK on `factor`; FK
+# promotion is deferred to v0.2.
+#
+# Authority: docs/factors/PHASE_2_PLAN.md §2.3c (CTO Phase 2 brief
+# 2026-04-27).
+# =============================================================================
+
+activities:
+
+  # =========================================================================
+  # IPCC 2006 categories (Volume 1 General / Volume 2 Energy / etc.)
+  # CTO scope: 1.A.1.a, 1.A.1.b, 1.A.1.c, 1.A.2, 1.A.3.a..1.A.3.e, 1.A.4,
+  #            1.B.1.a, 1.B.1.c, 1.B.2.a, 1.B.2.b, 2.A, 2.B, 2.C,
+  #            3.A, 3.B, 3.C, 3.D, 4.A, 4.B, 4.C, 4.D, 5.A, 5.B.
+  # =========================================================================
+
+  - urn: urn:gl:activity:ipcc:1-a-1-a
+    taxonomy: ipcc
+    code: 1.A.1.a
+    name: Public electricity and heat production
+    description: IPCC 2006 1.A.1.a — Main activity electricity and heat production.
+
+  - urn: urn:gl:activity:ipcc:1-a-1-b
+    taxonomy: ipcc
+    code: 1.A.1.b
+    name: Petroleum refining
+    description: IPCC 2006 1.A.1.b — Combustion of fuels in petroleum refineries.
+
+  - urn: urn:gl:activity:ipcc:1-a-1-c
+    taxonomy: ipcc
+    code: 1.A.1.c
+    name: Manufacture of solid fuels and other energy industries
+    description: IPCC 2006 1.A.1.c — Coke ovens, coal-to-liquids, charcoal, gas works.
+
+  - urn: urn:gl:activity:ipcc:1-a-2
+    taxonomy: ipcc
+    code: 1.A.2
+    name: Manufacturing industries and construction
+    description: IPCC 2006 1.A.2 — Combustion in iron-steel, chemicals, cement, and other industry.
+
+  - urn: urn:gl:activity:ipcc:1-a-3-a
+    taxonomy: ipcc
+    code: 1.A.3.a
+    name: Civil aviation
+    description: IPCC 2006 1.A.3.a — Domestic and international civil aviation combustion.
+
+  - urn: urn:gl:activity:ipcc:1-a-3-b
+    taxonomy: ipcc
+    code: 1.A.3.b
+    name: Road transportation
+    description: IPCC 2006 1.A.3.b — On-road passenger and freight vehicle combustion.
+
+  - urn: urn:gl:activity:ipcc:1-a-3-c
+    taxonomy: ipcc
+    code: 1.A.3.c
+    name: Railways
+    description: IPCC 2006 1.A.3.c — Diesel and electric rail combustion.
+
+  - urn: urn:gl:activity:ipcc:1-a-3-d
+    taxonomy: ipcc
+    code: 1.A.3.d
+    name: Water-borne navigation
+    description: IPCC 2006 1.A.3.d — Domestic and international shipping combustion.
+
+  - urn: urn:gl:activity:ipcc:1-a-3-e
+    taxonomy: ipcc
+    code: 1.A.3.e
+    name: Other transportation
+    description: IPCC 2006 1.A.3.e — Pipeline, off-road, and other transport combustion.
+
+  - urn: urn:gl:activity:ipcc:1-a-4
+    taxonomy: ipcc
+    code: 1.A.4
+    name: Other sectors (residential, commercial, agriculture, fishing)
+    description: IPCC 2006 1.A.4 — Stationary combustion in non-industry sectors.
+
+  - urn: urn:gl:activity:ipcc:1-b-1-a
+    taxonomy: ipcc
+    code: 1.B.1.a
+    name: Coal mining and handling
+    description: IPCC 2006 1.B.1.a — Underground and surface coal mine fugitive emissions.
+
+  - urn: urn:gl:activity:ipcc:1-b-1-c
+    taxonomy: ipcc
+    code: 1.B.1.c
+    name: Solid fuel transformation
+    description: IPCC 2006 1.B.1.c — Coke production and coal-to-liquids fugitive emissions.
+
+  - urn: urn:gl:activity:ipcc:1-b-2-a
+    taxonomy: ipcc
+    code: 1.B.2.a
+    name: Oil — fugitive emissions
+    description: IPCC 2006 1.B.2.a — Fugitive emissions from oil exploration, production, transport.
+
+  - urn: urn:gl:activity:ipcc:1-b-2-b
+    taxonomy: ipcc
+    code: 1.B.2.b
+    name: Natural gas — fugitive emissions
+    description: IPCC 2006 1.B.2.b — Fugitive emissions from gas production, processing, transmission, distribution.
+
+  - urn: urn:gl:activity:ipcc:2-a
+    taxonomy: ipcc
+    code: 2.A
+    name: Mineral industry
+    description: IPCC 2006 2.A — Cement, lime, glass, and other mineral process emissions.
+
+  - urn: urn:gl:activity:ipcc:2-b
+    taxonomy: ipcc
+    code: 2.B
+    name: Chemical industry
+    description: IPCC 2006 2.B — Ammonia, nitric acid, and other chemical process emissions.
+
+  - urn: urn:gl:activity:ipcc:2-c
+    taxonomy: ipcc
+    code: 2.C
+    name: Metal industry
+    description: IPCC 2006 2.C — Iron-steel, ferroalloys, aluminium, and other metal process emissions.
+
+  - urn: urn:gl:activity:ipcc:3-a
+    taxonomy: ipcc
+    code: 3.A
+    name: Livestock
+    description: IPCC 2006 3.A — Enteric fermentation and manure management.
+
+  - urn: urn:gl:activity:ipcc:3-b
+    taxonomy: ipcc
+    code: 3.B
+    name: Land
+    description: IPCC 2006 3.B — Forest land, cropland, grassland, wetlands, settlements.
+
+  - urn: urn:gl:activity:ipcc:3-c
+    taxonomy: ipcc
+    code: 3.C
+    name: Aggregate sources and non-CO2 emissions on land
+    description: IPCC 2006 3.C — Biomass burning, liming, urea application, fertiliser N2O.
+
+  - urn: urn:gl:activity:ipcc:3-d
+    taxonomy: ipcc
+    code: 3.D
+    name: Other (AFOLU)
+    description: IPCC 2006 3.D — Harvested wood products and other AFOLU.
+
+  - urn: urn:gl:activity:ipcc:4-a
+    taxonomy: ipcc
+    code: 4.A
+    name: Solid waste disposal
+    description: IPCC 2006 4.A — Managed and unmanaged solid waste disposal sites.
+
+  - urn: urn:gl:activity:ipcc:4-b
+    taxonomy: ipcc
+    code: 4.B
+    name: Biological treatment of solid waste
+    description: IPCC 2006 4.B — Composting and anaerobic digestion.
+
+  - urn: urn:gl:activity:ipcc:4-c
+    taxonomy: ipcc
+    code: 4.C
+    name: Incineration and open burning of waste
+    description: IPCC 2006 4.C — Waste incineration with and without energy recovery.
+
+  - urn: urn:gl:activity:ipcc:4-d
+    taxonomy: ipcc
+    code: 4.D
+    name: Wastewater treatment and discharge
+    description: IPCC 2006 4.D — Domestic and industrial wastewater methane and N2O.
+
+  - urn: urn:gl:activity:ipcc:5-a
+    taxonomy: ipcc
+    code: 5.A
+    name: Indirect N2O from atmospheric deposition of N
+    description: IPCC 2006 5.A — Indirect N2O from NOx and NH3 deposition.
+
+  - urn: urn:gl:activity:ipcc:5-b
+    taxonomy: ipcc
+    code: 5.B
+    name: Other (cross-cutting)
+    description: IPCC 2006 5.B — Other cross-cutting emissions categories.
+
+  # =========================================================================
+  # GHG Protocol scopes
+  # =========================================================================
+
+  - urn: urn:gl:activity:ghgp:scope1
+    taxonomy: ghgp
+    code: scope1
+    name: Scope 1 — direct emissions
+    description: GHGP Corporate Standard Scope 1 direct emissions from owned/controlled sources.
+
+  - urn: urn:gl:activity:ghgp:scope2-location
+    taxonomy: ghgp
+    code: scope2-location
+    name: Scope 2 — location-based
+    description: GHGP Scope 2 location-based — average grid mix for the geographic area.
+
+  - urn: urn:gl:activity:ghgp:scope2-market
+    taxonomy: ghgp
+    code: scope2-market
+    name: Scope 2 — market-based
+    description: GHGP Scope 2 market-based — contractual instruments (PPAs, RECs, GOs).
+
+  - urn: urn:gl:activity:ghgp:scope3-cat-1
+    taxonomy: ghgp
+    code: scope3-cat-1
+    name: Scope 3 Cat 1 — purchased goods and services
+    description: GHGP Scope 3 Category 1 upstream goods and services emissions.
+
+  - urn: urn:gl:activity:ghgp:scope3-cat-2
+    taxonomy: ghgp
+    code: scope3-cat-2
+    name: Scope 3 Cat 2 — capital goods
+    description: GHGP Scope 3 Category 2 upstream capital goods emissions.
+
+  - urn: urn:gl:activity:ghgp:scope3-cat-3
+    taxonomy: ghgp
+    code: scope3-cat-3
+    name: Scope 3 Cat 3 — fuel and energy related activities
+    description: GHGP Scope 3 Category 3 upstream fuel and energy related activities (WTT, T&D).
+
+  - urn: urn:gl:activity:ghgp:scope3-cat-4
+    taxonomy: ghgp
+    code: scope3-cat-4
+    name: Scope 3 Cat 4 — upstream transportation and distribution
+    description: GHGP Scope 3 Category 4 upstream third-party transport and distribution.
+
+  - urn: urn:gl:activity:ghgp:scope3-cat-5
+    taxonomy: ghgp
+    code: scope3-cat-5
+    name: Scope 3 Cat 5 — waste generated in operations
+    description: GHGP Scope 3 Category 5 waste disposal and treatment in operations.
+
+  - urn: urn:gl:activity:ghgp:scope3-cat-6
+    taxonomy: ghgp
+    code: scope3-cat-6
+    name: Scope 3 Cat 6 — business travel
+    description: GHGP Scope 3 Category 6 business travel emissions.
+
+  - urn: urn:gl:activity:ghgp:scope3-cat-7
+    taxonomy: ghgp
+    code: scope3-cat-7
+    name: Scope 3 Cat 7 — employee commuting
+    description: GHGP Scope 3 Category 7 employee commuting emissions.
+
+  - urn: urn:gl:activity:ghgp:scope3-cat-8
+    taxonomy: ghgp
+    code: scope3-cat-8
+    name: Scope 3 Cat 8 — upstream leased assets
+    description: GHGP Scope 3 Category 8 upstream leased assets emissions.
+
+  - urn: urn:gl:activity:ghgp:scope3-cat-9
+    taxonomy: ghgp
+    code: scope3-cat-9
+    name: Scope 3 Cat 9 — downstream transportation and distribution
+    description: GHGP Scope 3 Category 9 downstream transport and distribution emissions.
+
+  - urn: urn:gl:activity:ghgp:scope3-cat-10
+    taxonomy: ghgp
+    code: scope3-cat-10
+    name: Scope 3 Cat 10 — processing of sold products
+    description: GHGP Scope 3 Category 10 third-party processing of intermediate products.
+
+  - urn: urn:gl:activity:ghgp:scope3-cat-11
+    taxonomy: ghgp
+    code: scope3-cat-11
+    name: Scope 3 Cat 11 — use of sold products
+    description: GHGP Scope 3 Category 11 use-phase emissions of sold products.
+
+  - urn: urn:gl:activity:ghgp:scope3-cat-12
+    taxonomy: ghgp
+    code: scope3-cat-12
+    name: Scope 3 Cat 12 — end-of-life treatment of sold products
+    description: GHGP Scope 3 Category 12 end-of-life treatment of sold products.
+
+  - urn: urn:gl:activity:ghgp:scope3-cat-13
+    taxonomy: ghgp
+    code: scope3-cat-13
+    name: Scope 3 Cat 13 — downstream leased assets
+    description: GHGP Scope 3 Category 13 downstream leased assets emissions.
+
+  - urn: urn:gl:activity:ghgp:scope3-cat-14
+    taxonomy: ghgp
+    code: scope3-cat-14
+    name: Scope 3 Cat 14 — franchises
+    description: GHGP Scope 3 Category 14 franchise operations emissions.
+
+  - urn: urn:gl:activity:ghgp:scope3-cat-15
+    taxonomy: ghgp
+    code: scope3-cat-15
+    name: Scope 3 Cat 15 — investments
+    description: GHGP Scope 3 Category 15 investments — equity, project finance, debt, asset management.
+
+  # =========================================================================
+  # HS / CN — chapter-level codes for the EU CBAM scope (Annex I).
+  # =========================================================================
+
+  - urn: urn:gl:activity:hs-cn:25
+    taxonomy: hs-cn
+    code: "25"
+    name: HS Chapter 25 — Salt, sulphur, earths, stone, lime and cement
+    description: HS/CN chapter 25 — relevant to CBAM cement.
+
+  - urn: urn:gl:activity:hs-cn:28
+    taxonomy: hs-cn
+    code: "28"
+    name: HS Chapter 28 — Inorganic chemicals
+    description: HS/CN chapter 28 — relevant to CBAM hydrogen and inorganic chemicals.
+
+  - urn: urn:gl:activity:hs-cn:31
+    taxonomy: hs-cn
+    code: "31"
+    name: HS Chapter 31 — Fertilisers
+    description: HS/CN chapter 31 — relevant to CBAM fertilisers.
+
+  - urn: urn:gl:activity:hs-cn:72
+    taxonomy: hs-cn
+    code: "72"
+    name: HS Chapter 72 — Iron and steel
+    description: HS/CN chapter 72 — relevant to CBAM iron and steel.
+
+  - urn: urn:gl:activity:hs-cn:73
+    taxonomy: hs-cn
+    code: "73"
+    name: HS Chapter 73 — Articles of iron or steel
+    description: HS/CN chapter 73 — relevant to CBAM downstream iron-steel articles.
+
+  - urn: urn:gl:activity:hs-cn:76
+    taxonomy: hs-cn
+    code: "76"
+    name: HS Chapter 76 — Aluminium and articles thereof
+    description: HS/CN chapter 76 — relevant to CBAM aluminium.
+
+  # =========================================================================
+  # CPC — top-level divisions (illustrative).
+  # CPC v2.1 sections 0..9.
+  # =========================================================================
+
+  - urn: urn:gl:activity:cpc:0
+    taxonomy: cpc
+    code: "0"
+    name: CPC 0 — Agriculture, forestry, fishery products
+    description: UN CPC top-level division 0.
+
+  - urn: urn:gl:activity:cpc:1
+    taxonomy: cpc
+    code: "1"
+    name: CPC 1 — Ores and minerals; electricity, gas and water
+    description: UN CPC top-level division 1.
+
+  - urn: urn:gl:activity:cpc:2
+    taxonomy: cpc
+    code: "2"
+    name: CPC 2 — Food products, beverages and tobacco; textiles, apparel and leather
+    description: UN CPC top-level division 2.
+
+  - urn: urn:gl:activity:cpc:3
+    taxonomy: cpc
+    code: "3"
+    name: CPC 3 — Other transportable goods, except metal products, machinery and equipment
+    description: UN CPC top-level division 3.
+
+  - urn: urn:gl:activity:cpc:4
+    taxonomy: cpc
+    code: "4"
+    name: CPC 4 — Metal products, machinery and equipment
+    description: UN CPC top-level division 4.
+
+  - urn: urn:gl:activity:cpc:5
+    taxonomy: cpc
+    code: "5"
+    name: CPC 5 — Constructions and construction services
+    description: UN CPC top-level division 5.
+
+  - urn: urn:gl:activity:cpc:6
+    taxonomy: cpc
+    code: "6"
+    name: CPC 6 — Distributive trade services; accommodation, food and beverage serving services; transport services; and electricity, gas and water distribution services
+    description: UN CPC top-level division 6.
+
+  - urn: urn:gl:activity:cpc:7
+    taxonomy: cpc
+    code: "7"
+    name: CPC 7 — Financial and related services; real estate services; and rental and leasing services
+    description: UN CPC top-level division 7.
+
+  - urn: urn:gl:activity:cpc:8
+    taxonomy: cpc
+    code: "8"
+    name: CPC 8 — Business and production services
+    description: UN CPC top-level division 8.
+
+  - urn: urn:gl:activity:cpc:9
+    taxonomy: cpc
+    code: "9"
+    name: CPC 9 — Community, social and personal services
+    description: UN CPC top-level division 9.
+
+  # =========================================================================
+  # NACE Rev 2 — sections A through U.
+  # =========================================================================
+
+  - urn: urn:gl:activity:nace:a
+    taxonomy: nace
+    code: A
+    name: NACE Section A — Agriculture, forestry and fishing
+    description: NACE Rev 2 section A.
+
+  - urn: urn:gl:activity:nace:b
+    taxonomy: nace
+    code: B
+    name: NACE Section B — Mining and quarrying
+    description: NACE Rev 2 section B.
+
+  - urn: urn:gl:activity:nace:c
+    taxonomy: nace
+    code: C
+    name: NACE Section C — Manufacturing
+    description: NACE Rev 2 section C.
+
+  - urn: urn:gl:activity:nace:d
+    taxonomy: nace
+    code: D
+    name: NACE Section D — Electricity, gas, steam and air conditioning supply
+    description: NACE Rev 2 section D.
+
+  - urn: urn:gl:activity:nace:e
+    taxonomy: nace
+    code: E
+    name: NACE Section E — Water supply; sewerage; waste management and remediation activities
+    description: NACE Rev 2 section E.
+
+  - urn: urn:gl:activity:nace:f
+    taxonomy: nace
+    code: F
+    name: NACE Section F — Construction
+    description: NACE Rev 2 section F.
+
+  - urn: urn:gl:activity:nace:g
+    taxonomy: nace
+    code: G
+    name: NACE Section G — Wholesale and retail trade; repair of motor vehicles and motorcycles
+    description: NACE Rev 2 section G.
+
+  - urn: urn:gl:activity:nace:h
+    taxonomy: nace
+    code: H
+    name: NACE Section H — Transportation and storage
+    description: NACE Rev 2 section H.
+
+  - urn: urn:gl:activity:nace:i
+    taxonomy: nace
+    code: I
+    name: NACE Section I — Accommodation and food service activities
+    description: NACE Rev 2 section I.
+
+  - urn: urn:gl:activity:nace:j
+    taxonomy: nace
+    code: J
+    name: NACE Section J — Information and communication
+    description: NACE Rev 2 section J.
+
+  - urn: urn:gl:activity:nace:k
+    taxonomy: nace
+    code: K
+    name: NACE Section K — Financial and insurance activities
+    description: NACE Rev 2 section K.
+
+  - urn: urn:gl:activity:nace:l
+    taxonomy: nace
+    code: L
+    name: NACE Section L — Real estate activities
+    description: NACE Rev 2 section L.
+
+  - urn: urn:gl:activity:nace:m
+    taxonomy: nace
+    code: M
+    name: NACE Section M — Professional, scientific and technical activities
+    description: NACE Rev 2 section M.
+
+  - urn: urn:gl:activity:nace:n
+    taxonomy: nace
+    code: N
+    name: NACE Section N — Administrative and support service activities
+    description: NACE Rev 2 section N.
+
+  - urn: urn:gl:activity:nace:o
+    taxonomy: nace
+    code: O
+    name: NACE Section O — Public administration and defence; compulsory social security
+    description: NACE Rev 2 section O.
+
+  - urn: urn:gl:activity:nace:p
+    taxonomy: nace
+    code: P
+    name: NACE Section P — Education
+    description: NACE Rev 2 section P.
+
+  - urn: urn:gl:activity:nace:q
+    taxonomy: nace
+    code: Q
+    name: NACE Section Q — Human health and social work activities
+    description: NACE Rev 2 section Q.
+
+  - urn: urn:gl:activity:nace:r
+    taxonomy: nace
+    code: R
+    name: NACE Section R — Arts, entertainment and recreation
+    description: NACE Rev 2 section R.
+
+  - urn: urn:gl:activity:nace:s
+    taxonomy: nace
+    code: S
+    name: NACE Section S — Other service activities
+    description: NACE Rev 2 section S.
+
+  - urn: urn:gl:activity:nace:t
+    taxonomy: nace
+    code: T
+    name: NACE Section T — Activities of households as employers
+    description: NACE Rev 2 section T.
+
+  - urn: urn:gl:activity:nace:u
+    taxonomy: nace
+    code: U
+    name: NACE Section U — Activities of extraterritorial organisations and bodies
+    description: NACE Rev 2 section U.
+
+  # =========================================================================
+  # NAICS — 2-digit sectors (2022 revision).
+  # 31-33 / 44-45 / 48-49 are joined ranges; recorded as-is in `code`.
+  # =========================================================================
+
+  - urn: urn:gl:activity:naics:11
+    taxonomy: naics
+    code: "11"
+    name: NAICS 11 — Agriculture, Forestry, Fishing and Hunting
+    description: NAICS 2022 sector 11.
+
+  - urn: urn:gl:activity:naics:21
+    taxonomy: naics
+    code: "21"
+    name: NAICS 21 — Mining, Quarrying, and Oil and Gas Extraction
+    description: NAICS 2022 sector 21.
+
+  - urn: urn:gl:activity:naics:22
+    taxonomy: naics
+    code: "22"
+    name: NAICS 22 — Utilities
+    description: NAICS 2022 sector 22.
+
+  - urn: urn:gl:activity:naics:23
+    taxonomy: naics
+    code: "23"
+    name: NAICS 23 — Construction
+    description: NAICS 2022 sector 23.
+
+  - urn: urn:gl:activity:naics:31-33
+    taxonomy: naics
+    code: 31-33
+    name: NAICS 31-33 — Manufacturing
+    description: NAICS 2022 manufacturing sector range 31-33.
+
+  - urn: urn:gl:activity:naics:42
+    taxonomy: naics
+    code: "42"
+    name: NAICS 42 — Wholesale Trade
+    description: NAICS 2022 sector 42.
+
+  - urn: urn:gl:activity:naics:44-45
+    taxonomy: naics
+    code: 44-45
+    name: NAICS 44-45 — Retail Trade
+    description: NAICS 2022 retail trade sector range 44-45.
+
+  - urn: urn:gl:activity:naics:48-49
+    taxonomy: naics
+    code: 48-49
+    name: NAICS 48-49 — Transportation and Warehousing
+    description: NAICS 2022 transportation and warehousing range 48-49.
+
+  - urn: urn:gl:activity:naics:51
+    taxonomy: naics
+    code: "51"
+    name: NAICS 51 — Information
+    description: NAICS 2022 sector 51.
+
+  - urn: urn:gl:activity:naics:52
+    taxonomy: naics
+    code: "52"
+    name: NAICS 52 — Finance and Insurance
+    description: NAICS 2022 sector 52.
+
+  - urn: urn:gl:activity:naics:53
+    taxonomy: naics
+    code: "53"
+    name: NAICS 53 — Real Estate and Rental and Leasing
+    description: NAICS 2022 sector 53.
+
+  - urn: urn:gl:activity:naics:54
+    taxonomy: naics
+    code: "54"
+    name: NAICS 54 — Professional, Scientific, and Technical Services
+    description: NAICS 2022 sector 54.
+
+  - urn: urn:gl:activity:naics:55
+    taxonomy: naics
+    code: "55"
+    name: NAICS 55 — Management of Companies and Enterprises
+    description: NAICS 2022 sector 55.
+
+  - urn: urn:gl:activity:naics:56
+    taxonomy: naics
+    code: "56"
+    name: NAICS 56 — Administrative and Support and Waste Management and Remediation Services
+    description: NAICS 2022 sector 56.
+
+  - urn: urn:gl:activity:naics:61
+    taxonomy: naics
+    code: "61"
+    name: NAICS 61 — Educational Services
+    description: NAICS 2022 sector 61.
+
+  - urn: urn:gl:activity:naics:62
+    taxonomy: naics
+    code: "62"
+    name: NAICS 62 — Health Care and Social Assistance
+    description: NAICS 2022 sector 62.
+
+  - urn: urn:gl:activity:naics:71
+    taxonomy: naics
+    code: "71"
+    name: NAICS 71 — Arts, Entertainment, and Recreation
+    description: NAICS 2022 sector 71.
+
+  - urn: urn:gl:activity:naics:72
+    taxonomy: naics
+    code: "72"
+    name: NAICS 72 — Accommodation and Food Services
+    description: NAICS 2022 sector 72.
+
+  - urn: urn:gl:activity:naics:81
+    taxonomy: naics
+    code: "81"
+    name: NAICS 81 — Other Services (except Public Administration)
+    description: NAICS 2022 sector 81.
+
+  - urn: urn:gl:activity:naics:92
+    taxonomy: naics
+    code: "92"
+    name: NAICS 92 — Public Administration
+    description: NAICS 2022 sector 92.
+
+  # =========================================================================
+  # SIC — 2-digit / 2-digit-range divisions (1987 system).
+  # =========================================================================
+
+  - urn: urn:gl:activity:sic:01
+    taxonomy: sic
+    code: "01"
+    name: SIC 01 — Agricultural Production - Crops
+    description: SIC 1987 major group 01.
+
+  - urn: urn:gl:activity:sic:02
+    taxonomy: sic
+    code: "02"
+    name: SIC 02 — Agricultural Production - Livestock
+    description: SIC 1987 major group 02.
+
+  - urn: urn:gl:activity:sic:07
+    taxonomy: sic
+    code: "07"
+    name: SIC 07 — Agricultural Services
+    description: SIC 1987 major group 07.
+
+  - urn: urn:gl:activity:sic:08
+    taxonomy: sic
+    code: "08"
+    name: SIC 08 — Forestry
+    description: SIC 1987 major group 08.
+
+  - urn: urn:gl:activity:sic:09
+    taxonomy: sic
+    code: "09"
+    name: SIC 09 — Fishing, Hunting and Trapping
+    description: SIC 1987 major group 09.
+
+  - urn: urn:gl:activity:sic:10
+    taxonomy: sic
+    code: "10"
+    name: SIC 10 — Metal Mining
+    description: SIC 1987 major group 10.
+
+  - urn: urn:gl:activity:sic:12-14
+    taxonomy: sic
+    code: 12-14
+    name: SIC 12-14 — Coal, Oil and Gas, Other Mining
+    description: SIC 1987 mining division range 12-14.
+
+  - urn: urn:gl:activity:sic:15-17
+    taxonomy: sic
+    code: 15-17
+    name: SIC 15-17 — Construction
+    description: SIC 1987 construction division range 15-17.
+
+  - urn: urn:gl:activity:sic:20-39
+    taxonomy: sic
+    code: 20-39
+    name: SIC 20-39 — Manufacturing
+    description: SIC 1987 manufacturing division range 20-39.
+
+  - urn: urn:gl:activity:sic:40-49
+    taxonomy: sic
+    code: 40-49
+    name: SIC 40-49 — Transportation, Communications, Electric, Gas, and Sanitary Services
+    description: SIC 1987 transportation and utilities division range 40-49.
+
+  - urn: urn:gl:activity:sic:50-51
+    taxonomy: sic
+    code: 50-51
+    name: SIC 50-51 — Wholesale Trade
+    description: SIC 1987 wholesale trade division range 50-51.
+
+  - urn: urn:gl:activity:sic:52-59
+    taxonomy: sic
+    code: 52-59
+    name: SIC 52-59 — Retail Trade
+    description: SIC 1987 retail trade division range 52-59.
+
+  - urn: urn:gl:activity:sic:60-67
+    taxonomy: sic
+    code: 60-67
+    name: SIC 60-67 — Finance, Insurance, and Real Estate
+    description: SIC 1987 finance division range 60-67.
+
+  - urn: urn:gl:activity:sic:70-89
+    taxonomy: sic
+    code: 70-89
+    name: SIC 70-89 — Services
+    description: SIC 1987 services division range 70-89.
+
+  - urn: urn:gl:activity:sic:91-97
+    taxonomy: sic
+    code: 91-97
+    name: SIC 91-97 — Public Administration
+    description: SIC 1987 public administration division range 91-97.
+
+  # =========================================================================
+  # PACT — top-level product categories.
+  # =========================================================================
+
+  - urn: urn:gl:activity:pact:chemicals
+    taxonomy: pact
+    code: chemicals
+    name: PACT — Chemicals
+    description: WBCSD PACT product category — chemicals.
+
+  - urn: urn:gl:activity:pact:plastics
+    taxonomy: pact
+    code: plastics
+    name: PACT — Plastics
+    description: WBCSD PACT product category — plastics.
+
+  - urn: urn:gl:activity:pact:food-beverage
+    taxonomy: pact
+    code: food-beverage
+    name: PACT — Food and Beverage
+    description: WBCSD PACT product category — food and beverage.
+
+  - urn: urn:gl:activity:pact:electronics
+    taxonomy: pact
+    code: electronics
+    name: PACT — Electronics
+    description: WBCSD PACT product category — electronics.
+
+  - urn: urn:gl:activity:pact:textiles
+    taxonomy: pact
+    code: textiles
+    name: PACT — Textiles
+    description: WBCSD PACT product category — textiles.
+
+  - urn: urn:gl:activity:pact:automotive
+    taxonomy: pact
+    code: automotive
+    name: PACT — Automotive
+    description: WBCSD PACT product category — automotive.
+
+  # =========================================================================
+  # Freight modes (GLEC v3 / ISO 14083).
+  # =========================================================================
+
+  - urn: urn:gl:activity:freight:road-wtw
+    taxonomy: freight
+    code: road-wtw
+    name: Freight — Road (well-to-wheel)
+    description: Road freight emissions on a well-to-wheel basis.
+
+  - urn: urn:gl:activity:freight:road-ttw
+    taxonomy: freight
+    code: road-ttw
+    name: Freight — Road (tank-to-wheel)
+    description: Road freight emissions on a tank-to-wheel basis.
+
+  - urn: urn:gl:activity:freight:sea
+    taxonomy: freight
+    code: sea
+    name: Freight — Sea
+    description: Marine container, bulk, and tanker freight emissions.
+
+  - urn: urn:gl:activity:freight:air
+    taxonomy: freight
+    code: air
+    name: Freight — Air
+    description: Air cargo freight emissions.
+
+  - urn: urn:gl:activity:freight:rail
+    taxonomy: freight
+    code: rail
+    name: Freight — Rail
+    description: Rail freight emissions (diesel and electric).
+
+  - urn: urn:gl:activity:freight:inland-waterway
+    taxonomy: freight
+    code: inland-waterway
+    name: Freight — Inland waterway
+    description: Inland waterway freight emissions.
+
+  - urn: urn:gl:activity:freight:intermodal
+    taxonomy: freight
+    code: intermodal
+    name: Freight — Intermodal
+    description: Combined-mode freight emissions across road/rail/sea legs.
+
+  # =========================================================================
+  # CBAM Annex I — products in scope of the EU Carbon Border Adjustment Mechanism.
+  # =========================================================================
+
+  - urn: urn:gl:activity:cbam:cement
+    taxonomy: cbam
+    code: cement
+    name: CBAM — Cement
+    description: EU CBAM Annex I product family — cement.
+
+  - urn: urn:gl:activity:cbam:iron-steel
+    taxonomy: cbam
+    code: iron-steel
+    name: CBAM — Iron and Steel
+    description: EU CBAM Annex I product family — iron and steel.
+
+  - urn: urn:gl:activity:cbam:aluminium
+    taxonomy: cbam
+    code: aluminium
+    name: CBAM — Aluminium
+    description: EU CBAM Annex I product family — aluminium.
+
+  - urn: urn:gl:activity:cbam:fertiliser
+    taxonomy: cbam
+    code: fertiliser
+    name: CBAM — Fertiliser
+    description: EU CBAM Annex I product family — fertilisers.
+
+  - urn: urn:gl:activity:cbam:hydrogen
+    taxonomy: cbam
+    code: hydrogen
+    name: CBAM — Hydrogen
+    description: EU CBAM Annex I product family — hydrogen.
+
+  - urn: urn:gl:activity:cbam:electricity
+    taxonomy: cbam
+    code: electricity
+    name: CBAM — Electricity
+    description: EU CBAM Annex I product family — electricity.
+
+  # =========================================================================
+  # PCF — ISO 14067 lifecycle stages.
+  # =========================================================================
+
+  - urn: urn:gl:activity:pcf:raw-materials
+    taxonomy: pcf
+    code: raw-materials
+    name: PCF lifecycle — raw materials
+    description: ISO 14067 lifecycle stage — raw material acquisition.
+
+  - urn: urn:gl:activity:pcf:manufacturing
+    taxonomy: pcf
+    code: manufacturing
+    name: PCF lifecycle — manufacturing
+    description: ISO 14067 lifecycle stage — manufacturing.
+
+  - urn: urn:gl:activity:pcf:distribution
+    taxonomy: pcf
+    code: distribution
+    name: PCF lifecycle — distribution
+    description: ISO 14067 lifecycle stage — distribution and retail.
+
+  - urn: urn:gl:activity:pcf:use
+    taxonomy: pcf
+    code: use
+    name: PCF lifecycle — use
+    description: ISO 14067 lifecycle stage — product use phase.
+
+  - urn: urn:gl:activity:pcf:end-of-life
+    taxonomy: pcf
+    code: end-of-life
+    name: PCF lifecycle — end-of-life
+    description: ISO 14067 lifecycle stage — end-of-life treatment.
+
+  # =========================================================================
+  # Refrigerants — common HFC, HFO, PFC, and other F-gas species.
+  # =========================================================================
+
+  - urn: urn:gl:activity:refrigerants:hfc-134a
+    taxonomy: refrigerants
+    code: hfc-134a
+    name: HFC-134a
+    description: 1,1,1,2-Tetrafluoroethane (CAS 811-97-2).
+
+  - urn: urn:gl:activity:refrigerants:hfc-32
+    taxonomy: refrigerants
+    code: hfc-32
+    name: HFC-32
+    description: Difluoromethane (CAS 75-10-5).
+
+  - urn: urn:gl:activity:refrigerants:hfc-125
+    taxonomy: refrigerants
+    code: hfc-125
+    name: HFC-125
+    description: Pentafluoroethane (CAS 354-33-6).
+
+  - urn: urn:gl:activity:refrigerants:hfc-143a
+    taxonomy: refrigerants
+    code: hfc-143a
+    name: HFC-143a
+    description: 1,1,1-Trifluoroethane (CAS 420-46-2).
+
+  - urn: urn:gl:activity:refrigerants:hfc-152a
+    taxonomy: refrigerants
+    code: hfc-152a
+    name: HFC-152a
+    description: 1,1-Difluoroethane (CAS 75-37-6).
+
+  - urn: urn:gl:activity:refrigerants:hfo-1234yf
+    taxonomy: refrigerants
+    code: hfo-1234yf
+    name: HFO-1234yf
+    description: 2,3,3,3-Tetrafluoropropene (CAS 754-12-1).
+
+  - urn: urn:gl:activity:refrigerants:hfo-1234ze
+    taxonomy: refrigerants
+    code: hfo-1234ze
+    name: HFO-1234ze
+    description: trans-1,3,3,3-Tetrafluoropropene (CAS 29118-24-9).
+
+  - urn: urn:gl:activity:refrigerants:sf6
+    taxonomy: refrigerants
+    code: sf6
+    name: SF6
+    description: Sulfur hexafluoride (CAS 2551-62-4).
+
+  - urn: urn:gl:activity:refrigerants:nf3
+    taxonomy: refrigerants
+    code: nf3
+    name: NF3
+    description: Nitrogen trifluoride (CAS 7783-54-2).
+
+  - urn: urn:gl:activity:refrigerants:pfc-14
+    taxonomy: refrigerants
+    code: pfc-14
+    name: PFC-14
+    description: Tetrafluoromethane (CAS 75-73-0).
+
+  - urn: urn:gl:activity:refrigerants:pfc-116
+    taxonomy: refrigerants
+    code: pfc-116
+    name: PFC-116
+    description: Hexafluoroethane (CAS 76-16-4).
+
+  - urn: urn:gl:activity:refrigerants:hcfc-22
+    taxonomy: refrigerants
+    code: hcfc-22
+    name: HCFC-22
+    description: Chlorodifluoromethane (CAS 75-45-6); transitional refrigerant phasing out under Montreal Protocol.
+
+  # =========================================================================
+  # Agriculture (IPCC AFOLU sub-sources).
+  # =========================================================================
+
+  - urn: urn:gl:activity:agriculture:enteric-fermentation
+    taxonomy: agriculture
+    code: enteric-fermentation
+    name: Enteric fermentation
+    description: CH4 from ruminant digestive processes (IPCC 3.A.1).
+
+  - urn: urn:gl:activity:agriculture:manure-management
+    taxonomy: agriculture
+    code: manure-management
+    name: Manure management
+    description: CH4 and N2O from livestock manure handling and storage (IPCC 3.A.2).
+
+  - urn: urn:gl:activity:agriculture:rice-cultivation
+    taxonomy: agriculture
+    code: rice-cultivation
+    name: Rice cultivation
+    description: CH4 from anaerobic decomposition in flooded rice paddies (IPCC 3.C.7).
+
+  - urn: urn:gl:activity:agriculture:synthetic-fertiliser
+    taxonomy: agriculture
+    code: synthetic-fertiliser
+    name: Synthetic fertiliser application
+    description: Direct and indirect N2O from synthetic N fertiliser application (IPCC 3.C.4/3.C.5).
+
+  - urn: urn:gl:activity:agriculture:biomass-burning
+    taxonomy: agriculture
+    code: biomass-burning
+    name: Biomass burning
+    description: Non-CO2 emissions from prescribed and field-residue biomass burning (IPCC 3.C.1).
+
+  - urn: urn:gl:activity:agriculture:lime-application
+    taxonomy: agriculture
+    code: lime-application
+    name: Lime application
+    description: CO2 from agricultural liming (IPCC 3.C.2).
+
+  - urn: urn:gl:activity:agriculture:urea-application
+    taxonomy: agriculture
+    code: urea-application
+    name: Urea application
+    description: CO2 from urea fertiliser application (IPCC 3.C.3).
+
+  # =========================================================================
+  # Waste (IPCC + GHGP).
+  # =========================================================================
+
+  - urn: urn:gl:activity:waste:msw-landfill
+    taxonomy: waste
+    code: msw-landfill
+    name: Municipal solid waste — landfill
+    description: CH4 from MSW disposal in managed and unmanaged landfills (IPCC 4.A).
+
+  - urn: urn:gl:activity:waste:msw-incineration
+    taxonomy: waste
+    code: msw-incineration
+    name: Municipal solid waste — incineration
+    description: CO2/N2O from MSW incineration with and without energy recovery (IPCC 4.C).
+
+  - urn: urn:gl:activity:waste:msw-composting
+    taxonomy: waste
+    code: msw-composting
+    name: Municipal solid waste — composting
+    description: CH4 and N2O from aerobic composting of MSW (IPCC 4.B).
+
+  - urn: urn:gl:activity:waste:msw-anaerobic-digestion
+    taxonomy: waste
+    code: msw-anaerobic-digestion
+    name: Municipal solid waste — anaerobic digestion
+    description: CH4 from anaerobic digestion of MSW (IPCC 4.B).
+
+  - urn: urn:gl:activity:waste:wastewater-domestic
+    taxonomy: waste
+    code: wastewater-domestic
+    name: Wastewater — domestic
+    description: CH4 and N2O from domestic wastewater treatment and discharge (IPCC 4.D.1).
+
+  - urn: urn:gl:activity:waste:wastewater-industrial
+    taxonomy: waste
+    code: wastewater-industrial
+    name: Wastewater — industrial
+    description: CH4 from industrial wastewater treatment and discharge (IPCC 4.D.2).
+
+  # =========================================================================
+  # Land use, land-use change, and forestry (LULUCF).
+  # =========================================================================
+
+  - urn: urn:gl:activity:land-use:deforestation
+    taxonomy: land-use
+    code: deforestation
+    name: Deforestation
+    description: Loss of forest cover and associated carbon stock losses.
+
+  - urn: urn:gl:activity:land-use:afforestation
+    taxonomy: land-use
+    code: afforestation
+    name: Afforestation
+    description: Planting of forest on land that was not previously forested.
+
+  - urn: urn:gl:activity:land-use:reforestation
+    taxonomy: land-use
+    code: reforestation
+    name: Reforestation
+    description: Re-establishment of forest on land that was previously forested.
+
+  - urn: urn:gl:activity:land-use:grassland-conversion
+    taxonomy: land-use
+    code: grassland-conversion
+    name: Grassland conversion
+    description: Conversion of grassland to other land-use types and associated stock changes.
+
+  - urn: urn:gl:activity:land-use:peatland-drainage
+    taxonomy: land-use
+    code: peatland-drainage
+    name: Peatland drainage
+    description: CO2 and N2O emissions from drained organic soils on peatlands.
+
+  - urn: urn:gl:activity:land-use:wetland-conversion
+    taxonomy: land-use
+    code: wetland-conversion
+    name: Wetland conversion
+    description: Conversion of wetlands to other land-use types and associated stock changes.
