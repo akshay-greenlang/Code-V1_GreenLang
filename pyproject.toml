@@ -309,6 +309,7 @@ factors-test = [
   "pytest-cov>=4.1.0",
   "pytest-xdist>=3.5.0",
   "pytest-mock>=3.12.0",
+  "hypothesis>=6.98.0",
   # --- HTTP / ASGI test plumbing ------------------------------------------
   "httpx>=0.28.1",
   "anyio>=4.0",

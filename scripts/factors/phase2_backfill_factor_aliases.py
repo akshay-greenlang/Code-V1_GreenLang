@@ -50,8 +50,9 @@ Usage
     python scripts/factors/phase2_backfill_factor_aliases.py \
         --dsn sqlite:///./factors_phase2.db --dry-run
 
-    # Apply against Postgres
-    GL_FACTORS_DSN=postgresql://user:pwd@host/db \
+    # Apply against Postgres. Keep credentials outside shell history,
+    # for example by injecting GL_FACTORS_DSN from a secret manager.
+    GL_FACTORS_DSN=postgresql://db.example.invalid/greenlang_factors \
         python scripts/factors/phase2_backfill_factor_aliases.py
 """
 from __future__ import annotations
