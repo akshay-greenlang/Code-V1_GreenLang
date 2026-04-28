@@ -1,0 +1,442 @@
+[
+  {
+    "boundary": "Reported per JRC EDGAR sectoral disaggregation; boundary excludes LULUCF unless stated.",
+    "category": "inventory",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://edgar.jrc.ec.europa.eu/"
+      }
+    ],
+    "description": "EDGAR JRC global inventory annual emissions row (country=USA, sector=energy, pollutant=co2, year=2023).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://edgar_v8_mini.csv",
+      "row_ref": "Row=2",
+      "source_publication": "EDGAR \u2014 Global Emissions Inventory",
+      "source_record_id": "Row=2",
+      "source_url": "https://edgar.jrc.ec.europa.eu/",
+      "source_version": "v8.0"
+    },
+    "factor_id_alias": "EF:EDGAR:usa:energy:co2:2023",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EDGAR USA \u2014 energy \u2014 co2 \u2014 2023",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:edgar",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:edgar:usa:energy:co2:2023:v1",
+    "value": 5078.0,
+    "vintage_end": "2023-12-31",
+    "vintage_start": "2023-01-01"
+  },
+  {
+    "boundary": "Reported per JRC EDGAR sectoral disaggregation; boundary excludes LULUCF unless stated.",
+    "category": "inventory",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://edgar.jrc.ec.europa.eu/"
+      }
+    ],
+    "description": "EDGAR JRC global inventory annual emissions row (country=DEU, sector=energy, pollutant=co2, year=2023).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://edgar_v8_mini.csv",
+      "row_ref": "Row=3",
+      "source_publication": "EDGAR \u2014 Global Emissions Inventory",
+      "source_record_id": "Row=3",
+      "source_url": "https://edgar.jrc.ec.europa.eu/",
+      "source_version": "v8.0"
+    },
+    "factor_id_alias": "EF:EDGAR:deu:energy:co2:2023",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EDGAR DEU \u2014 energy \u2014 co2 \u2014 2023",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:edgar",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:edgar:deu:energy:co2:2023:v1",
+    "value": 675.5,
+    "vintage_end": "2023-12-31",
+    "vintage_start": "2023-01-01"
+  },
+  {
+    "boundary": "Reported per JRC EDGAR sectoral disaggregation; boundary excludes LULUCF unless stated.",
+    "category": "inventory",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://edgar.jrc.ec.europa.eu/"
+      }
+    ],
+    "description": "EDGAR JRC global inventory annual emissions row (country=FRA, sector=energy, pollutant=co2, year=2023).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://edgar_v8_mini.csv",
+      "row_ref": "Row=4",
+      "source_publication": "EDGAR \u2014 Global Emissions Inventory",
+      "source_record_id": "Row=4",
+      "source_url": "https://edgar.jrc.ec.europa.eu/",
+      "source_version": "v8.0"
+    },
+    "factor_id_alias": "EF:EDGAR:fra:energy:co2:2023",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EDGAR FRA \u2014 energy \u2014 co2 \u2014 2023",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:edgar",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:edgar:fra:energy:co2:2023:v1",
+    "value": 310.2,
+    "vintage_end": "2023-12-31",
+    "vintage_start": "2023-01-01"
+  },
+  {
+    "boundary": "Reported per JRC EDGAR sectoral disaggregation; boundary excludes LULUCF unless stated.",
+    "category": "inventory",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://edgar.jrc.ec.europa.eu/"
+      }
+    ],
+    "description": "EDGAR JRC global inventory annual emissions row (country=GBR, sector=energy, pollutant=co2, year=2023).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://edgar_v8_mini.csv",
+      "row_ref": "Row=5",
+      "source_publication": "EDGAR \u2014 Global Emissions Inventory",
+      "source_record_id": "Row=5",
+      "source_url": "https://edgar.jrc.ec.europa.eu/",
+      "source_version": "v8.0"
+    },
+    "factor_id_alias": "EF:EDGAR:gbr:energy:co2:2023",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EDGAR GBR \u2014 energy \u2014 co2 \u2014 2023",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:edgar",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:edgar:gbr:energy:co2:2023:v1",
+    "value": 341.7,
+    "vintage_end": "2023-12-31",
+    "vintage_start": "2023-01-01"
+  },
+  {
+    "boundary": "Reported per JRC EDGAR sectoral disaggregation; boundary excludes LULUCF unless stated.",
+    "category": "inventory",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://edgar.jrc.ec.europa.eu/"
+      }
+    ],
+    "description": "EDGAR JRC global inventory annual emissions row (country=JPN, sector=energy, pollutant=co2, year=2023).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://edgar_v8_mini.csv",
+      "row_ref": "Row=6",
+      "source_publication": "EDGAR \u2014 Global Emissions Inventory",
+      "source_record_id": "Row=6",
+      "source_url": "https://edgar.jrc.ec.europa.eu/",
+      "source_version": "v8.0"
+    },
+    "factor_id_alias": "EF:EDGAR:jpn:energy:co2:2023",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EDGAR JPN \u2014 energy \u2014 co2 \u2014 2023",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:edgar",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:edgar:jpn:energy:co2:2023:v1",
+    "value": 1058.9,
+    "vintage_end": "2023-12-31",
+    "vintage_start": "2023-01-01"
+  },
+  {
+    "boundary": "Reported per JRC EDGAR sectoral disaggregation; boundary excludes LULUCF unless stated.",
+    "category": "inventory",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://edgar.jrc.ec.europa.eu/"
+      }
+    ],
+    "description": "EDGAR JRC global inventory annual emissions row (country=IND, sector=energy, pollutant=co2, year=2023).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://edgar_v8_mini.csv",
+      "row_ref": "Row=7",
+      "source_publication": "EDGAR \u2014 Global Emissions Inventory",
+      "source_record_id": "Row=7",
+      "source_url": "https://edgar.jrc.ec.europa.eu/",
+      "source_version": "v8.0"
+    },
+    "factor_id_alias": "EF:EDGAR:ind:energy:co2:2023",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EDGAR IND \u2014 energy \u2014 co2 \u2014 2023",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:edgar",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:edgar:ind:energy:co2:2023:v1",
+    "value": 2655.4,
+    "vintage_end": "2023-12-31",
+    "vintage_start": "2023-01-01"
+  },
+  {
+    "boundary": "Reported per JRC EDGAR sectoral disaggregation; boundary excludes LULUCF unless stated.",
+    "category": "inventory",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://edgar.jrc.ec.europa.eu/"
+      }
+    ],
+    "description": "EDGAR JRC global inventory annual emissions row (country=CHN, sector=energy, pollutant=co2, year=2023).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://edgar_v8_mini.csv",
+      "row_ref": "Row=8",
+      "source_publication": "EDGAR \u2014 Global Emissions Inventory",
+      "source_record_id": "Row=8",
+      "source_url": "https://edgar.jrc.ec.europa.eu/",
+      "source_version": "v8.0"
+    },
+    "factor_id_alias": "EF:EDGAR:chn:energy:co2:2023",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EDGAR CHN \u2014 energy \u2014 co2 \u2014 2023",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:edgar",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:edgar:chn:energy:co2:2023:v1",
+    "value": 11472.8,
+    "vintage_end": "2023-12-31",
+    "vintage_start": "2023-01-01"
+  },
+  {
+    "boundary": "Reported per JRC EDGAR sectoral disaggregation; boundary excludes LULUCF unless stated.",
+    "category": "inventory",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://edgar.jrc.ec.europa.eu/"
+      }
+    ],
+    "description": "EDGAR JRC global inventory annual emissions row (country=ITA, sector=industrial-processes, pollutant=co2, year=2023).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://edgar_v8_mini.csv",
+      "row_ref": "Row=9",
+      "source_publication": "EDGAR \u2014 Global Emissions Inventory",
+      "source_record_id": "Row=9",
+      "source_url": "https://edgar.jrc.ec.europa.eu/",
+      "source_version": "v8.0"
+    },
+    "factor_id_alias": "EF:EDGAR:ita:industrial_processes:co2:2023",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EDGAR ITA \u2014 industrial-processes \u2014 co2 \u2014 2023",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:edgar",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:edgar:ita:industrial_processes:co2:2023:v1",
+    "value": 76.3,
+    "vintage_end": "2023-12-31",
+    "vintage_start": "2023-01-01"
+  },
+  {
+    "boundary": "Reported per JRC EDGAR sectoral disaggregation; boundary excludes LULUCF unless stated.",
+    "category": "inventory",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://edgar.jrc.ec.europa.eu/"
+      }
+    ],
+    "description": "EDGAR JRC global inventory annual emissions row (country=ESP, sector=industrial-processes, pollutant=co2, year=2023).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://edgar_v8_mini.csv",
+      "row_ref": "Row=10",
+      "source_publication": "EDGAR \u2014 Global Emissions Inventory",
+      "source_record_id": "Row=10",
+      "source_url": "https://edgar.jrc.ec.europa.eu/",
+      "source_version": "v8.0"
+    },
+    "factor_id_alias": "EF:EDGAR:esp:industrial_processes:co2:2023",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EDGAR ESP \u2014 industrial-processes \u2014 co2 \u2014 2023",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:edgar",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:edgar:esp:industrial_processes:co2:2023:v1",
+    "value": 68.1,
+    "vintage_end": "2023-12-31",
+    "vintage_start": "2023-01-01"
+  },
+  {
+    "boundary": "Reported per JRC EDGAR sectoral disaggregation; boundary excludes LULUCF unless stated.",
+    "category": "inventory",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://edgar.jrc.ec.europa.eu/"
+      }
+    ],
+    "description": "EDGAR JRC global inventory annual emissions row (country=NLD, sector=energy, pollutant=co2, year=2023).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://edgar_v8_mini.csv",
+      "row_ref": "Row=11",
+      "source_publication": "EDGAR \u2014 Global Emissions Inventory",
+      "source_record_id": "Row=11",
+      "source_url": "https://edgar.jrc.ec.europa.eu/",
+      "source_version": "v8.0"
+    },
+    "factor_id_alias": "EF:EDGAR:nld:energy:co2:2023",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EDGAR NLD \u2014 energy \u2014 co2 \u2014 2023",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:edgar",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:edgar:nld:energy:co2:2023:v1",
+    "value": 134.6,
+    "vintage_end": "2023-12-31",
+    "vintage_start": "2023-01-01"
+  }
+]

@@ -1,0 +1,222 @@
+[
+  {
+    "boundary": "Cradle-to-gate per PACT Pathfinder Framework v2.",
+    "category": "purchased_goods",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://wbcsd.github.io/data-exchange-protocol/"
+      }
+    ],
+    "description": "Phase 3 reference PACT API record. Boundary excludes downstream-of-gate emissions per PACT methodology.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_api_adapters.Phase3PactApiParser",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://pact_api.json",
+      "row_ref": "pact:pact-001",
+      "source_publication": "PACT Pathfinder API",
+      "source_record_id": "pact:pact-001",
+      "source_url": "https://api.partner.example/pact/footprints",
+      "source_version": "2.0.0"
+    },
+    "factor_id_alias": "EF:PACT:pact-001",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "PACT Aluminium Sheet 1mm",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:pact-api-2024",
+    "unit_urn": "urn:gl:unit:kgco2e/kg",
+    "urn": "urn:gl:factor:phase3-alpha:pact:aluminium_sheet_1mm:v1",
+    "value": 8.45,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Cradle-to-gate per PACT Pathfinder Framework v2.",
+    "category": "purchased_goods",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://wbcsd.github.io/data-exchange-protocol/"
+      }
+    ],
+    "description": "Phase 3 reference PACT API record. Boundary excludes downstream-of-gate emissions per PACT methodology.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_api_adapters.Phase3PactApiParser",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://pact_api.json",
+      "row_ref": "pact:pact-002",
+      "source_publication": "PACT Pathfinder API",
+      "source_record_id": "pact:pact-002",
+      "source_url": "https://api.partner.example/pact/footprints",
+      "source_version": "2.0.0"
+    },
+    "factor_id_alias": "EF:PACT:pact-002",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "PACT Steel Coil HRC",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:pact-api-2024",
+    "unit_urn": "urn:gl:unit:kgco2e/kg",
+    "urn": "urn:gl:factor:phase3-alpha:pact:steel_coil_hrc:v1",
+    "value": 1.85,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Cradle-to-gate per PACT Pathfinder Framework v2.",
+    "category": "purchased_goods",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://wbcsd.github.io/data-exchange-protocol/"
+      }
+    ],
+    "description": "Phase 3 reference PACT API record. Boundary excludes downstream-of-gate emissions per PACT methodology.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_api_adapters.Phase3PactApiParser",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://pact_api.json",
+      "row_ref": "pact:pact-003",
+      "source_publication": "PACT Pathfinder API",
+      "source_record_id": "pact:pact-003",
+      "source_url": "https://api.partner.example/pact/footprints",
+      "source_version": "2.0.0"
+    },
+    "factor_id_alias": "EF:PACT:pact-003",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "PACT Polyethylene HDPE",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:pact-api-2024",
+    "unit_urn": "urn:gl:unit:kgco2e/kg",
+    "urn": "urn:gl:factor:phase3-alpha:pact:polyethylene_hdpe:v1",
+    "value": 2.12,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Cradle-to-gate per PACT Pathfinder Framework v2.",
+    "category": "purchased_goods",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://wbcsd.github.io/data-exchange-protocol/"
+      }
+    ],
+    "description": "Phase 3 reference PACT API record. Boundary excludes downstream-of-gate emissions per PACT methodology.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_api_adapters.Phase3PactApiParser",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://pact_api.json",
+      "row_ref": "pact:pact-004",
+      "source_publication": "PACT Pathfinder API",
+      "source_record_id": "pact:pact-004",
+      "source_url": "https://api.partner.example/pact/footprints",
+      "source_version": "2.0.0"
+    },
+    "factor_id_alias": "EF:PACT:pact-004",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "PACT Glass Container 330ml",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:pact-api-2024",
+    "unit_urn": "urn:gl:unit:kgco2e/kg",
+    "urn": "urn:gl:factor:phase3-alpha:pact:glass_container_330ml:v1",
+    "value": 0.28,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Cradle-to-gate per PACT Pathfinder Framework v2.",
+    "category": "purchased_goods",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://wbcsd.github.io/data-exchange-protocol/"
+      }
+    ],
+    "description": "Phase 3 reference PACT API record. Boundary excludes downstream-of-gate emissions per PACT methodology.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_api_adapters.Phase3PactApiParser",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://pact_api.json",
+      "row_ref": "pact:pact-005",
+      "source_publication": "PACT Pathfinder API",
+      "source_record_id": "pact:pact-005",
+      "source_url": "https://api.partner.example/pact/footprints",
+      "source_version": "2.0.0"
+    },
+    "factor_id_alias": "EF:PACT:pact-005",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "PACT Cardboard Box Standard",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:pact-api-2024",
+    "unit_urn": "urn:gl:unit:kgco2e/kg",
+    "urn": "urn:gl:factor:phase3-alpha:pact:cardboard_box_standard:v1",
+    "value": 0.72,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  }
+]

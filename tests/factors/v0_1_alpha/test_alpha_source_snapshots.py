@@ -90,9 +90,20 @@ def _load_registry() -> Dict[str, Dict[str, Any]]:
 
 
 def _resolve_parser(source: Dict[str, Any]):
-    """Import and return the registry-pinned parser callable."""
-    mod_name = source["parser_module"]
-    fn_name = source["parser_function"]
+    """Import and return the registry-pinned legacy parser callable.
+
+    The snapshot test deliberately resolves the LEGACY function-style
+    parser via the nested ``parser:`` block (kept unchanged for legacy
+    callers per the Phase 3 / Wave 2.0 source-registry comment). The
+    top-level ``parser_module`` / ``parser_function`` keys may have been
+    overwritten by Wave 2.0 with class-based runner-dispatch parsers
+    (e.g. ``Phase3EPAExcelParser``) which take kwargs in ``__init__`` and
+    expose a ``.parse(data)`` method — those are not callable as
+    ``parser(raw)`` so we cannot use them here.
+    """
+    legacy = source.get("parser") or {}
+    mod_name = legacy.get("module") or source["parser_module"]
+    fn_name = legacy.get("function") or source["parser_function"]
     mod = importlib.import_module(mod_name)
     return getattr(mod, fn_name)
 

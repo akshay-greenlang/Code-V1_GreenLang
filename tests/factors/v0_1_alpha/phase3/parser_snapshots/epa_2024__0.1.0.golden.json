@@ -1,0 +1,354 @@
+[
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 epa fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://epa_2024_mini.xlsx",
+      "row_ref": "Sheet=Stationary Combustion;Row=2",
+      "source_publication": "EPA GHG Emission Factors Hub",
+      "source_record_id": "Sheet=Stationary Combustion;Row=2",
+      "source_url": "https://www.epa.gov/ghgemissionfactors",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:EPA:stationary_combustion:natural_gas",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EPA Stationary Combustion \u2014 natural_gas",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:epa-hub",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:epa:stationary_combustion:natural_gas:v1",
+    "value": 53.06,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 epa fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://epa_2024_mini.xlsx",
+      "row_ref": "Sheet=Stationary Combustion;Row=3",
+      "source_publication": "EPA GHG Emission Factors Hub",
+      "source_record_id": "Sheet=Stationary Combustion;Row=3",
+      "source_url": "https://www.epa.gov/ghgemissionfactors",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:EPA:stationary_combustion:distillate_fuel_oil_no_2",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EPA Stationary Combustion \u2014 distillate_fuel_oil_no_2",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:epa-hub",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:epa:stationary_combustion:distillate_fuel_oil_no_2:v1",
+    "value": 73.96,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 epa fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://epa_2024_mini.xlsx",
+      "row_ref": "Sheet=Stationary Combustion;Row=4",
+      "source_publication": "EPA GHG Emission Factors Hub",
+      "source_record_id": "Sheet=Stationary Combustion;Row=4",
+      "source_url": "https://www.epa.gov/ghgemissionfactors",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:EPA:stationary_combustion:propane",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EPA Stationary Combustion \u2014 propane",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:epa-hub",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:epa:stationary_combustion:propane:v1",
+    "value": 62.87,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 epa fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://epa_2024_mini.xlsx",
+      "row_ref": "Sheet=Stationary Combustion;Row=5",
+      "source_publication": "EPA GHG Emission Factors Hub",
+      "source_record_id": "Sheet=Stationary Combustion;Row=5",
+      "source_url": "https://www.epa.gov/ghgemissionfactors",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:EPA:stationary_combustion:bituminous_coal",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EPA Stationary Combustion \u2014 bituminous_coal",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:epa-hub",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:epa:stationary_combustion:bituminous_coal:v1",
+    "value": 93.4,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 epa fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://epa_2024_mini.xlsx",
+      "row_ref": "Sheet=Stationary Combustion;Row=6",
+      "source_publication": "EPA GHG Emission Factors Hub",
+      "source_record_id": "Sheet=Stationary Combustion;Row=6",
+      "source_url": "https://www.epa.gov/ghgemissionfactors",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:EPA:stationary_combustion:wood_waste",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EPA Stationary Combustion \u2014 wood_waste",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:epa-hub",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:epa:stationary_combustion:wood_waste:v1",
+    "value": 93.8,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 epa fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://epa_2024_mini.xlsx",
+      "row_ref": "Sheet=Mobile Combustion;Row=2",
+      "source_publication": "EPA GHG Emission Factors Hub",
+      "source_record_id": "Sheet=Mobile Combustion;Row=2",
+      "source_url": "https://www.epa.gov/ghgemissionfactors",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:EPA:mobile_combustion:motor_gasoline",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EPA Mobile Combustion \u2014 motor_gasoline",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:epa-hub",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:epa:mobile_combustion:motor_gasoline:v1",
+    "value": 8.78,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 epa fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://epa_2024_mini.xlsx",
+      "row_ref": "Sheet=Mobile Combustion;Row=3",
+      "source_publication": "EPA GHG Emission Factors Hub",
+      "source_record_id": "Sheet=Mobile Combustion;Row=3",
+      "source_url": "https://www.epa.gov/ghgemissionfactors",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:EPA:mobile_combustion:diesel_fuel",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EPA Mobile Combustion \u2014 diesel_fuel",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:epa-hub",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:epa:mobile_combustion:diesel_fuel:v1",
+    "value": 10.21,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 epa fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://epa_2024_mini.xlsx",
+      "row_ref": "Sheet=Mobile Combustion;Row=4",
+      "source_publication": "EPA GHG Emission Factors Hub",
+      "source_record_id": "Sheet=Mobile Combustion;Row=4",
+      "source_url": "https://www.epa.gov/ghgemissionfactors",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:EPA:mobile_combustion:jet_fuel",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EPA Mobile Combustion \u2014 jet_fuel",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:epa-hub",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:epa:mobile_combustion:jet_fuel:v1",
+    "value": 9.75,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  }
+]

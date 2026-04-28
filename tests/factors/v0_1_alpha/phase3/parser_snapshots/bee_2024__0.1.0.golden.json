@@ -1,0 +1,222 @@
+[
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://beeindia.gov.in/en/programmes/perform-achieve-trade-pat"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 bee fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://bee_2024_mini.xlsx",
+      "row_ref": "Sheet=PAT Sectoral Baselines;Row=2",
+      "source_publication": "PAT Scheme sectoral specific energy consumption baselines",
+      "source_record_id": "Sheet=PAT Sectoral Baselines;Row=2",
+      "source_url": "https://beeindia.gov.in/en/programmes/perform-achieve-trade-pat",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:BEE:pat_sectoral_baselines:cement",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "BEE PAT Sectoral Baselines \u2014 cement",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:india-bee-pat",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:bee:pat_sectoral_baselines:cement:v1",
+    "value": 0.795,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://beeindia.gov.in/en/programmes/perform-achieve-trade-pat"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 bee fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://bee_2024_mini.xlsx",
+      "row_ref": "Sheet=PAT Sectoral Baselines;Row=3",
+      "source_publication": "PAT Scheme sectoral specific energy consumption baselines",
+      "source_record_id": "Sheet=PAT Sectoral Baselines;Row=3",
+      "source_url": "https://beeindia.gov.in/en/programmes/perform-achieve-trade-pat",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:BEE:pat_sectoral_baselines:iron_and_steel",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "BEE PAT Sectoral Baselines \u2014 iron_and_steel",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:india-bee-pat",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:bee:pat_sectoral_baselines:iron_and_steel:v1",
+    "value": 1.91,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://beeindia.gov.in/en/programmes/perform-achieve-trade-pat"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 bee fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://bee_2024_mini.xlsx",
+      "row_ref": "Sheet=PAT Sectoral Baselines;Row=4",
+      "source_publication": "PAT Scheme sectoral specific energy consumption baselines",
+      "source_record_id": "Sheet=PAT Sectoral Baselines;Row=4",
+      "source_url": "https://beeindia.gov.in/en/programmes/perform-achieve-trade-pat",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:BEE:pat_sectoral_baselines:aluminium",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "BEE PAT Sectoral Baselines \u2014 aluminium",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:india-bee-pat",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:bee:pat_sectoral_baselines:aluminium:v1",
+    "value": 14.25,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://beeindia.gov.in/en/programmes/perform-achieve-trade-pat"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 bee fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://bee_2024_mini.xlsx",
+      "row_ref": "Sheet=PAT Sectoral Baselines;Row=5",
+      "source_publication": "PAT Scheme sectoral specific energy consumption baselines",
+      "source_record_id": "Sheet=PAT Sectoral Baselines;Row=5",
+      "source_url": "https://beeindia.gov.in/en/programmes/perform-achieve-trade-pat",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:BEE:pat_sectoral_baselines:fertilizer",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "BEE PAT Sectoral Baselines \u2014 fertilizer",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:india-bee-pat",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:bee:pat_sectoral_baselines:fertilizer:v1",
+    "value": 0.622,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://beeindia.gov.in/en/programmes/perform-achieve-trade-pat"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 bee fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://bee_2024_mini.xlsx",
+      "row_ref": "Sheet=PAT Sectoral Baselines;Row=6",
+      "source_publication": "PAT Scheme sectoral specific energy consumption baselines",
+      "source_record_id": "Sheet=PAT Sectoral Baselines;Row=6",
+      "source_url": "https://beeindia.gov.in/en/programmes/perform-achieve-trade-pat",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:BEE:pat_sectoral_baselines:pulp_and_paper",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "BEE PAT Sectoral Baselines \u2014 pulp_and_paper",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:india-bee-pat",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:bee:pat_sectoral_baselines:pulp_and_paper:v1",
+    "value": 1.035,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  }
+]

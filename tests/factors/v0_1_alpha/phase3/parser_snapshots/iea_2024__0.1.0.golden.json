@@ -1,0 +1,222 @@
+[
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.iea.org/data-and-statistics/data-product/emissions-factors-2024"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 iea fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://iea_2024_mini.xlsx",
+      "row_ref": "Sheet=Country Grid Factors;Row=2",
+      "source_publication": "IEA Emissions Factors database (annual)",
+      "source_record_id": "Sheet=Country Grid Factors;Row=2",
+      "source_url": "https://www.iea.org/data-and-statistics/data-product/emissions-factors-2024",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:IEA:country_grid_factors:fra",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "IEA Country Grid Factors \u2014 fra",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:iea-emission-factors",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:iea:country_grid_factors:fra:v1",
+    "value": 0.056,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.iea.org/data-and-statistics/data-product/emissions-factors-2024"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 iea fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://iea_2024_mini.xlsx",
+      "row_ref": "Sheet=Country Grid Factors;Row=3",
+      "source_publication": "IEA Emissions Factors database (annual)",
+      "source_record_id": "Sheet=Country Grid Factors;Row=3",
+      "source_url": "https://www.iea.org/data-and-statistics/data-product/emissions-factors-2024",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:IEA:country_grid_factors:deu",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "IEA Country Grid Factors \u2014 deu",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:iea-emission-factors",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:iea:country_grid_factors:deu:v1",
+    "value": 0.349,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.iea.org/data-and-statistics/data-product/emissions-factors-2024"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 iea fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://iea_2024_mini.xlsx",
+      "row_ref": "Sheet=Country Grid Factors;Row=4",
+      "source_publication": "IEA Emissions Factors database (annual)",
+      "source_record_id": "Sheet=Country Grid Factors;Row=4",
+      "source_url": "https://www.iea.org/data-and-statistics/data-product/emissions-factors-2024",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:IEA:country_grid_factors:chn",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "IEA Country Grid Factors \u2014 chn",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:iea-emission-factors",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:iea:country_grid_factors:chn:v1",
+    "value": 0.586,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.iea.org/data-and-statistics/data-product/emissions-factors-2024"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 iea fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://iea_2024_mini.xlsx",
+      "row_ref": "Sheet=Country Grid Factors;Row=5",
+      "source_publication": "IEA Emissions Factors database (annual)",
+      "source_record_id": "Sheet=Country Grid Factors;Row=5",
+      "source_url": "https://www.iea.org/data-and-statistics/data-product/emissions-factors-2024",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:IEA:country_grid_factors:usa",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "IEA Country Grid Factors \u2014 usa",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:iea-emission-factors",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:iea:country_grid_factors:usa:v1",
+    "value": 0.367,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.iea.org/data-and-statistics/data-product/emissions-factors-2024"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 iea fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://iea_2024_mini.xlsx",
+      "row_ref": "Sheet=Country Grid Factors;Row=6",
+      "source_publication": "IEA Emissions Factors database (annual)",
+      "source_record_id": "Sheet=Country Grid Factors;Row=6",
+      "source_url": "https://www.iea.org/data-and-statistics/data-product/emissions-factors-2024",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:IEA:country_grid_factors:bra",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "IEA Country Grid Factors \u2014 bra",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:iea-emission-factors",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:iea:country_grid_factors:bra:v1",
+    "value": 0.119,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  }
+]

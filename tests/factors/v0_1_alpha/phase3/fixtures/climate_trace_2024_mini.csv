@@ -1,0 +1,11 @@
+asset_id,country_iso3,sector,subsector,gas,emissions_quantity,emissions_unit,start_time,end_time
+ct-asset-0001,USA,power,electricity-generation,co2e,1234567.0,tCO2e,2024-01-01T00:00:00+00:00,2024-12-31T23:59:59+00:00
+ct-asset-0002,DEU,power,electricity-generation,co2e,876543.0,tCO2e,2024-01-01T00:00:00+00:00,2024-12-31T23:59:59+00:00
+ct-asset-0003,FRA,power,electricity-generation,co2e,123456.0,tCO2e,2024-01-01T00:00:00+00:00,2024-12-31T23:59:59+00:00
+ct-asset-0004,GBR,power,electricity-generation,co2e,234567.0,tCO2e,2024-01-01T00:00:00+00:00,2024-12-31T23:59:59+00:00
+ct-asset-0005,JPN,power,electricity-generation,co2e,345678.0,tCO2e,2024-01-01T00:00:00+00:00,2024-12-31T23:59:59+00:00
+ct-asset-0006,IND,manufacturing,steel,co2e,567890.0,tCO2e,2024-01-01T00:00:00+00:00,2024-12-31T23:59:59+00:00
+ct-asset-0007,CHN,manufacturing,steel,co2e,2345678.0,tCO2e,2024-01-01T00:00:00+00:00,2024-12-31T23:59:59+00:00
+ct-asset-0008,USA,transportation,aviation,co2e,789012.0,tCO2e,2024-01-01T00:00:00+00:00,2024-12-31T23:59:59+00:00
+ct-asset-0009,BRA,forestry-and-land-use,forest-clearing,co2e,-12345.0,tCO2e,2024-01-01T00:00:00+00:00,2024-12-31T23:59:59+00:00
+ct-asset-0010,IDN,forestry-and-land-use,forest-clearing,co2e,98765.0,tCO2e,2024-01-01T00:00:00+00:00,2024-12-31T23:59:59+00:00

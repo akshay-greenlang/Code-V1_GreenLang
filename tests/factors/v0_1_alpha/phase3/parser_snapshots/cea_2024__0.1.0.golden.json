@@ -1,0 +1,178 @@
+[
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 cea fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://cea_2024_mini.xlsx",
+      "row_ref": "Sheet=Grid Emission Factors;Row=2",
+      "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+      "source_record_id": "Sheet=Grid Emission Factors;Row=2",
+      "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:CEA:grid_emission_factors:all_india",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "CEA Grid Emission Factors \u2014 all_india",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:india-cea-co2-baseline",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:cea:grid_emission_factors:all_india:v1",
+    "value": 0.727,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 cea fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://cea_2024_mini.xlsx",
+      "row_ref": "Sheet=Grid Emission Factors;Row=3",
+      "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+      "source_record_id": "Sheet=Grid Emission Factors;Row=3",
+      "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:CEA:grid_emission_factors:newne",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "CEA Grid Emission Factors \u2014 newne",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:india-cea-co2-baseline",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:cea:grid_emission_factors:newne:v1",
+    "value": 0.764,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 cea fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://cea_2024_mini.xlsx",
+      "row_ref": "Sheet=Grid Emission Factors;Row=4",
+      "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+      "source_record_id": "Sheet=Grid Emission Factors;Row=4",
+      "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:CEA:grid_emission_factors:s",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "CEA Grid Emission Factors \u2014 s",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:india-cea-co2-baseline",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:cea:grid_emission_factors:s:v1",
+    "value": 0.583,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://cea.nic.in/cdm-co2-baseline-database/"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 cea fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://cea_2024_mini.xlsx",
+      "row_ref": "Sheet=Grid Emission Factors;Row=5",
+      "source_publication": "CO2 Baseline Database for the Indian Power Sector",
+      "source_record_id": "Sheet=Grid Emission Factors;Row=5",
+      "source_url": "https://cea.nic.in/cdm-co2-baseline-database/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:CEA:grid_emission_factors:ner",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "CEA Grid Emission Factors \u2014 ner",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:india-cea-co2-baseline",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:cea:grid_emission_factors:ner:v1",
+    "value": 0.291,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  }
+]

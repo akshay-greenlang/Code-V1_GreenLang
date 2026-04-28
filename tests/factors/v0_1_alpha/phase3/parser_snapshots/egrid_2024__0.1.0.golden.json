@@ -1,0 +1,354 @@
+[
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.epa.gov/egrid"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 egrid fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://egrid_2024_mini.xlsx",
+      "row_ref": "Sheet=Subregion Factors;Row=2",
+      "source_publication": "EPA eGRID",
+      "source_record_id": "Sheet=Subregion Factors;Row=2",
+      "source_url": "https://www.epa.gov/egrid/download-data",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:EGRID:subregion_factors:akgd",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EGRID Subregion Factors \u2014 akgd",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:egrid",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:egrid:subregion_factors:akgd:v1",
+    "value": 0.47624,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.epa.gov/egrid"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 egrid fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://egrid_2024_mini.xlsx",
+      "row_ref": "Sheet=Subregion Factors;Row=3",
+      "source_publication": "EPA eGRID",
+      "source_record_id": "Sheet=Subregion Factors;Row=3",
+      "source_url": "https://www.epa.gov/egrid/download-data",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:EGRID:subregion_factors:camx",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EGRID Subregion Factors \u2014 camx",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:egrid",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:egrid:subregion_factors:camx:v1",
+    "value": 0.20598,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.epa.gov/egrid"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 egrid fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://egrid_2024_mini.xlsx",
+      "row_ref": "Sheet=Subregion Factors;Row=4",
+      "source_publication": "EPA eGRID",
+      "source_record_id": "Sheet=Subregion Factors;Row=4",
+      "source_url": "https://www.epa.gov/egrid/download-data",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:EGRID:subregion_factors:erct",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EGRID Subregion Factors \u2014 erct",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:egrid",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:egrid:subregion_factors:erct:v1",
+    "value": 0.36791,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.epa.gov/egrid"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 egrid fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://egrid_2024_mini.xlsx",
+      "row_ref": "Sheet=Subregion Factors;Row=5",
+      "source_publication": "EPA eGRID",
+      "source_record_id": "Sheet=Subregion Factors;Row=5",
+      "source_url": "https://www.epa.gov/egrid/download-data",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:EGRID:subregion_factors:rfcm",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EGRID Subregion Factors \u2014 rfcm",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:egrid",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:egrid:subregion_factors:rfcm:v1",
+    "value": 0.43882,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.epa.gov/egrid"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 egrid fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://egrid_2024_mini.xlsx",
+      "row_ref": "Sheet=Subregion Factors;Row=6",
+      "source_publication": "EPA eGRID",
+      "source_record_id": "Sheet=Subregion Factors;Row=6",
+      "source_url": "https://www.epa.gov/egrid/download-data",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:EGRID:subregion_factors:mrow",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EGRID Subregion Factors \u2014 mrow",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:egrid",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:egrid:subregion_factors:mrow:v1",
+    "value": 0.40117,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.epa.gov/egrid"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 egrid fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://egrid_2024_mini.xlsx",
+      "row_ref": "Sheet=State Factors;Row=2",
+      "source_publication": "EPA eGRID",
+      "source_record_id": "Sheet=State Factors;Row=2",
+      "source_url": "https://www.epa.gov/egrid/download-data",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:EGRID:state_factors:ca",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EGRID State Factors \u2014 ca",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:egrid",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:egrid:state_factors:ca:v1",
+    "value": 0.20109,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.epa.gov/egrid"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 egrid fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://egrid_2024_mini.xlsx",
+      "row_ref": "Sheet=State Factors;Row=3",
+      "source_publication": "EPA eGRID",
+      "source_record_id": "Sheet=State Factors;Row=3",
+      "source_url": "https://www.epa.gov/egrid/download-data",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:EGRID:state_factors:tx",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EGRID State Factors \u2014 tx",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:egrid",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:egrid:state_factors:tx:v1",
+    "value": 0.36544,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.epa.gov/egrid"
+      }
+    ],
+    "description": "Phase 3 Wave 2.0 egrid fixture row.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://egrid_2024_mini.xlsx",
+      "row_ref": "Sheet=State Factors;Row=4",
+      "source_publication": "EPA eGRID",
+      "source_record_id": "Sheet=State Factors;Row=4",
+      "source_url": "https://www.epa.gov/egrid/download-data",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:EGRID:state_factors:wa",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EGRID State Factors \u2014 wa",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:egrid",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:egrid:state_factors:wa:v1",
+    "value": 0.07932,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  }
+]

@@ -1,0 +1,442 @@
+[
+  {
+    "boundary": "Climate TRACE asset-level boundary; emissions reported at the facility level.",
+    "category": "asset_emissions",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://climatetrace.org/"
+      }
+    ],
+    "description": "Climate TRACE per-asset emissions row (asset=ct-asset-0001, country=USA, sector=power, subsector=electricity-generation, gas=co2e).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://climate_trace_2024_mini.csv",
+      "row_ref": "Row=2",
+      "source_publication": "Climate TRACE Coalition",
+      "source_record_id": "Row=2",
+      "source_url": "https://climatetrace.org/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:CT:usa:power:electricity-generation:co2e:ct-asset-0001",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "Climate TRACE USA \u2014 power \u2014 electricity-generation \u2014 co2e \u2014 ct-asset-0001",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:climate-trace",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:climate-trace:usa:power:electricity-generation:co2e:ct-asset-0001:v1",
+    "value": 1234567.0,
+    "vintage_end": "2024-12-31T23:59:59+00:00",
+    "vintage_start": "2024-01-01T00:00:00+00:00"
+  },
+  {
+    "boundary": "Climate TRACE asset-level boundary; emissions reported at the facility level.",
+    "category": "asset_emissions",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://climatetrace.org/"
+      }
+    ],
+    "description": "Climate TRACE per-asset emissions row (asset=ct-asset-0002, country=DEU, sector=power, subsector=electricity-generation, gas=co2e).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://climate_trace_2024_mini.csv",
+      "row_ref": "Row=3",
+      "source_publication": "Climate TRACE Coalition",
+      "source_record_id": "Row=3",
+      "source_url": "https://climatetrace.org/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:CT:deu:power:electricity-generation:co2e:ct-asset-0002",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "Climate TRACE DEU \u2014 power \u2014 electricity-generation \u2014 co2e \u2014 ct-asset-0002",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:climate-trace",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:climate-trace:deu:power:electricity-generation:co2e:ct-asset-0002:v1",
+    "value": 876543.0,
+    "vintage_end": "2024-12-31T23:59:59+00:00",
+    "vintage_start": "2024-01-01T00:00:00+00:00"
+  },
+  {
+    "boundary": "Climate TRACE asset-level boundary; emissions reported at the facility level.",
+    "category": "asset_emissions",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://climatetrace.org/"
+      }
+    ],
+    "description": "Climate TRACE per-asset emissions row (asset=ct-asset-0003, country=FRA, sector=power, subsector=electricity-generation, gas=co2e).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://climate_trace_2024_mini.csv",
+      "row_ref": "Row=4",
+      "source_publication": "Climate TRACE Coalition",
+      "source_record_id": "Row=4",
+      "source_url": "https://climatetrace.org/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:CT:fra:power:electricity-generation:co2e:ct-asset-0003",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "Climate TRACE FRA \u2014 power \u2014 electricity-generation \u2014 co2e \u2014 ct-asset-0003",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:climate-trace",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:climate-trace:fra:power:electricity-generation:co2e:ct-asset-0003:v1",
+    "value": 123456.0,
+    "vintage_end": "2024-12-31T23:59:59+00:00",
+    "vintage_start": "2024-01-01T00:00:00+00:00"
+  },
+  {
+    "boundary": "Climate TRACE asset-level boundary; emissions reported at the facility level.",
+    "category": "asset_emissions",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://climatetrace.org/"
+      }
+    ],
+    "description": "Climate TRACE per-asset emissions row (asset=ct-asset-0004, country=GBR, sector=power, subsector=electricity-generation, gas=co2e).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://climate_trace_2024_mini.csv",
+      "row_ref": "Row=5",
+      "source_publication": "Climate TRACE Coalition",
+      "source_record_id": "Row=5",
+      "source_url": "https://climatetrace.org/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:CT:gbr:power:electricity-generation:co2e:ct-asset-0004",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "Climate TRACE GBR \u2014 power \u2014 electricity-generation \u2014 co2e \u2014 ct-asset-0004",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:climate-trace",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:climate-trace:gbr:power:electricity-generation:co2e:ct-asset-0004:v1",
+    "value": 234567.0,
+    "vintage_end": "2024-12-31T23:59:59+00:00",
+    "vintage_start": "2024-01-01T00:00:00+00:00"
+  },
+  {
+    "boundary": "Climate TRACE asset-level boundary; emissions reported at the facility level.",
+    "category": "asset_emissions",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://climatetrace.org/"
+      }
+    ],
+    "description": "Climate TRACE per-asset emissions row (asset=ct-asset-0005, country=JPN, sector=power, subsector=electricity-generation, gas=co2e).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://climate_trace_2024_mini.csv",
+      "row_ref": "Row=6",
+      "source_publication": "Climate TRACE Coalition",
+      "source_record_id": "Row=6",
+      "source_url": "https://climatetrace.org/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:CT:jpn:power:electricity-generation:co2e:ct-asset-0005",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "Climate TRACE JPN \u2014 power \u2014 electricity-generation \u2014 co2e \u2014 ct-asset-0005",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:climate-trace",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:climate-trace:jpn:power:electricity-generation:co2e:ct-asset-0005:v1",
+    "value": 345678.0,
+    "vintage_end": "2024-12-31T23:59:59+00:00",
+    "vintage_start": "2024-01-01T00:00:00+00:00"
+  },
+  {
+    "boundary": "Climate TRACE asset-level boundary; emissions reported at the facility level.",
+    "category": "asset_emissions",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://climatetrace.org/"
+      }
+    ],
+    "description": "Climate TRACE per-asset emissions row (asset=ct-asset-0006, country=IND, sector=manufacturing, subsector=steel, gas=co2e).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://climate_trace_2024_mini.csv",
+      "row_ref": "Row=7",
+      "source_publication": "Climate TRACE Coalition",
+      "source_record_id": "Row=7",
+      "source_url": "https://climatetrace.org/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:CT:ind:manufacturing:steel:co2e:ct-asset-0006",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "Climate TRACE IND \u2014 manufacturing \u2014 steel \u2014 co2e \u2014 ct-asset-0006",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:climate-trace",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:climate-trace:ind:manufacturing:steel:co2e:ct-asset-0006:v1",
+    "value": 567890.0,
+    "vintage_end": "2024-12-31T23:59:59+00:00",
+    "vintage_start": "2024-01-01T00:00:00+00:00"
+  },
+  {
+    "boundary": "Climate TRACE asset-level boundary; emissions reported at the facility level.",
+    "category": "asset_emissions",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://climatetrace.org/"
+      }
+    ],
+    "description": "Climate TRACE per-asset emissions row (asset=ct-asset-0007, country=CHN, sector=manufacturing, subsector=steel, gas=co2e).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://climate_trace_2024_mini.csv",
+      "row_ref": "Row=8",
+      "source_publication": "Climate TRACE Coalition",
+      "source_record_id": "Row=8",
+      "source_url": "https://climatetrace.org/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:CT:chn:manufacturing:steel:co2e:ct-asset-0007",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "Climate TRACE CHN \u2014 manufacturing \u2014 steel \u2014 co2e \u2014 ct-asset-0007",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:climate-trace",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:climate-trace:chn:manufacturing:steel:co2e:ct-asset-0007:v1",
+    "value": 2345678.0,
+    "vintage_end": "2024-12-31T23:59:59+00:00",
+    "vintage_start": "2024-01-01T00:00:00+00:00"
+  },
+  {
+    "boundary": "Climate TRACE asset-level boundary; emissions reported at the facility level.",
+    "category": "asset_emissions",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://climatetrace.org/"
+      }
+    ],
+    "description": "Climate TRACE per-asset emissions row (asset=ct-asset-0008, country=USA, sector=transportation, subsector=aviation, gas=co2e).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://climate_trace_2024_mini.csv",
+      "row_ref": "Row=9",
+      "source_publication": "Climate TRACE Coalition",
+      "source_record_id": "Row=9",
+      "source_url": "https://climatetrace.org/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:CT:usa:transportation:aviation:co2e:ct-asset-0008",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "Climate TRACE USA \u2014 transportation \u2014 aviation \u2014 co2e \u2014 ct-asset-0008",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:climate-trace",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:climate-trace:usa:transportation:aviation:co2e:ct-asset-0008:v1",
+    "value": 789012.0,
+    "vintage_end": "2024-12-31T23:59:59+00:00",
+    "vintage_start": "2024-01-01T00:00:00+00:00"
+  },
+  {
+    "boundary": "Climate TRACE asset-level boundary; emissions reported at the facility level.",
+    "category": "asset_emissions",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://climatetrace.org/"
+      }
+    ],
+    "description": "Climate TRACE per-asset emissions row (asset=ct-asset-0009, country=BRA, sector=forestry-and-land-use, subsector=forest-clearing, gas=co2e).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://climate_trace_2024_mini.csv",
+      "row_ref": "Row=10",
+      "source_publication": "Climate TRACE Coalition",
+      "source_record_id": "Row=10",
+      "source_url": "https://climatetrace.org/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:CT:bra:forestry-and-land-use:forest-clearing:co2e:ct-asset-0009",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "Climate TRACE BRA \u2014 forestry-and-land-use \u2014 forest-clearing \u2014 co2e \u2014 ct-asset-0009",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:climate-trace",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:climate-trace:bra:forestry-and-land-use:forest-clearing:co2e:ct-asset-0009:v1",
+    "value": -12345.0,
+    "vintage_end": "2024-12-31T23:59:59+00:00",
+    "vintage_start": "2024-01-01T00:00:00+00:00"
+  },
+  {
+    "boundary": "Climate TRACE asset-level boundary; emissions reported at the facility level.",
+    "category": "asset_emissions",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://climatetrace.org/"
+      }
+    ],
+    "description": "Climate TRACE per-asset emissions row (asset=ct-asset-0010, country=IDN, sector=forestry-and-land-use, subsector=forest-clearing, gas=co2e).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://climate_trace_2024_mini.csv",
+      "row_ref": "Row=11",
+      "source_publication": "Climate TRACE Coalition",
+      "source_record_id": "Row=11",
+      "source_url": "https://climatetrace.org/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:CT:idn:forestry-and-land-use:forest-clearing:co2e:ct-asset-0010",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "Climate TRACE IDN \u2014 forestry-and-land-use \u2014 forest-clearing \u2014 co2e \u2014 ct-asset-0010",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:climate-trace",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:climate-trace:idn:forestry-and-land-use:forest-clearing:co2e:ct-asset-0010:v1",
+    "value": 98765.0,
+    "vintage_end": "2024-12-31T23:59:59+00:00",
+    "vintage_start": "2024-01-01T00:00:00+00:00"
+  }
+]

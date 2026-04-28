@@ -48,6 +48,17 @@ sources:
       17 U.S.C. § 105. Attribution required per registry citation_text.
   latest_source_version: '2024.1'
   latest_ingestion_timestamp: '2026-04-24T07:12:22+00:00'
+  # Phase 3 / Wave 2.0 — additive runner-dispatch fields. The unified
+  # IngestionPipelineRunner reads ``family`` to pick a parser family
+  # and ``parser_module`` / ``parser_function`` to dispatch. The legacy
+  # nested ``parser:`` block is kept unchanged for legacy callers.
+  family: excel
+  parser_module: greenlang.factors.ingestion.parsers._phase3_adapters
+  parser_function: Phase3EPAExcelParser
+  parser_version: 0.1.0
+  parser_commit_pinned: false
+  owner: methodology-lead@greenlang.io
+  status: alpha_v0_1
 - source_id: egrid
   display_name: eGRID
   connector_only: false
@@ -100,6 +111,14 @@ sources:
       17 U.S.C. § 105. Attribution required.
   latest_source_version: '2022.1'
   latest_ingestion_timestamp: '2026-04-24T07:12:22+00:00'
+  # Phase 3 / Wave 2.0 — additive runner-dispatch fields.
+  family: excel
+  parser_module: greenlang.factors.ingestion.parsers._phase3_adapters
+  parser_function: Phase3EGridExcelParser
+  parser_version: 0.1.0
+  parser_commit_pinned: false
+  owner: methodology-lead@greenlang.io
+  status: alpha_v0_1
 - source_id: desnz_ghg_conversion
   display_name: DESNZ GHG conversion factors
   connector_only: false
@@ -715,6 +734,14 @@ sources:
       per CEA terms; no copyright restriction on factual baseline values.
   latest_source_version: '20.0'
   latest_ingestion_timestamp: '2026-04-24T07:12:22+00:00'
+  # Phase 3 / Wave 2.0 — additive runner-dispatch fields.
+  family: excel
+  parser_module: greenlang.factors.ingestion.parsers._phase3_adapters
+  parser_function: Phase3CEAExcelParser
+  parser_version: 0.1.0
+  parser_commit_pinned: false
+  owner: methodology-lead@greenlang.io
+  status: alpha_v0_1
 - source_id: ipcc_2006_nggi
   display_name: IPCC 2006 Guidelines + 2019 Refinement (National GHG Inventories)
   authority: IPCC Task Force on National GHG Inventories
@@ -1631,6 +1658,14 @@ sources:
   release_milestone: v0.5
   latest_source_version: null
   latest_ingestion_timestamp: null
+  # Phase 3 / Wave 2.0 — additive runner-dispatch fields.
+  family: excel
+  parser_module: greenlang.factors.ingestion.parsers._phase3_adapters
+  parser_function: Phase3IEAExcelParser
+  parser_version: 0.1.0
+  parser_commit_pinned: false
+  owner: methodology-lead@greenlang.io
+  status: pending_legal_review
 - source_id: india_bee_pat
   urn: urn:gl:source:india-bee-pat
   display_name: India BEE PAT (Perform Achieve Trade) sectoral baselines
@@ -1661,6 +1696,14 @@ sources:
   release_milestone: v0.5
   latest_source_version: null
   latest_ingestion_timestamp: null
+  # Phase 3 / Wave 2.0 — additive runner-dispatch fields.
+  family: excel
+  parser_module: greenlang.factors.ingestion.parsers._phase3_adapters
+  parser_function: Phase3BEEExcelParser
+  parser_version: 0.1.0
+  parser_commit_pinned: false
+  owner: methodology-lead@greenlang.io
+  status: pending_legal_review
 - source_id: edgar
   urn: urn:gl:source:edgar
   display_name: EDGAR — Emissions Database for Global Atmospheric Research
@@ -1691,6 +1734,16 @@ sources:
   release_milestone: v0.9
   latest_source_version: null
   latest_ingestion_timestamp: null
+  # Phase 3 / Wave 2.0 — additive runner-dispatch fields. The unified
+  # ``IngestionPipelineRunner`` reads ``family`` to pick a parser family
+  # and ``parser_module`` / ``parser_function`` to dispatch.
+  family: csv_json_xml
+  parser_module: greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters
+  parser_function: parse_bytes
+  parser_version: 0.1.0
+  parser_commit_pinned: false
+  owner: climate-methodology-lead@greenlang.io
+  status: alpha_v0_1
 - source_id: unfccc_nir_bur_btr
   urn: urn:gl:source:unfccc-nir-bur-btr
   display_name: UNFCCC National Inventory Reports / Biennial Update / Transparency
@@ -1843,6 +1896,14 @@ sources:
   release_milestone: v1.5
   latest_source_version: null
   latest_ingestion_timestamp: null
+  # Phase 3 / Wave 2.0 — additive runner-dispatch fields.
+  family: csv_json_xml
+  parser_module: greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters
+  parser_function: parse_bytes
+  parser_version: 0.1.0
+  parser_commit_pinned: false
+  owner: climate-methodology-lead@greenlang.io
+  status: alpha_v0_1
 - source_id: nies_japan
   urn: urn:gl:source:nies-japan
   display_name: NIES — National Institute for Environmental Studies (Japan)
@@ -1932,6 +1993,14 @@ sources:
   release_milestone: v2.5
   latest_source_version: null
   latest_ingestion_timestamp: null
+  # Phase 3 / Wave 2.0 — additive runner-dispatch fields.
+  family: csv_json_xml
+  parser_module: greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters
+  parser_function: parse_bytes
+  parser_version: 0.1.0
+  parser_commit_pinned: false
+  owner: data-engineering-lead@greenlang.io
+  status: alpha_v0_1
 - source_id: watttime
   urn: urn:gl:source:watttime
   display_name: WattTime — real-time and forecasted marginal grid intensity
@@ -2185,3 +2254,241 @@ sources:
     is the IDEA-Consortium-distributed hourly LCI / IO dataset commonly used for Japanese
     product-carbon calculations; it ships under a separate commercial licence and
     at a different release cadence.
+- source_id: pact_api_2024
+  urn: urn:gl:source:pact-api-2024
+  display_name: PACT Pathfinder API — Partnership for Carbon Transparency
+  authority: WBCSD / Partnership for Carbon Transparency
+  publisher: PACT (WBCSD)
+  jurisdiction:
+  - GLOBAL
+  family: api_webhook
+  fetch_mode: api
+  fetch_url: https://api.partner.example/pact/footprints
+  cadence: continuous
+  source_owner: climate-methodology-lead
+  parser_module: greenlang.factors.ingestion.parsers._phase3_api_adapters
+  parser_function: Phase3PactApiParser
+  parser_version: 0.1.0
+  parser_commit_pinned: false
+  parser:
+    module: greenlang.factors.ingestion.parsers._phase3_api_adapters
+    function: Phase3PactApiParser
+    version: 0.1.0
+  licence_class: community_open
+  licence: PACT-Pathfinder-Spec
+  redistribution_class: attribution_required
+  trust_tier: external_verified
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://wbcsd.github.io/data-exchange-protocol/
+  citation_text: PACT Pathfinder API — WBCSD Partnership for Carbon Transparency,
+    Pathfinder Framework v2.
+  entitlement_rules:
+    model: tenant_entitlement_required
+    metadata_visibility: public
+  release_milestone: v1.0
+  status: pending_legal_review
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  notes: Phase 3 Wave 2.5 — api_webhook family reference source. PACT Pathfinder
+    public schema; cursor-pagination via X-Next-Cursor or pagination.next_cursor.
+- source_id: acme_private_pack_2024
+  urn: urn:gl:source:acme-private-pack-2024
+  display_name: Acme Private Factor Pack 2024 (synthetic)
+  authority: Acme Corp (synthetic tenant for Phase 3 Wave 2.5 tests)
+  publisher: GreenLang Engineering — synthetic test partner
+  jurisdiction:
+  - GLOBAL
+  family: api_webhook
+  fetch_mode: webhook
+  fetch_url: webhook://acme-private-pack-2024
+  cadence: on_event
+  source_owner: climate-methodology-lead
+  parser_module: greenlang.factors.ingestion.parsers._phase3_api_adapters
+  parser_function: Phase3PrivatePackParser
+  parser_version: 0.1.0
+  parser_commit_pinned: false
+  parser:
+    module: greenlang.factors.ingestion.parsers._phase3_api_adapters
+    function: Phase3PrivatePackParser
+    version: 0.1.0
+  licence_class: tenant_private
+  licence: tenant-private
+  redistribution_class: tenant_entitled_only
+  trust_tier: tenant_supplied
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://docs.acme.example/private-pack
+  citation_text: Acme Private Factor Pack 2024 (tenant-licensed synthetic source).
+  entitlement_rules:
+    model: tenant_entitlement_required
+    metadata_visibility: tenant_only
+  release_milestone: v1.0
+  status: pending_legal_review
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  notes: Phase 3 Wave 2.5 — synthetic webhook-driven private pack used by the
+    api_webhook e2e test. Real tenant packs onboard against this template once
+    legal review approves the contract template.
+- source_id: unfccc_bur_2024_in
+  display_name: UNFCCC Biennial Update Report (India) 2024 mini fixture
+  connector_only: false
+  license_class: un_publication
+  redistribution_allowed: true
+  attribution_required: true
+  citation_text: UNFCCC India BUR 2024 (Phase 3 Wave 2.5 synthetic mini fixture).
+  cadence: ad_hoc
+  watch:
+    mechanism: http_head
+    url: https://unfccc.int/sites/default/files/resource/India_BUR-4.pdf
+  approval_required_for_certified: true
+  legal_signoff_artifact: null
+  licence_class: community_open
+  licence: CC-BY-4.0
+  redistribution_class: attribution_required
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  trust_tier: community_curated
+  release_milestone: v0.5
+  authority: United Nations Framework Convention on Climate Change
+  publisher: UNFCCC Secretariat
+  source_owner: methodology-lead@greenlang.io
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://unfccc.int/sites/default/files/resource/India_BUR-4.pdf
+  urn: urn:gl:source:unfccc-bur-2024-in
+  latest_source_version: null
+  latest_ingestion_timestamp: null
+  parser:
+    module: greenlang.factors.ingestion.parsers._phase3_pdf_ocr_adapters
+    function: Phase3PdfOcrParser
+    version: 0.1.0
+  # Phase 3 / Wave 2.5 — PDF/OCR-family runner-dispatch fields.
+  family: pdf_ocr
+  parser_module: greenlang.factors.ingestion.parsers._phase3_pdf_ocr_adapters
+  parser_function: Phase3PdfOcrParser
+  parser_version: 0.1.0
+  parser_commit_pinned: false
+  owner: methodology-lead@greenlang.io
+  status: pending_legal_review
+  # PDF table extraction config consumed by ``Phase3PdfOcrParser``. The
+  # fixture is a single-page, single-table mini BUR excerpt; production
+  # BUR PDFs add pages + tables under the same family adapter.
+  pdf_table_config:
+    extraction_method: pdfplumber
+    confidence_threshold: 0.85
+    tables:
+      - page_index: 0
+        table_index: 0
+        header_row_index: 0
+        sheet_label: UNFCCC BUR — National Inventory
+        column_map:
+          Fuel: fuel_type
+          Unit: unit_label
+          EF: value
+          Notes: notes
+  notes: >-
+    Phase 3 Wave 2.5 — synthetic UNFCCC BUR mini fixture used by the
+    pdf_ocr e2e test. The ``status`` field is set to pending_legal_review
+    so the source is not ingested in production-mode runs until the
+    legal team signs off on the redistribution contract.
+- source_id: ecoinvent_3.10_cutoff
+  urn: urn:gl:source:ecoinvent-3.10-cutoff
+  display_name: ecoinvent 3.10 (cutoff system model)
+  authority: ecoinvent Association
+  publisher: ecoinvent Association
+  source_owner: climate-methodology-lead
+  jurisdiction:
+  - global
+  family: ecospold_mrio
+  fetch_mode: zip
+  licence_class: ecoinvent-licensed
+  licence: ecoinvent-licensed
+  redistribution_class: forbidden
+  entitlement_required: true
+  cadence: annual
+  parser_module: greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters
+  parser_function: Phase3EcoSpoldParser
+  parser_version: 0.1.0
+  parser_commit_pinned: false
+  parser:
+    module: greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters
+    function: Phase3EcoSpoldParser
+    version: 0.1.0
+  trust_tier: external_verified
+  legal_signoff:
+    status: pending_legal_review
+    reviewed_by: null
+    reviewed_at: null
+    evidence_uri: null
+  publication_url: https://ecoinvent.org/the-ecoinvent-database/
+  citation_text: ecoinvent v3.10, cutoff system model. ecoinvent Association, Zurich.
+  entitlement_rules:
+    model: tenant_entitlement_required
+    metadata_visibility: public
+  release_milestone: v1.0
+  status: pending_legal_review
+  system_model: cutoff
+  latest_source_version: '3.10'
+  latest_ingestion_timestamp: null
+  notes: Phase 3 Wave 2.5 — ecospold_mrio family. Paid commercial licence; the
+    ingestion pipeline refuses to emit records when the tenant context lacks
+    a matching entitlement (parser raises ParserDispatchError code
+    ECOSPOLD_ENTITLEMENT_MISSING). Three system models (cutoff, apos,
+    consequential) ship as separate zip bundles; this entry covers the cutoff
+    model. apos and consequential variants register under their own source_id
+    once Wave 3 lands.
+- source_id: exiobase_v3.8.2
+  urn: urn:gl:source:exiobase-v3.8.2
+  display_name: EXIOBASE v3.8.2 (multi-regional input-output database)
+  authority: EXIOBASE Consortium
+  publisher: EXIOBASE Consortium
+  source_owner: climate-methodology-lead
+  jurisdiction:
+  - global
+  family: ecospold_mrio
+  fetch_mode: zip
+  licence_class: cc-by-4.0
+  licence: CC-BY-4.0
+  redistribution_class: attribution
+  entitlement_required: false
+  cadence: annual
+  parser_module: greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters
+  parser_function: Phase3ExiobaseMrioParser
+  parser_version: 0.1.0
+  parser_commit_pinned: false
+  parser:
+    module: greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters
+    function: Phase3ExiobaseMrioParser
+    version: 0.1.0
+  trust_tier: community_curated
+  legal_signoff:
+    status: approved
+    reviewed_by: human:cto-delegated@greenlang.io
+    reviewed_at: '2026-04-28T00:00:00+00:00'
+    evidence_uri: docs/factors/source-rights/legal-notes/exiobase_v3.md
+    rationale: EXIOBASE is published under CC-BY-4.0; redistribution allowed with attribution.
+  publication_url: https://www.exiobase.eu/
+  citation_text: EXIOBASE v3.8.2. Stadler et al. (2018) — EXIOBASE 3, JIE 22(3).
+  entitlement_rules:
+    model: public_no_entitlement
+    metadata_visibility: public
+  release_milestone: v0.5
+  status: pending_legal_review
+  latest_source_version: 3.8.2
+  latest_ingestion_timestamp: null
+  notes: Phase 3 Wave 2.5 — ecospold_mrio family. Open-licensed multi-regional
+    input-output database. 49 country codes plus 5 aggregated ROW
+    (rest-of-world) regions (asia-pacific, latam, europe, africa, middle-east).
+    Used for spend-based Scope 3 estimation when supplier-specific factors are
+    unavailable.

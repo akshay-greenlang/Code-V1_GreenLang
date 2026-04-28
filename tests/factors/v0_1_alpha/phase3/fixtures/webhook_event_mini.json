@@ -1,0 +1,23 @@
+{
+  "event_id": "evt_phase3_wave2_5_mini_0001",
+  "event_type": "factor.batch.published",
+  "issued_at": "2024-04-01T00:00:00Z",
+  "tenant_id": "acme-corp",
+  "pack_version": "2024.1",
+  "pagination": {
+    "next_cursor": null,
+    "total": 1
+  },
+  "records": [
+    {
+      "id": "AC-FUEL-001",
+      "name": "Acme Custom Diesel B7",
+      "value": 2.685,
+      "category": "fuel",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2024-12-31",
+      "version": "2024.1",
+      "citation_url": "https://docs.acme.example/fuel/B7"
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+[
+  {
+    "boundary": "ecoinvent apos reference-product boundary",
+    "category": "lca",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://ecoinvent.org/the-ecoinvent-database/"
+      }
+    ],
+    "description": "ecoinvent apos system model. Activity 'electricity production, hard coal' reference flow 'electricity, high voltage'.",
+    "extraction": {
+      "geography_short": "GLO",
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://ecoinvent_3.10_mini.zip",
+      "row_ref": "apos/dataset_11111111.spold/11111111-1111-1111-1111-111111111111/exchange-11111111",
+      "source_publication": "ecoinvent v3.10",
+      "source_record_id": "apos/dataset_11111111.spold/11111111-1111-1111-1111-111111111111/exchange-11111111",
+      "source_url": "https://ecoinvent.org/",
+      "source_version": "3.10",
+      "system_model": "apos"
+    },
+    "factor_id_alias": "EF:ECOINVENT:apos:11111111-111",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "ecoinvent-licensed",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "ecoinvent apos \u2014 electricity production, hard coal",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:ecoinvent-3.10-cutoff",
+    "unit_urn": "urn:gl:unit:kgco2e/kg",
+    "urn": "urn:gl:factor:phase3-alpha:ecoinvent:11111111:electricity_high_voltage:apos:v1",
+    "value": 0.95,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "ecoinvent consequential reference-product boundary",
+    "category": "lca",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://ecoinvent.org/the-ecoinvent-database/"
+      }
+    ],
+    "description": "ecoinvent consequential system model. Activity 'diesel, burned in industrial machinery' reference flow 'diesel, burned in industrial machinery'.",
+    "extraction": {
+      "geography_short": "RoW",
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://ecoinvent_3.10_mini.zip",
+      "row_ref": "consequential/dataset_22222222.spold/22222222-2222-2222-2222-222222222222/exchange-22222222",
+      "source_publication": "ecoinvent v3.10",
+      "source_record_id": "consequential/dataset_22222222.spold/22222222-2222-2222-2222-222222222222/exchange-22222222",
+      "source_url": "https://ecoinvent.org/",
+      "source_version": "3.10",
+      "system_model": "consequential"
+    },
+    "factor_id_alias": "EF:ECOINVENT:consequential:22222222-222",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "ecoinvent-licensed",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "ecoinvent consequential \u2014 diesel, burned in industrial machinery",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:ecoinvent-3.10-cutoff",
+    "unit_urn": "urn:gl:unit:kgco2e/kg",
+    "urn": "urn:gl:factor:phase3-alpha:ecoinvent:22222222:diesel_burned_in_industrial_machinery:consequential:v1",
+    "value": 3.21,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "ecoinvent cutoff reference-product boundary",
+    "category": "lca",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://ecoinvent.org/the-ecoinvent-database/"
+      }
+    ],
+    "description": "ecoinvent cutoff system model. Activity 'transport, freight, lorry 16-32 metric ton, EURO6' reference flow 'transport, freight, lorry'.",
+    "extraction": {
+      "geography_short": "GLO",
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://ecoinvent_3.10_mini.zip",
+      "row_ref": "cutoff/dataset_33333333.spold/33333333-3333-3333-3333-333333333333/exchange-33333333",
+      "source_publication": "ecoinvent v3.10",
+      "source_record_id": "cutoff/dataset_33333333.spold/33333333-3333-3333-3333-333333333333/exchange-33333333",
+      "source_url": "https://ecoinvent.org/",
+      "source_version": "3.10",
+      "system_model": "cutoff"
+    },
+    "factor_id_alias": "EF:ECOINVENT:cutoff:33333333-333",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "ecoinvent-licensed",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "ecoinvent cutoff \u2014 transport, freight, lorry 16-32 metric ton, EURO6",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:ecoinvent-3.10-cutoff",
+    "unit_urn": "urn:gl:unit:kgco2e/kg",
+    "urn": "urn:gl:factor:phase3-alpha:ecoinvent:33333333:transport_freight_lorry:cutoff:v1",
+    "value": 0.18,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  }
+]

@@ -1,0 +1,11 @@
+country_iso3,sector,year,pollutant,value,unit
+USA,energy,2023,co2,5078.0,Mt
+DEU,energy,2023,co2,675.5,Mt
+FRA,energy,2023,co2,310.2,Mt
+GBR,energy,2023,co2,341.7,Mt
+JPN,energy,2023,co2,1058.9,Mt
+IND,energy,2023,co2,2655.4,Mt
+CHN,energy,2023,co2,11472.8,Mt
+ITA,industrial-processes,2023,co2,76.3,Mt
+ESP,industrial-processes,2023,co2,68.1,Mt
+NLD,energy,2023,co2,134.6,Mt

@@ -52,6 +52,7 @@ __all__ = [
     "INGESTION_DIFF_KIND_VALUES",
     "INGESTION_CURRENT_STAGE_VALUES",
     "apply_phase3_ddl",
+    "apply_v509_reviewer_notes_column",
 ]
 
 
@@ -257,3 +258,63 @@ def apply_phase3_ddl(conn: sqlite3.Connection) -> None:
         conn.execute(idx)
     for trg in PHASE3_TRIGGER_STATEMENTS:
         conn.execute(trg)
+
+    # Phase 3 / Wave 2.5 — V509 mirror: add ``reviewer_notes`` to the
+    # SQLite ``alpha_source_artifacts_v0_1`` table if it exists. The table
+    # is created by :class:`AlphaFactorRepository._SQLITE_DDL` (V501
+    # mirror); if a test fixture has already materialised it, we ALTER
+    # the column in. Idempotent — duplicate-column errors are tolerated.
+    apply_v509_reviewer_notes_column(conn)
+
+
+# ---------------------------------------------------------------------------
+# V509 mirror helper — additive ``reviewer_notes TEXT`` (JSON-as-text on
+# SQLite) on the existing ``alpha_source_artifacts_v0_1`` table.
+# ---------------------------------------------------------------------------
+
+
+def apply_v509_reviewer_notes_column(conn: sqlite3.Connection) -> None:
+    """Add ``reviewer_notes TEXT`` to ``alpha_source_artifacts_v0_1`` (idempotent).
+
+    This is the SQLite mirror of the V509 Postgres migration
+    (``ALTER TABLE factors_v0_1.source_artifacts ADD COLUMN reviewer_notes
+    JSONB``). On SQLite, JSONB is stored as ``TEXT`` (callers JSON-encode
+    on write, JSON-decode on read).
+
+    Behaviour:
+      * If the underlying ``alpha_source_artifacts_v0_1`` table does not
+        exist yet (e.g. fixture order varies), this is a no-op. The table
+        is created later by :class:`AlphaFactorRepository`'s DDL bundle;
+        the caller is responsible for re-applying this helper after that
+        DDL runs if it needs the column for the current test run.
+      * If the column already exists, the duplicate-column ``OperationalError``
+        is swallowed.
+
+    Args:
+        conn: An open :class:`sqlite3.Connection`. The caller owns the
+            connection lifecycle; this helper neither commits nor closes.
+    """
+    try:
+        # Fast path — only ALTER if the table is present. Otherwise the
+        # ALTER TABLE fails with "no such table" which is noisy in test
+        # logs even though we'd swallow it.
+        cur = conn.execute(
+            "SELECT 1 FROM sqlite_master "
+            "WHERE type = 'table' AND name = 'alpha_source_artifacts_v0_1'"
+        )
+        if cur.fetchone() is None:
+            return
+    except Exception:  # noqa: BLE001 — sqlite_master access is best-effort
+        return
+
+    try:
+        conn.execute(
+            "ALTER TABLE alpha_source_artifacts_v0_1 "
+            "ADD COLUMN reviewer_notes TEXT"
+        )
+    except sqlite3.OperationalError as exc:
+        # SQLite raises OperationalError("duplicate column name: ...") if
+        # the column already exists. Tolerate that one; re-raise anything
+        # else so a real schema error surfaces.
+        if "duplicate column" not in str(exc).lower():
+            raise

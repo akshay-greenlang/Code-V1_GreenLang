@@ -1,0 +1,442 @@
+[
+  {
+    "boundary": "Per ENTSO-E TYNDP scope; transmission-system level.",
+    "category": "electricity",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://transparency.entsoe.eu/"
+      }
+    ],
+    "description": "ENTSO-E Transparency Platform real-time generation TimeSeries (mRID=TS-DE-0001, businessType=A04, area=10YDE-VE-------2).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://entsoe_2024_mini.xml",
+      "row_ref": "TimeSeries=1",
+      "source_publication": "ENTSO-E Transparency Platform",
+      "source_record_id": "TimeSeries=1",
+      "source_url": "https://transparency.entsoe.eu/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:ENTSOE:de:A04:TS-DE-0001",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "ENTSO-E DE \u2014 A04 \u2014 TS-DE-0001",
+    "resolution": "hourly",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:entsoe-realtime",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:entsoe:de:a04:ts-de-0001:v1",
+    "value": 4321.5,
+    "vintage_end": "2024-04-28T23:59:59+00:00",
+    "vintage_start": "2024-04-28T00:00:00+00:00"
+  },
+  {
+    "boundary": "Per ENTSO-E TYNDP scope; transmission-system level.",
+    "category": "electricity",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://transparency.entsoe.eu/"
+      }
+    ],
+    "description": "ENTSO-E Transparency Platform real-time generation TimeSeries (mRID=TS-DE-0002, businessType=A05, area=10YDE-VE-------2).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://entsoe_2024_mini.xml",
+      "row_ref": "TimeSeries=2",
+      "source_publication": "ENTSO-E Transparency Platform",
+      "source_record_id": "TimeSeries=2",
+      "source_url": "https://transparency.entsoe.eu/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:ENTSOE:de:A05:TS-DE-0002",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "ENTSO-E DE \u2014 A05 \u2014 TS-DE-0002",
+    "resolution": "hourly",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:entsoe-realtime",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:entsoe:de:a05:ts-de-0002:v1",
+    "value": 5678.1,
+    "vintage_end": "2024-04-28T23:59:59+00:00",
+    "vintage_start": "2024-04-28T00:00:00+00:00"
+  },
+  {
+    "boundary": "Per ENTSO-E TYNDP scope; transmission-system level.",
+    "category": "electricity",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://transparency.entsoe.eu/"
+      }
+    ],
+    "description": "ENTSO-E Transparency Platform real-time generation TimeSeries (mRID=TS-FR-0001, businessType=A04, area=10YFR-RTE------C).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://entsoe_2024_mini.xml",
+      "row_ref": "TimeSeries=3",
+      "source_publication": "ENTSO-E Transparency Platform",
+      "source_record_id": "TimeSeries=3",
+      "source_url": "https://transparency.entsoe.eu/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:ENTSOE:fr:A04:TS-FR-0001",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "ENTSO-E FR \u2014 A04 \u2014 TS-FR-0001",
+    "resolution": "hourly",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:entsoe-realtime",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:entsoe:fr:a04:ts-fr-0001:v1",
+    "value": 3210.75,
+    "vintage_end": "2024-04-28T23:59:59+00:00",
+    "vintage_start": "2024-04-28T00:00:00+00:00"
+  },
+  {
+    "boundary": "Per ENTSO-E TYNDP scope; transmission-system level.",
+    "category": "electricity",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://transparency.entsoe.eu/"
+      }
+    ],
+    "description": "ENTSO-E Transparency Platform real-time generation TimeSeries (mRID=TS-FR-0002, businessType=A05, area=10YFR-RTE------C).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://entsoe_2024_mini.xml",
+      "row_ref": "TimeSeries=4",
+      "source_publication": "ENTSO-E Transparency Platform",
+      "source_record_id": "TimeSeries=4",
+      "source_url": "https://transparency.entsoe.eu/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:ENTSOE:fr:A05:TS-FR-0002",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "ENTSO-E FR \u2014 A05 \u2014 TS-FR-0002",
+    "resolution": "hourly",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:entsoe-realtime",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:entsoe:fr:a05:ts-fr-0002:v1",
+    "value": 4567.2,
+    "vintage_end": "2024-04-28T23:59:59+00:00",
+    "vintage_start": "2024-04-28T00:00:00+00:00"
+  },
+  {
+    "boundary": "Per ENTSO-E TYNDP scope; transmission-system level.",
+    "category": "electricity",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://transparency.entsoe.eu/"
+      }
+    ],
+    "description": "ENTSO-E Transparency Platform real-time generation TimeSeries (mRID=TS-GB-0001, businessType=A04, area=10YGB----------A).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://entsoe_2024_mini.xml",
+      "row_ref": "TimeSeries=5",
+      "source_publication": "ENTSO-E Transparency Platform",
+      "source_record_id": "TimeSeries=5",
+      "source_url": "https://transparency.entsoe.eu/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:ENTSOE:gb:A04:TS-GB-0001",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "ENTSO-E GB \u2014 A04 \u2014 TS-GB-0001",
+    "resolution": "hourly",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:entsoe-realtime",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:entsoe:gb:a04:ts-gb-0001:v1",
+    "value": 2890.4,
+    "vintage_end": "2024-04-28T23:59:59+00:00",
+    "vintage_start": "2024-04-28T00:00:00+00:00"
+  },
+  {
+    "boundary": "Per ENTSO-E TYNDP scope; transmission-system level.",
+    "category": "electricity",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://transparency.entsoe.eu/"
+      }
+    ],
+    "description": "ENTSO-E Transparency Platform real-time generation TimeSeries (mRID=TS-GB-0002, businessType=A05, area=10YGB----------A).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://entsoe_2024_mini.xml",
+      "row_ref": "TimeSeries=6",
+      "source_publication": "ENTSO-E Transparency Platform",
+      "source_record_id": "TimeSeries=6",
+      "source_url": "https://transparency.entsoe.eu/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:ENTSOE:gb:A05:TS-GB-0002",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "ENTSO-E GB \u2014 A05 \u2014 TS-GB-0002",
+    "resolution": "hourly",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:entsoe-realtime",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:entsoe:gb:a05:ts-gb-0002:v1",
+    "value": 3456.8,
+    "vintage_end": "2024-04-28T23:59:59+00:00",
+    "vintage_start": "2024-04-28T00:00:00+00:00"
+  },
+  {
+    "boundary": "Per ENTSO-E TYNDP scope; transmission-system level.",
+    "category": "electricity",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://transparency.entsoe.eu/"
+      }
+    ],
+    "description": "ENTSO-E Transparency Platform real-time generation TimeSeries (mRID=TS-ES-0001, businessType=A04, area=10YES-REE------0).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://entsoe_2024_mini.xml",
+      "row_ref": "TimeSeries=7",
+      "source_publication": "ENTSO-E Transparency Platform",
+      "source_record_id": "TimeSeries=7",
+      "source_url": "https://transparency.entsoe.eu/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:ENTSOE:es:A04:TS-ES-0001",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "ENTSO-E ES \u2014 A04 \u2014 TS-ES-0001",
+    "resolution": "hourly",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:entsoe-realtime",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:entsoe:es:a04:ts-es-0001:v1",
+    "value": 2100.3,
+    "vintage_end": "2024-04-28T23:59:59+00:00",
+    "vintage_start": "2024-04-28T00:00:00+00:00"
+  },
+  {
+    "boundary": "Per ENTSO-E TYNDP scope; transmission-system level.",
+    "category": "electricity",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://transparency.entsoe.eu/"
+      }
+    ],
+    "description": "ENTSO-E Transparency Platform real-time generation TimeSeries (mRID=TS-ES-0002, businessType=A05, area=10YES-REE------0).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://entsoe_2024_mini.xml",
+      "row_ref": "TimeSeries=8",
+      "source_publication": "ENTSO-E Transparency Platform",
+      "source_record_id": "TimeSeries=8",
+      "source_url": "https://transparency.entsoe.eu/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:ENTSOE:es:A05:TS-ES-0002",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "ENTSO-E ES \u2014 A05 \u2014 TS-ES-0002",
+    "resolution": "hourly",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:entsoe-realtime",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:entsoe:es:a05:ts-es-0002:v1",
+    "value": 2654.9,
+    "vintage_end": "2024-04-28T23:59:59+00:00",
+    "vintage_start": "2024-04-28T00:00:00+00:00"
+  },
+  {
+    "boundary": "Per ENTSO-E TYNDP scope; transmission-system level.",
+    "category": "electricity",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://transparency.entsoe.eu/"
+      }
+    ],
+    "description": "ENTSO-E Transparency Platform real-time generation TimeSeries (mRID=TS-IT-0001, businessType=A04, area=10YIT-GRTN-----B).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://entsoe_2024_mini.xml",
+      "row_ref": "TimeSeries=9",
+      "source_publication": "ENTSO-E Transparency Platform",
+      "source_record_id": "TimeSeries=9",
+      "source_url": "https://transparency.entsoe.eu/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:ENTSOE:it:A04:TS-IT-0001",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "ENTSO-E IT \u2014 A04 \u2014 TS-IT-0001",
+    "resolution": "hourly",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:entsoe-realtime",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:entsoe:it:a04:ts-it-0001:v1",
+    "value": 1980.6,
+    "vintage_end": "2024-04-28T23:59:59+00:00",
+    "vintage_start": "2024-04-28T00:00:00+00:00"
+  },
+  {
+    "boundary": "Per ENTSO-E TYNDP scope; transmission-system level.",
+    "category": "electricity",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://transparency.entsoe.eu/"
+      }
+    ],
+    "description": "ENTSO-E Transparency Platform real-time generation TimeSeries (mRID=TS-IT-0002, businessType=A05, area=10YIT-GRTN-----B).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.0",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_csv_json_xml_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://entsoe_2024_mini.xml",
+      "row_ref": "TimeSeries=10",
+      "source_publication": "ENTSO-E Transparency Platform",
+      "source_record_id": "TimeSeries=10",
+      "source_url": "https://transparency.entsoe.eu/",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:ENTSOE:it:A05:TS-IT-0002",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "ENTSO-E IT \u2014 A05 \u2014 TS-IT-0002",
+    "resolution": "hourly",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:entsoe-realtime",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:entsoe:it:a05:ts-it-0002:v1",
+    "value": 2543.1,
+    "vintage_end": "2024-04-28T23:59:59+00:00",
+    "vintage_start": "2024-04-28T00:00:00+00:00"
+  }
+]

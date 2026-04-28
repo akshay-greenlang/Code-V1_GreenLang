@@ -1,0 +1,59 @@
+{
+  "pack_metadata": {
+    "tenant_id": "acme-corp",
+    "pack_version": "2024.1",
+    "issued_at": "2024-04-01T00:00:00Z"
+  },
+  "records": [
+    {
+      "id": "AC-FUEL-001",
+      "name": "Acme Custom Diesel B7",
+      "value": 2.685,
+      "category": "fuel",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2024-12-31",
+      "version": "2024.1",
+      "citation_url": "https://docs.acme.example/fuel/B7"
+    },
+    {
+      "id": "AC-FUEL-002",
+      "name": "Acme Custom Petrol E10",
+      "value": 2.193,
+      "category": "fuel",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2024-12-31",
+      "version": "2024.1",
+      "citation_url": "https://docs.acme.example/fuel/E10"
+    },
+    {
+      "id": "AC-ELEC-001",
+      "name": "Acme On-site PV Generation",
+      "value": 0.041,
+      "category": "electricity",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2024-12-31",
+      "version": "2024.1",
+      "citation_url": "https://docs.acme.example/elec/onsite-pv"
+    },
+    {
+      "id": "AC-HEAT-001",
+      "name": "Acme District Heat Network",
+      "value": 0.205,
+      "category": "heat",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2024-12-31",
+      "version": "2024.1",
+      "citation_url": "https://docs.acme.example/heat/district"
+    },
+    {
+      "id": "AC-WST-001",
+      "name": "Acme Industrial Waste Disposal",
+      "value": 0.512,
+      "category": "waste",
+      "vintage_start": "2024-01-01",
+      "vintage_end": "2024-12-31",
+      "version": "2024.1",
+      "citation_url": "https://docs.acme.example/waste/industrial"
+    }
+  ]
+}

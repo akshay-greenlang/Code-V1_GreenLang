@@ -1,0 +1,73 @@
+{
+  "pagination": {
+    "total": 5,
+    "next_cursor": null
+  },
+  "data": [
+    {
+      "id": "pact-001",
+      "specVersion": "2.0.0",
+      "productName": "Aluminium Sheet 1mm",
+      "companyName": "Acme Aluminium Co",
+      "created": "2024-03-01T00:00:00Z",
+      "pcf": {
+        "declaredUnit": 8.45,
+        "referencePeriodStart": "2024-01-01",
+        "referencePeriodEnd": "2024-12-31",
+        "geographyCountry": "DE"
+      }
+    },
+    {
+      "id": "pact-002",
+      "specVersion": "2.0.0",
+      "productName": "Steel Coil HRC",
+      "companyName": "Acme Steel Co",
+      "created": "2024-03-05T00:00:00Z",
+      "pcf": {
+        "declaredUnit": 1.85,
+        "referencePeriodStart": "2024-01-01",
+        "referencePeriodEnd": "2024-12-31",
+        "geographyCountry": "FR"
+      }
+    },
+    {
+      "id": "pact-003",
+      "specVersion": "2.0.0",
+      "productName": "Polyethylene HDPE",
+      "companyName": "Acme Plastics Co",
+      "created": "2024-03-08T00:00:00Z",
+      "pcf": {
+        "declaredUnit": 2.12,
+        "referencePeriodStart": "2024-01-01",
+        "referencePeriodEnd": "2024-12-31",
+        "geographyCountry": "NL"
+      }
+    },
+    {
+      "id": "pact-004",
+      "specVersion": "2.0.0",
+      "productName": "Glass Container 330ml",
+      "companyName": "Acme Glass Co",
+      "created": "2024-03-11T00:00:00Z",
+      "pcf": {
+        "declaredUnit": 0.28,
+        "referencePeriodStart": "2024-01-01",
+        "referencePeriodEnd": "2024-12-31",
+        "geographyCountry": "IT"
+      }
+    },
+    {
+      "id": "pact-005",
+      "specVersion": "2.0.0",
+      "productName": "Cardboard Box Standard",
+      "companyName": "Acme Paper Co",
+      "created": "2024-03-15T00:00:00Z",
+      "pcf": {
+        "declaredUnit": 0.72,
+        "referencePeriodStart": "2024-01-01",
+        "referencePeriodEnd": "2024-12-31",
+        "geographyCountry": "ES"
+      }
+    }
+  ]
+}

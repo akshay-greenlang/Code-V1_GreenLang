@@ -676,3 +676,56 @@ geographies:
     centroid_lat: 12.6
     centroid_lon: 104.0
     tags: ["phase2_v0_1", "unep-wcmc-basin", "illustrative"]
+
+  # ---------------------------------------------------------------------------
+  # EXIOBASE Rest-of-World (ROW) regions — Wave 2.5 (Phase 3 / ecospold_mrio
+  # family). EXIOBASE v3.8.2 declares 49 country codes plus 5 aggregated ROW
+  # buckets covering everything not in the explicit list. Each ROW is a
+  # subregion and is referenced by the EXIOBASE MRIO parser when a row's
+  # region code is one of WA / WL / WE / WF / WM. Centroids are nominal
+  # geographic centres used only for map rendering.
+  # ---------------------------------------------------------------------------
+  - urn: "urn:gl:geo:subregion:row-asia-pacific"
+    type: "subregion"
+    iso_code: null
+    name: "EXIOBASE — Rest of World (Asia & Pacific)"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 10.0
+    centroid_lon: 130.0
+    tags: ["phase2_v0_1", "exiobase-row", "alpha-source-exiobase"]
+
+  - urn: "urn:gl:geo:subregion:row-latam"
+    type: "subregion"
+    iso_code: null
+    name: "EXIOBASE — Rest of World (Latin America)"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: -15.0
+    centroid_lon: -60.0
+    tags: ["phase2_v0_1", "exiobase-row", "alpha-source-exiobase"]
+
+  - urn: "urn:gl:geo:subregion:row-europe"
+    type: "subregion"
+    iso_code: null
+    name: "EXIOBASE — Rest of World (Europe)"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 50.0
+    centroid_lon: 25.0
+    tags: ["phase2_v0_1", "exiobase-row", "alpha-source-exiobase"]
+
+  - urn: "urn:gl:geo:subregion:row-africa"
+    type: "subregion"
+    iso_code: null
+    name: "EXIOBASE — Rest of World (Africa)"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 0.0
+    centroid_lon: 20.0
+    tags: ["phase2_v0_1", "exiobase-row", "alpha-source-exiobase"]
+
+  - urn: "urn:gl:geo:subregion:row-middle-east"
+    type: "subregion"
+    iso_code: null
+    name: "EXIOBASE — Rest of World (Middle East)"
+    parent_urn: "urn:gl:geo:global:world"
+    centroid_lat: 27.0
+    centroid_lon: 45.0
+    tags: ["phase2_v0_1", "exiobase-row", "alpha-source-exiobase"]

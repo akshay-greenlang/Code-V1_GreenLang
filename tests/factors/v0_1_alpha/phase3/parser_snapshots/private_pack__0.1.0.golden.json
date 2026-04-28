@@ -1,0 +1,222 @@
+[
+  {
+    "boundary": "Tenant-supplied; boundary per pack-config.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://docs.acme.example/fuel/B7"
+      }
+    ],
+    "description": "Phase 3 reference private-pack record. Tenant-scoped data; redistribution gated by entitlement.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_api_adapters.Phase3PrivatePackParser",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://private_pack.json",
+      "row_ref": "private:AC-FUEL-001",
+      "source_publication": "Acme Private Pack 2024",
+      "source_record_id": "private:AC-FUEL-001",
+      "source_url": "webhook://acme-private-pack-2024",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:PRIVATE_PACK:AC-FUEL-001",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "Acme Custom Diesel B7",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:acme-private-pack-2024",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:private-pack:ac-fuel-001:v1",
+    "value": 2.685,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Tenant-supplied; boundary per pack-config.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://docs.acme.example/fuel/E10"
+      }
+    ],
+    "description": "Phase 3 reference private-pack record. Tenant-scoped data; redistribution gated by entitlement.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_api_adapters.Phase3PrivatePackParser",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://private_pack.json",
+      "row_ref": "private:AC-FUEL-002",
+      "source_publication": "Acme Private Pack 2024",
+      "source_record_id": "private:AC-FUEL-002",
+      "source_url": "webhook://acme-private-pack-2024",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:PRIVATE_PACK:AC-FUEL-002",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "Acme Custom Petrol E10",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:acme-private-pack-2024",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:private-pack:ac-fuel-002:v1",
+    "value": 2.193,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Tenant-supplied; boundary per pack-config.",
+    "category": "electricity",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://docs.acme.example/elec/onsite-pv"
+      }
+    ],
+    "description": "Phase 3 reference private-pack record. Tenant-scoped data; redistribution gated by entitlement.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_api_adapters.Phase3PrivatePackParser",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://private_pack.json",
+      "row_ref": "private:AC-ELEC-001",
+      "source_publication": "Acme Private Pack 2024",
+      "source_record_id": "private:AC-ELEC-001",
+      "source_url": "webhook://acme-private-pack-2024",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:PRIVATE_PACK:AC-ELEC-001",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "Acme On-site PV Generation",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:acme-private-pack-2024",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:private-pack:ac-elec-001:v1",
+    "value": 0.041,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Tenant-supplied; boundary per pack-config.",
+    "category": "heat",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://docs.acme.example/heat/district"
+      }
+    ],
+    "description": "Phase 3 reference private-pack record. Tenant-scoped data; redistribution gated by entitlement.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_api_adapters.Phase3PrivatePackParser",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://private_pack.json",
+      "row_ref": "private:AC-HEAT-001",
+      "source_publication": "Acme Private Pack 2024",
+      "source_record_id": "private:AC-HEAT-001",
+      "source_url": "webhook://acme-private-pack-2024",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:PRIVATE_PACK:AC-HEAT-001",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "Acme District Heat Network",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:acme-private-pack-2024",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:private-pack:ac-heat-001:v1",
+    "value": 0.205,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  },
+  {
+    "boundary": "Tenant-supplied; boundary per pack-config.",
+    "category": "waste",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://docs.acme.example/waste/industrial"
+      }
+    ],
+    "description": "Phase 3 reference private-pack record. Tenant-scoped data; redistribution gated by entitlement.",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_api_adapters.Phase3PrivatePackParser",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://private_pack.json",
+      "row_ref": "private:AC-WST-001",
+      "source_publication": "Acme Private Pack 2024",
+      "source_record_id": "private:AC-WST-001",
+      "source_url": "webhook://acme-private-pack-2024",
+      "source_version": "2024.1"
+    },
+    "factor_id_alias": "EF:PRIVATE_PACK:AC-WST-001",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "Acme Industrial Waste Disposal",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:acme-private-pack-2024",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:private-pack:ac-wst-001:v1",
+    "value": 0.512,
+    "vintage_end": "2024-12-31",
+    "vintage_start": "2024-01-01"
+  }
+]

@@ -37,15 +37,15 @@
       "properties": {
         "source_id": {
           "type": "string",
-          "pattern": "^[a-z0-9][a-z0-9_]*$",
+          "pattern": "^[a-z0-9][a-z0-9_.]*$",
           "minLength": 2,
           "maxLength": 80,
-          "description": "Internal source slug. Lowercase + underscores. Stable across versions."
+          "description": "Internal source slug. Lowercase + underscores; dots allowed for version-bearing Phase 3 source slugs (e.g. 'ecoinvent_3.10_cutoff', 'exiobase_v3.8.2'). Stable across versions."
         },
         "urn": {
           "type": "string",
-          "pattern": "^urn:gl:source:[a-z0-9][a-z0-9-]*$",
-          "description": "Canonical source URN per greenlang.factors.ontology.urn. Public id."
+          "pattern": "^urn:gl:source:[a-z0-9][a-z0-9.-]*$",
+          "description": "Canonical source URN per greenlang.factors.ontology.urn. Public id. Dots permitted in version-bearing Phase 3 URNs (e.g. 'urn:gl:source:ecoinvent-3.10-cutoff', 'urn:gl:source:exiobase-v3.8.2')."
         },
         "display_name": {
           "type": "string",
@@ -72,9 +72,12 @@
             "commercial_licensed",
             "private_tenant_scoped",
             "connector_only",
-            "blocked"
+            "blocked",
+            "cc-by-4.0",
+            "ecoinvent-licensed",
+            "tenant_private"
           ],
-          "description": "CTO Phase 1 licence class. community_open: free with attribution (e.g. EPA, DESNZ, IPCC, EU CBAM defaults, India CEA). method_only: framework/method text public; values restricted (PCAF, GHGP, GLEC, PACT). commercial_licensed: requires commercial licence (Ecoinvent, IEA, CEDA, EXIOBASE commercial). private_tenant_scoped: tenant-uploaded or tenant-private factors. connector_only: served via API/connector only, no bulk redistribution (Electricity Maps, EC3). blocked: cannot be ingested or served until reclassified."
+          "description": "CTO Phase 1 licence class. community_open: free with attribution (e.g. EPA, DESNZ, IPCC, EU CBAM defaults, India CEA). method_only: framework/method text public; values restricted (PCAF, GHGP, GLEC, PACT). commercial_licensed: requires commercial licence (Ecoinvent, IEA, CEDA, EXIOBASE commercial). private_tenant_scoped: tenant-uploaded or tenant-private factors. connector_only: served via API/connector only, no bulk redistribution (Electricity Maps, EC3). blocked: cannot be ingested or served until reclassified. Phase 3 additions: cc-by-4.0 (open Creative-Commons sources e.g. EXIOBASE), ecoinvent-licensed (commercial ecoinvent licence), tenant_private (synonym of private_tenant_scoped retained for Phase 3 tenant packs)."
         },
         "licence": {
           "type": ["string", "null"],
@@ -91,14 +94,16 @@
             "derived_values_only",
             "tenant_entitled_only",
             "no_redistribution",
-            "blocked"
+            "blocked",
+            "attribution",
+            "forbidden"
           ],
           "description": "Separate from licence_class. Specifies what can be returned to tenants. redistribution_allowed: values + metadata + bulk download. attribution_required: same but caller must surface attribution. metadata_only: list/describe but don't return values. derived_values_only: return our normalized derived values, not the raw upstream values. tenant_entitled_only: return only to tenants with an active entitlement record. no_redistribution: never return values, only describe existence. blocked: never return at all."
         },
         "cadence": {
           "type": "string",
-          "enum": ["annual", "biennial", "triennial", "quarterly", "monthly", "daily", "hourly", "continuous", "ad_hoc", "event_driven", "on_release"],
-          "description": "Publication cadence of the upstream source."
+          "enum": ["annual", "biennial", "triennial", "quarterly", "monthly", "daily", "hourly", "continuous", "ad_hoc", "event_driven", "on_release", "on_event"],
+          "description": "Publication cadence of the upstream source. Phase 3 addition: on_event (synonym of event_driven for webhook-driven sources)."
         },
         "source_owner": {
           "type": "string",
@@ -117,8 +122,8 @@
             },
             "function": {
               "type": "string",
-              "pattern": "^[a-z_][a-z0-9_]*$",
-              "description": "Parser function name."
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+              "description": "Parser function or class name. Phase 3 introduces class-based runner-dispatch parsers (e.g. 'Phase3PactApiParser'); legacy alpha parsers remain snake_case functions ('parse_epa_ghg_hub')."
             },
             "version": {
               "type": "string",
@@ -134,8 +139,8 @@
         },
         "trust_tier": {
           "type": "string",
-          "enum": ["regulator_approved", "external_verified", "community_curated", "experimental"],
-          "description": "Independent of licence_class. regulator_approved: published by a national/regional regulator and accepted as-is for compliance reporting. external_verified: peer-reviewed methodology (IPCC, GHGP, ISO 14083). community_curated: curated by GreenLang from public sources. experimental: not yet ready for compliance use."
+          "enum": ["regulator_approved", "external_verified", "community_curated", "experimental", "tenant_supplied"],
+          "description": "Independent of licence_class. regulator_approved: published by a national/regional regulator and accepted as-is for compliance reporting. external_verified: peer-reviewed methodology (IPCC, GHGP, ISO 14083). community_curated: curated by GreenLang from public sources. experimental: not yet ready for compliance use. Phase 3 addition: tenant_supplied (private factor packs uploaded by tenants)."
         },
         "legal_signoff": {
           "type": "object",

@@ -1,0 +1,1322 @@
+[
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "ENERGY/US/CO2",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "ENERGY/US/CO2",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:ENERGY:US:CO2",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:us",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 ENERGY @ US [CO2]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:energy:us:co2:v1",
+    "value": 2.259,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "ENERGY/US/CH4",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "ENERGY/US/CH4",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:ENERGY:US:CH4",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:us",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 ENERGY @ US [CH4]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:energy:us:ch4:v1",
+    "value": 2.135,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "ENERGY/DE/CO2",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "ENERGY/DE/CO2",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:ENERGY:DE:CO2",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:de",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 ENERGY @ DE [CO2]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:energy:de:co2:v1",
+    "value": 4.423,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "ENERGY/DE/CH4",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "ENERGY/DE/CH4",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:ENERGY:DE:CH4",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:de",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 ENERGY @ DE [CH4]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:energy:de:ch4:v1",
+    "value": 0.585,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "ENERGY/WA/CO2",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "ENERGY/WA/CO2",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:ENERGY:WA:CO2",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:subregion:row-asia-pacific",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 ENERGY @ WA [CO2]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:energy:wa:co2:v1",
+    "value": 2.346,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "ENERGY/WA/CH4",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "ENERGY/WA/CH4",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:ENERGY:WA:CH4",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:subregion:row-asia-pacific",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 ENERGY @ WA [CH4]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:energy:wa:ch4:v1",
+    "value": 3.059,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "TRANSPORT/US/CO2",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "TRANSPORT/US/CO2",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:TRANSPORT:US:CO2",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:us",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 TRANSPORT @ US [CO2]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:transport:us:co2:v1",
+    "value": 1.924,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "TRANSPORT/US/CH4",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "TRANSPORT/US/CH4",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:TRANSPORT:US:CH4",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:us",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 TRANSPORT @ US [CH4]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:transport:us:ch4:v1",
+    "value": 2.763,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "TRANSPORT/DE/CO2",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "TRANSPORT/DE/CO2",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:TRANSPORT:DE:CO2",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:de",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 TRANSPORT @ DE [CO2]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:transport:de:co2:v1",
+    "value": 3.417,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "TRANSPORT/DE/CH4",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "TRANSPORT/DE/CH4",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:TRANSPORT:DE:CH4",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:de",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 TRANSPORT @ DE [CH4]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:transport:de:ch4:v1",
+    "value": 4.061,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "TRANSPORT/WA/CO2",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "TRANSPORT/WA/CO2",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:TRANSPORT:WA:CO2",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:subregion:row-asia-pacific",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 TRANSPORT @ WA [CO2]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:transport:wa:co2:v1",
+    "value": 2.247,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "TRANSPORT/WA/CH4",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "TRANSPORT/WA/CH4",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:TRANSPORT:WA:CH4",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:subregion:row-asia-pacific",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 TRANSPORT @ WA [CH4]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:transport:wa:ch4:v1",
+    "value": 3.051,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "AGRICULTURE/US/CO2",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "AGRICULTURE/US/CO2",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:AGRICULTURE:US:CO2",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:us",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 AGRICULTURE @ US [CO2]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:agriculture:us:co2:v1",
+    "value": 0.082,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "AGRICULTURE/US/CH4",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "AGRICULTURE/US/CH4",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:AGRICULTURE:US:CH4",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:us",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 AGRICULTURE @ US [CH4]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:agriculture:us:ch4:v1",
+    "value": 2.808,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "AGRICULTURE/DE/CO2",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "AGRICULTURE/DE/CO2",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:AGRICULTURE:DE:CO2",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:de",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 AGRICULTURE @ DE [CO2]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:agriculture:de:co2:v1",
+    "value": 3.971,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "AGRICULTURE/DE/CH4",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "AGRICULTURE/DE/CH4",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:AGRICULTURE:DE:CH4",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:de",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 AGRICULTURE @ DE [CH4]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:agriculture:de:ch4:v1",
+    "value": 3.463,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "AGRICULTURE/WA/CO2",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "AGRICULTURE/WA/CO2",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:AGRICULTURE:WA:CO2",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:subregion:row-asia-pacific",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 AGRICULTURE @ WA [CO2]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:agriculture:wa:co2:v1",
+    "value": 1.43,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "AGRICULTURE/WA/CH4",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "AGRICULTURE/WA/CH4",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:AGRICULTURE:WA:CH4",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:subregion:row-asia-pacific",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 AGRICULTURE @ WA [CH4]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:agriculture:wa:ch4:v1",
+    "value": 4.467,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "MANUFACTURING/US/CO2",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "MANUFACTURING/US/CO2",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:MANUFACTURING:US:CO2",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:us",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 MANUFACTURING @ US [CO2]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:manufacturing:us:co2:v1",
+    "value": 1.897,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "MANUFACTURING/US/CH4",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "MANUFACTURING/US/CH4",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:MANUFACTURING:US:CH4",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:us",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 MANUFACTURING @ US [CH4]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:manufacturing:us:ch4:v1",
+    "value": 2.329,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "MANUFACTURING/DE/CO2",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "MANUFACTURING/DE/CO2",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:MANUFACTURING:DE:CO2",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:de",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 MANUFACTURING @ DE [CO2]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:manufacturing:de:co2:v1",
+    "value": 2.654,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "MANUFACTURING/DE/CH4",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "MANUFACTURING/DE/CH4",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:MANUFACTURING:DE:CH4",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:de",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 MANUFACTURING @ DE [CH4]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:manufacturing:de:ch4:v1",
+    "value": 1.324,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "MANUFACTURING/WA/CO2",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "MANUFACTURING/WA/CO2",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:MANUFACTURING:WA:CO2",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:subregion:row-asia-pacific",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 MANUFACTURING @ WA [CO2]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:manufacturing:wa:co2:v1",
+    "value": 4.396,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "MANUFACTURING/WA/CH4",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "MANUFACTURING/WA/CH4",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:MANUFACTURING:WA:CH4",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:subregion:row-asia-pacific",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 MANUFACTURING @ WA [CH4]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:manufacturing:wa:ch4:v1",
+    "value": 2.534,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "SERVICES/US/CO2",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "SERVICES/US/CO2",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:SERVICES:US:CO2",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:us",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 SERVICES @ US [CO2]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:services:us:co2:v1",
+    "value": 1.625,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "SERVICES/US/CH4",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "SERVICES/US/CH4",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:SERVICES:US:CH4",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:us",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 SERVICES @ US [CH4]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:services:us:ch4:v1",
+    "value": 2.218,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "SERVICES/DE/CO2",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "SERVICES/DE/CO2",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:SERVICES:DE:CO2",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:de",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 SERVICES @ DE [CO2]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:services:de:co2:v1",
+    "value": 2.694,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "SERVICES/DE/CH4",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "SERVICES/DE/CH4",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:SERVICES:DE:CH4",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:country:de",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 SERVICES @ DE [CH4]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:services:de:ch4:v1",
+    "value": 1.212,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "SERVICES/WA/CO2",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "SERVICES/WA/CO2",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:SERVICES:WA:CO2",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:subregion:row-asia-pacific",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 SERVICES @ WA [CO2]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:services:wa:co2:v1",
+    "value": 1.362,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  },
+  {
+    "boundary": "EXIOBASE product-by-product MRIO",
+    "category": "mrio",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.exiobase.eu/"
+      }
+    ],
+    "description": "EXIOBASE v3.8.2 environmental extension factor (F-matrix row, normalised by total output).",
+    "extraction": {
+      "operator": "bot:phase3-wave2.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_ecospold_mrio_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://exiobase_v3.8.2_mini.zip",
+      "row_ref": "SERVICES/WA/CH4",
+      "source_publication": "EXIOBASE v3.8.2",
+      "source_record_id": "SERVICES/WA/CH4",
+      "source_url": "https://www.exiobase.eu/",
+      "source_version": "3.8.2"
+    },
+    "factor_id_alias": "EF:EXIOBASE:SERVICES:WA:CH4",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:subregion:row-asia-pacific",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "EXIOBASE \u2014 SERVICES @ WA [CH4]",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:exiobase-v3.8.2",
+    "unit_urn": "urn:gl:unit:kgco2e/eur",
+    "urn": "urn:gl:factor:phase3-alpha:exiobase:services:wa:ch4:v1",
+    "value": 3.103,
+    "vintage_end": "2022-12-31",
+    "vintage_start": "2022-01-01"
+  }
+]

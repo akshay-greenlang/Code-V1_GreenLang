@@ -113,9 +113,21 @@ def _load_seed_data(seed_path: Path) -> Optional[Any]:
 
 
 def _resolve_parser(source: Dict[str, Any]) -> Callable[..., Any]:
-    """Import ``source.parser_module`` and return the declared function."""
-    module_name = source.get("parser_module")
-    function_name = source.get("parser_function")
+    """Import the legacy function-style parser declared by the registry.
+
+    Resolution order:
+      1. The nested ``parser:`` block (``module``/``function``) — this is
+         the legacy alpha parser kept unchanged for legacy callers per the
+         Phase 3 / Wave 2.0 source-registry comment.
+      2. Top-level ``parser_module`` / ``parser_function`` — these may
+         have been overwritten in Wave 2.0 with class-based
+         runner-dispatch parsers (Phase3*ExcelParser etc.). The alpha
+         provenance gate exercises the FUNCTION-style parsers, so we
+         prefer the nested block when present.
+    """
+    legacy = source.get("parser") or {}
+    module_name = legacy.get("module") or source.get("parser_module")
+    function_name = legacy.get("function") or source.get("parser_function")
     if not isinstance(module_name, str) or not module_name:
         raise RuntimeError(
             f"alpha source {source.get('source_id')!r} has no parser_module"

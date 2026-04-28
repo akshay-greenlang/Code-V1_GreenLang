@@ -27,7 +27,7 @@ from __future__ import annotations
 import logging
 import os
 import subprocess
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple  # noqa: F401
 
 from fastapi import APIRouter, Depends, Path, Query, Request, Response
 from fastapi.responses import JSONResponse
@@ -1056,9 +1056,53 @@ def deprecated_api_v1(request: Request, path: str) -> JSONResponse:
     )
 
 
+# ---------------------------------------------------------------------------
+# Phase 3 / Wave 2.5 — webhook ingestion mount (feature-flagged).
+#
+# The webhook receiver lives in :mod:`greenlang.factors.ingestion.webhook`
+# and is intentionally NOT auto-mounted unless the operator opts in via
+# ``GL_FACTORS_PHASE3_WEBHOOK_ENABLED=1``. Default behaviour is unchanged
+# so production keeps the legacy v0.1 surface until Block 3 governance
+# signs off. The mount block lives here (rather than in
+# :mod:`greenlang.factors.factors_app`) so the v0.1 alpha export remains
+# the single seam for adding/withdrawing public endpoints under the
+# alpha release profile.
+#
+# Tests that exercise the webhook router build it directly via
+# :func:`build_webhook_router` to avoid depending on the env flag.
+# ---------------------------------------------------------------------------
+
+
+def _maybe_mount_phase3_webhook(app_or_router: Any) -> bool:
+    """Mount the Phase 3 webhook router onto ``app_or_router`` when enabled.
+
+    Returns True if the router was mounted, False otherwise. Safe to call
+    multiple times (idempotent at the import level — the router itself
+    is module-singleton).
+    """
+    try:
+        from greenlang.factors.ingestion.webhook import (
+            is_webhook_enabled,
+            webhook_router,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Phase 3 webhook router import failed: %s", exc)
+        return False
+    if not is_webhook_enabled():
+        return False
+    try:
+        app_or_router.include_router(webhook_router)
+    except Exception as exc:  # noqa: BLE001
+        logger.error("Phase 3 webhook router mount failed: %s", exc)
+        return False
+    logger.info("Phase 3 webhook router mounted (feature-flagged ON)")
+    return True
+
+
 __all__ = [
     "router",
     "deprecated_router",
     "ALPHA_ENDPOINTS_PUBLIC",
     "ALPHA_SCHEMA_ID",
+    "_maybe_mount_phase3_webhook",
 ]
