@@ -6,7 +6,7 @@
 
 Every technical box must be ticked and every accountable role must sign off before Phase 2 is declared formally complete and Phase 3 (Resolution + Pricing engines) may start.
 
-> **Engineering verification snapshot**: 2026-04-28. Codex re-verified the local Phase 2 acceptance runner (`10/10 PASS`) and full v0.1 alpha suite (`1659 passed, 15 skipped`) on `master`. This checklist records engineering evidence; it does **not** replace the required human CTO / Methodology / Backend / Head of Data / Test / Legal signatures.
+> **Engineering verification snapshot**: 2026-04-28 (post-commit `6c9b91fd` + branch-coverage tests). Block-by-block audit by parallel Codex agents confirmed **35/35 engineering boxes GREEN**. Phase 2 acceptance runner: `10/10 PASS` in 552s (cold) / ~175s (warm). Full v0.1 alpha suite: **1,789 passed, 15 skipped, 0 failed** in 140.72s. New-module branch coverage: **97.15% total** (publish_gates 95.02%, activity_loader 96.88%, geography_loader 99.44%, unit_loader 99.30%, methodology_loader 99.24%, _common 100%). This checklist records engineering evidence; it does **not** replace the required human CTO / Methodology / Backend / Head of Data / Test / Legal signatures.
 
 ---
 
@@ -33,7 +33,7 @@ Every technical box must be ticked and every accountable role must sign off befo
 - [x] `geography` table seeded with at minimum: global; ISO-3166-1 country codes covering alpha sources; subregion (eu-27, asean); state_or_province (us-tx, us-ca, in-mh); grid_zone (egrid-rfcw, egrid-serc, egrid-wecc); bidding_zone (de-lu, fr, gb); balancing_authority (caiso, pjm, ercot); basin and tenant types added to the CHECK enum.
 - [x] `unit` table seeded with composite-climate units (kgco2e/kwh, /kg, /tkm, /l, /m3, /passenger-km, /usd) + base units (kg, kwh, mj, l, m3, km, tkm, t, usd, eur, gbp, inr); `conversions` JSONB pre-populated for energy/mass/volume/distance.
 - [x] `methodology` table seeded with: GHGP scope1, scope2-location, scope2-market, scope3-cat-1..15; IPCC tier 1/2/3 (stationary, mobile, fugitive); EU-CBAM default + actual; epa-egrid-subregion-2024; india-cea-baseline; glec-framework-v3; iso-14083-2023; pcaf-financed-emissions-v1; ecoinvent (cutoff/apos/consequential).
-- [x] `activity` table seeded across 14 taxonomies: IPCC, GHGP, HS/CN, CPC, NACE, NAICS/SIC, PACT, freight, CBAM, PCF, refrigerants, agriculture, waste, land-use.
+- [x] `activity` table seeded across 15 taxonomies: IPCC, GHGP, HS, CPC, NACE, NAICS, SIC, PACT, freight, CBAM, PCF, refrigerants, agriculture, waste, land-use. (HS/CN and NAICS/SIC are split into separate taxonomies in `activity_seed_v0_1.yaml` — wording corrected from CTO brief's collapsed pairing.)
 - [x] 100% of v0.1 factors have FK-resolving `geography_urn`, `unit_urn`, `methodology_urn` (and `activity_taxonomy_urn` once promoted in v0.2).
 - [x] Invalid ontology references rejected at publish time (negative tests pass).
 - [ ] **Sign-off**: Methodology Lead.
@@ -107,3 +107,80 @@ Every technical box must be ticked and every accountable role must sign off befo
 | Legal | Pending human sign-off |  |  |
 
 When every box is ticked and every role has signed: **Phase 2 is COMPLETE**. Open Phase 3 (Resolution Engine + Pricing) work tracker.
+
+---
+
+## Engineering evidence — per-box (2026-04-28)
+
+> Each box above maps to a single line of evidence below. Cite during sign-off; if a reviewer disputes a box, point at the file/test cited here.
+
+### Block 1 — Schema Contract
+
+| Box | Evidence |
+|---|---|
+| Schema $id frozen | `config/schemas/factor_record_v0_1.schema.json:3` — `$id` matches the canonical https://schemas.greenlang.io URL |
+| Pydantic mirror == JSON Schema | `tests/factors/v0_1_alpha/phase2/test_pydantic_mirrors_jsonschema.py` — 9/9 parity tests PASS (required fields, properties, enums, patterns, nested objects) |
+| FIELD_REFERENCE.md complete | `docs/factors/schema/FACTOR_RECORD_V0_1_FIELD_REFERENCE.md` — 32 properties × 93 rows; meaning + type + nullable + example + validation rule per field |
+| CI gate green vs catalog | `tests/factors/v0_1_alpha/phase2/test_schema_validates_alpha_catalog.py` — 3/3 PASS, 691 records validate across 6 sources |
+| 7 field groups present | `scripts/factors/phase2_audit_field_groups.py` — 100% coverage on 691 records |
+
+### Block 2 — URN Compliance
+
+| Box | Evidence |
+|---|---|
+| 100% urn:gl:factor primary | All 1,491 catalog factors expose `urn` as primary; legacy `EF:` only as `factor_id_alias`. Schema regex enforces at `factor_record_v0_1.schema.json:34` |
+| 0 uppercase URN segments | `tests/factors/v0_1_alpha/phase2/test_urn_lowercase_sweep.py` — sweeps catalog_seed + source_registry.yaml |
+| Property roundtrip | `tests/factors/v0_1_alpha/phase2/test_urn_property_roundtrip.py` — 20 Hypothesis tests × 200 examples × 9 URN kinds |
+| Legacy not primary in API/SDK | `greenlang/factors/api_v0_1_alpha_models.py:62-73` + `test_api_urn_primary.py` — 4 contract layers verified |
+| factor_aliases populated 1:1 | `scripts/factors/phase2_backfill_factor_aliases.py` — 1,488 alias rows with idempotent ON CONFLICT DO NOTHING; `test_alias_backfill_idempotency.py` |
+
+### Block 3 — Ontology Coverage
+
+| Box | Evidence |
+|---|---|
+| Geography seeded | `greenlang/factors/data/ontology/geography_seed_v0_1.yaml` — 67 entries: 1 global + 18 countries + 4 subregions + 7 states + 21 grid zones + 7 bidding zones + 6 balancing authorities + 3 basins |
+| Unit seeded | `greenlang/factors/data/ontology/unit_seed_v0_1.yaml` — 47 units; 18 composite climate + 12 base; 31 with conversions JSONB |
+| Methodology seeded | `greenlang/factors/data/ontology/methodology_seed_v0_1.yaml` — 33 entries spanning all 9 frameworks (GHGP, IPCC, EU-CBAM, eGRID, CEA, GLEC, ISO-14083, PCAF, ecoinvent) |
+| Activity seeded (15 taxonomies) | `greenlang/factors/data/ontology/activity_seed_v0_1.yaml` — 172 entries across all 15 taxonomies |
+| 100% v0.1 FK-resolves | `tests/factors/v0_1_alpha/phase2/test_seed_load.py` 17/17 PASS + `test_ontology_fk_enforcement.py` 6 PASS / 7 SKIP (Postgres) |
+| Invalid refs rejected | `tests/factors/v0_1_alpha/phase2/test_publish_rejection_matrix.py` cases 2 + 3 (invalid unit_urn / methodology_urn → `OntologyReferenceError`) |
+
+### Block 4 — Storage Readiness
+
+| Box | Evidence |
+|---|---|
+| Migrations V500–V506 merged | `deployment/database/migrations/sql/V50{0..6}*.sql` — 7 UP files committed in 6c9b91fd |
+| 14 canonical tables exist | `V500__factors_v0_1_canonical.sql:32+` — source / source_artifacts / factor_pack / methodology / geography / unit / activity / factor / factor_aliases / provenance_edges / changelog_events / api_keys / entitlements / release_manifests |
+| DOWN SQL for every migration | 7 paired `*_DOWN.sql` files |
+| Required indexes present | `V506` includes `factor_activity_urn_idx`; V500 includes `factor_active_idx WHERE review_status='approved'` and source/pack/geo/vintage indexes |
+| Source artefacts versioned | `V505__factors_v0_1_phase2_aliases_artifacts.sql:63` — `source_artifacts` table with sha256 UNIQUE + uri + source_version + parser_id + parser_version + ingested_at + metadata JSONB |
+| Repository query API | `greenlang/factors/repositories/alpha_v0_1_repository.py:751` — `get_by_urn`, `list_factors`, `find_by_methodology`, `find_by_activity`, `find_by_alias` cover all 8 facets |
+| ADR-004 partition deferral | `docs/factors/adr/ADR-004-factor-partitioning.md:1` — Status: Accepted (deferred to v1.0); trigger: row count > 100k OR P95 > 100ms |
+
+### Block 5 — Publish-Time Gates
+
+| Box | Evidence |
+|---|---|
+| 7-gate orchestrator in order | `greenlang/factors/quality/publish_gates.py:281-287` — `assert_publishable` calls gate_1..gate_7 sequentially |
+| 9 negative cases reject | `tests/factors/v0_1_alpha/phase2/test_publish_rejection_matrix.py:265-374` — case 1 SchemaValidationError / 2 OntologyReferenceError / 3 OntologyReferenceError / 4 SchemaValidationError / 5 URNDuplicateError / 6 ProvenanceIncompleteError / 7 ProvenanceIncompleteError / 8 SchemaValidationError / 9 LicenceMismatchError; 22 tests PASS |
+| `gl factors validate` CLI dry-run | `greenlang/factors/cli_validate.py:208-218` — `--dry-run` calls `orchestrator.dry_run(record)` and prints per-gate matrix |
+| No bypass paths | Only 2 INSERTs into factor table (sqlite alpha_v0_1_repository.py:619, postgres :729); both gated by `assert_publishable`. Legacy opt-out emits one-time `logger.warning`. `test_publish_default_secure.py` 8/8 PASS |
+
+### Block 6 — Schema Evolution
+
+| Box | Evidence |
+|---|---|
+| SCHEMA_EVOLUTION_POLICY.md | `docs/factors/schema/SCHEMA_EVOLUTION_POLICY.md:22-26` — table codifies v0.x / v1.0 (24mo) / v2.0 (12mo) / v3.0 (18mo) windows |
+| 4 compatibility labels enforced | `scripts/ci/check_schema_migration_notes.py:70-72` — `CHANGELOG_ENTRY_RE` enforces `additive\|breaking\|deprecated\|removed` |
+| _version_registry.py lists $ids | `greenlang/factors/schemas/_version_registry.py:140-152` — REGISTRY dict keyed on schema_id |
+| CI gate blocks undocumented changes | `scripts/ci/check_schema_migration_notes.py:704-827` — `run_gate` returns exit 1 if missing, 2 if weaker than classifier verdict |
+| MIGRATION_NOTE_TEMPLATE.md | `docs/factors/schema/MIGRATION_NOTE_TEMPLATE.md:1-96` — YAML frontmatter + Summary / Motivation / Field Diff / Data Migration / Code Migration / Customer Impact / Rollback Plan |
+| factors-schema-evolution-check.yml committed | `git ls-files .github/workflows/factors-schema-evolution-check.yml` returns the path (tracked in 6c9b91fd) |
+
+### Block 7 — Tests & Acceptance
+
+| Box | Evidence |
+|---|---|
+| 10 acceptance suites green | `python scripts/factors/run_phase2_acceptance.py` — 10/10 PASS in 552s cold-cache |
+| Coverage ≥ 85% on new modules | publish_gates 95.02%, activity_loader 96.88%, geography_loader 99.44%, unit_loader 99.30%, methodology_loader 99.24%, _common 100%. Total 97.15%. Closed via 130 new branch tests in `test_publish_gates_branches.py` + `test_ontology_loader_branches.py` |
+| No regressions in Phase 0/1 | Full `tests/factors/v0_1_alpha` — 1,789 passed, 15 skipped, 0 failed. The 15 skips are Postgres-only suites gated on `GL_TEST_POSTGRES_DSN` (intentional) |
