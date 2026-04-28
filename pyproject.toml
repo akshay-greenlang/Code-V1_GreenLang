@@ -321,7 +321,7 @@ factors-test = [
   "psycopg[binary,pool]>=3.1",
   "redis>=5.0.1",
   "pgvector>=0.2",
-  "fakeredis>=2.20",
+  "fakeredis>=2.35.1",
   "alembic>=1.13.1",
   # --- Payloads / serialization -------------------------------------------
   "numpy>=1.26.3",
