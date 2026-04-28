@@ -460,7 +460,8 @@
       "Bash(ls greenlang/factors/data/catalog_seed/cbam_default_values/)",
       "Read(//c/Users/aksha/AppData/Local/Temp/claude/C--Users-aksha-Code-V1-GreenLang/fb5b7336-fbdd-422c-8260-8ed7fddd8019/tasks/**)",
       "Bash(UPDATE_OPENAPI_SNAPSHOT=1 python -m pytest tests/factors/v0_1_alpha/test_alpha_api_contract.py::test_openapi_alpha_v0_1_matches_snapshot -W ignore::DeprecationWarning)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(npm list *)"
     ],
     "deny": [],
     "ask": []
