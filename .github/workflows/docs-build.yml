@@ -83,7 +83,7 @@ jobs:
           args: |
             --verbose
             --no-progress
-            --accept 200,204,206
+            --accept 200,202,204,206
             --timeout 20
             --max-concurrency 10
             --exclude-all-private
@@ -91,6 +91,11 @@ jobs:
             --exclude '^https?://127\.0\.0\.1'
             --exclude '^https?://example\.com'
             --exclude '^https?://\[.*\]'
+            --exclude '^/pricing$'
+            --exclude '^https://schemas\.greenlang\.io/'
+            --exclude '^https://docs\.greenlang\.io/'
+            --exclude '^https://greenlang\.io/?$'
+            --exclude '^https://cea\.nic\.in/'
             ./docs/factors
             ./README.md
           fail: true

@@ -131,7 +131,7 @@ The workflow:
 
 ## 5. Support
 
-- GitHub issues: https://github.com/greenlang/greenlang/issues (label `sdk`)
+- GitHub issues: https://github.com/akshay-greenlang/Code-V1_GreenLang/issues (label `sdk`)
 - Docs: https://docs.greenlang.io/factors-sdk
 - Email: support@greenlang.io
 
