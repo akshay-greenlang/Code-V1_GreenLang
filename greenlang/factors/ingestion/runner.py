@@ -352,15 +352,29 @@ class IngestionPipelineRunner:
         try:
             parser = self._resolve_parser(source_id)
             raw_bytes = self._read_artifact(artifact)
-            data = json.loads(raw_bytes.decode("utf-8"))
-            ok, schema_issues = parser.validate_schema(data)
-            if not ok:
-                raise ValidationStageError(
-                    "parser schema validation failed",
-                    rejected_count=len(schema_issues),
-                    first_reasons=schema_issues,
+            # Family-aware parse dispatch (Phase 3 / Wave 1.5):
+            # - Excel-family parsers expose ``parse_bytes(raw, *,
+            #   artifact_uri, artifact_sha256)`` because their inputs are
+            #   binary workbooks, not JSON text.
+            # - JSON-family parsers continue to expose the legacy
+            #   ``parse(data: dict)`` ABC method; the runner JSON-loads
+            #   the bytes before calling them.
+            if hasattr(parser, "parse_bytes"):
+                rows = parser.parse_bytes(  # type: ignore[attr-defined]
+                    raw_bytes,
+                    artifact_uri=artifact.storage_uri,
+                    artifact_sha256=artifact.sha256,
                 )
-            rows = parser.parse(data)
+            else:
+                data = json.loads(raw_bytes.decode("utf-8"))
+                ok, schema_issues = parser.validate_schema(data)
+                if not ok:
+                    raise ValidationStageError(
+                        "parser schema validation failed",
+                        rejected_count=len(schema_issues),
+                        first_reasons=schema_issues,
+                    )
+                rows = parser.parse(data)
             result = ParserResult(status="ok", rows=rows)
             self._run_repo.set_artifact(
                 run_id,

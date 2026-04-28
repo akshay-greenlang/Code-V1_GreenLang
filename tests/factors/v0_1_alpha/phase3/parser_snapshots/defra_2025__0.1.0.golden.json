@@ -1,0 +1,442 @@
+[
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025"
+      }
+    ],
+    "description": "Phase 3 reference DEFRA fixture row. Boundary excludes upstream extraction and distribution losses.",
+    "extraction": {
+      "operator": "bot:phase3-wave1.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://defra_2025_mini.xlsx",
+      "row_ref": "Sheet=Stationary Combustion;Row=2",
+      "source_publication": "DEFRA UK GHG Conversion Factors",
+      "source_record_id": "Sheet=Stationary Combustion;Row=2",
+      "source_url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025",
+      "source_version": "2025.1"
+    },
+    "factor_id_alias": "EF:DEFRA:stationary_combustion:natural_gas",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "DEFRA Stationary Combustion \u2014 natural_gas",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:defra-2025",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:defra:stationary_combustion:natural_gas:v1",
+    "value": 0.18293,
+    "vintage_end": "2025-12-31",
+    "vintage_start": "2025-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025"
+      }
+    ],
+    "description": "Phase 3 reference DEFRA fixture row. Boundary excludes upstream extraction and distribution losses.",
+    "extraction": {
+      "operator": "bot:phase3-wave1.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://defra_2025_mini.xlsx",
+      "row_ref": "Sheet=Stationary Combustion;Row=3",
+      "source_publication": "DEFRA UK GHG Conversion Factors",
+      "source_record_id": "Sheet=Stationary Combustion;Row=3",
+      "source_url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025",
+      "source_version": "2025.1"
+    },
+    "factor_id_alias": "EF:DEFRA:stationary_combustion:diesel",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "DEFRA Stationary Combustion \u2014 diesel",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:defra-2025",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:defra:stationary_combustion:diesel:v1",
+    "value": 2.51233,
+    "vintage_end": "2025-12-31",
+    "vintage_start": "2025-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025"
+      }
+    ],
+    "description": "Phase 3 reference DEFRA fixture row. Boundary excludes upstream extraction and distribution losses.",
+    "extraction": {
+      "operator": "bot:phase3-wave1.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://defra_2025_mini.xlsx",
+      "row_ref": "Sheet=Stationary Combustion;Row=4",
+      "source_publication": "DEFRA UK GHG Conversion Factors",
+      "source_record_id": "Sheet=Stationary Combustion;Row=4",
+      "source_url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025",
+      "source_version": "2025.1"
+    },
+    "factor_id_alias": "EF:DEFRA:stationary_combustion:lpg",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "DEFRA Stationary Combustion \u2014 lpg",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:defra-2025",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:defra:stationary_combustion:lpg:v1",
+    "value": 0.21449,
+    "vintage_end": "2025-12-31",
+    "vintage_start": "2025-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025"
+      }
+    ],
+    "description": "Phase 3 reference DEFRA fixture row. Boundary excludes upstream extraction and distribution losses.",
+    "extraction": {
+      "operator": "bot:phase3-wave1.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://defra_2025_mini.xlsx",
+      "row_ref": "Sheet=Stationary Combustion;Row=5",
+      "source_publication": "DEFRA UK GHG Conversion Factors",
+      "source_record_id": "Sheet=Stationary Combustion;Row=5",
+      "source_url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025",
+      "source_version": "2025.1"
+    },
+    "factor_id_alias": "EF:DEFRA:stationary_combustion:coal_industrial",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "DEFRA Stationary Combustion \u2014 coal_industrial",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:defra-2025",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:defra:stationary_combustion:coal_industrial:v1",
+    "value": 2.41062,
+    "vintage_end": "2025-12-31",
+    "vintage_start": "2025-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025"
+      }
+    ],
+    "description": "Phase 3 reference DEFRA fixture row. Boundary excludes upstream extraction and distribution losses.",
+    "extraction": {
+      "operator": "bot:phase3-wave1.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://defra_2025_mini.xlsx",
+      "row_ref": "Sheet=Stationary Combustion;Row=6",
+      "source_publication": "DEFRA UK GHG Conversion Factors",
+      "source_record_id": "Sheet=Stationary Combustion;Row=6",
+      "source_url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025",
+      "source_version": "2025.1"
+    },
+    "factor_id_alias": "EF:DEFRA:stationary_combustion:biomass_wood_pellets",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "DEFRA Stationary Combustion \u2014 biomass_wood_pellets",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:defra-2025",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:defra:stationary_combustion:biomass_wood_pellets:v1",
+    "value": 0.0154,
+    "vintage_end": "2025-12-31",
+    "vintage_start": "2025-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025"
+      }
+    ],
+    "description": "Phase 3 reference DEFRA fixture row. Boundary excludes upstream extraction and distribution losses.",
+    "extraction": {
+      "operator": "bot:phase3-wave1.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://defra_2025_mini.xlsx",
+      "row_ref": "Sheet=Fuel Conversion;Row=2",
+      "source_publication": "DEFRA UK GHG Conversion Factors",
+      "source_record_id": "Sheet=Fuel Conversion;Row=2",
+      "source_url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025",
+      "source_version": "2025.1"
+    },
+    "factor_id_alias": "EF:DEFRA:fuel_conversion:petrol",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "DEFRA Fuel Conversion \u2014 petrol",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:defra-2025",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:defra:fuel_conversion:petrol:v1",
+    "value": 2.16802,
+    "vintage_end": "2025-12-31",
+    "vintage_start": "2025-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025"
+      }
+    ],
+    "description": "Phase 3 reference DEFRA fixture row. Boundary excludes upstream extraction and distribution losses.",
+    "extraction": {
+      "operator": "bot:phase3-wave1.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://defra_2025_mini.xlsx",
+      "row_ref": "Sheet=Fuel Conversion;Row=3",
+      "source_publication": "DEFRA UK GHG Conversion Factors",
+      "source_record_id": "Sheet=Fuel Conversion;Row=3",
+      "source_url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025",
+      "source_version": "2025.1"
+    },
+    "factor_id_alias": "EF:DEFRA:fuel_conversion:aviation_kerosene",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "DEFRA Fuel Conversion \u2014 aviation_kerosene",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:defra-2025",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:defra:fuel_conversion:aviation_kerosene:v1",
+    "value": 2.54453,
+    "vintage_end": "2025-12-31",
+    "vintage_start": "2025-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025"
+      }
+    ],
+    "description": "Phase 3 reference DEFRA fixture row. Boundary excludes upstream extraction and distribution losses.",
+    "extraction": {
+      "operator": "bot:phase3-wave1.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://defra_2025_mini.xlsx",
+      "row_ref": "Sheet=Fuel Conversion;Row=4",
+      "source_publication": "DEFRA UK GHG Conversion Factors",
+      "source_record_id": "Sheet=Fuel Conversion;Row=4",
+      "source_url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025",
+      "source_version": "2025.1"
+    },
+    "factor_id_alias": "EF:DEFRA:fuel_conversion:heavy_fuel_oil",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "DEFRA Fuel Conversion \u2014 heavy_fuel_oil",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:defra-2025",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:defra:fuel_conversion:heavy_fuel_oil:v1",
+    "value": 3.1666,
+    "vintage_end": "2025-12-31",
+    "vintage_start": "2025-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025"
+      }
+    ],
+    "description": "Phase 3 reference DEFRA fixture row. Boundary excludes upstream extraction and distribution losses.",
+    "extraction": {
+      "operator": "bot:phase3-wave1.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://defra_2025_mini.xlsx",
+      "row_ref": "Sheet=Fuel Conversion;Row=5",
+      "source_publication": "DEFRA UK GHG Conversion Factors",
+      "source_record_id": "Sheet=Fuel Conversion;Row=5",
+      "source_url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025",
+      "source_version": "2025.1"
+    },
+    "factor_id_alias": "EF:DEFRA:fuel_conversion:burning_oil",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "DEFRA Fuel Conversion \u2014 burning_oil",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:defra-2025",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:defra:fuel_conversion:burning_oil:v1",
+    "value": 2.54035,
+    "vintage_end": "2025-12-31",
+    "vintage_start": "2025-01-01"
+  },
+  {
+    "boundary": "Boundary excludes upstream extraction and distribution losses.",
+    "category": "fuel",
+    "citations": [
+      {
+        "type": "url",
+        "value": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025"
+      }
+    ],
+    "description": "Phase 3 reference DEFRA fixture row. Boundary excludes upstream extraction and distribution losses.",
+    "extraction": {
+      "operator": "bot:phase3-wave1.5",
+      "parser_commit": "deadbeefcafe1234",
+      "parser_id": "greenlang.factors.ingestion.parsers._phase3_adapters",
+      "parser_version": "0.1.0",
+      "raw_artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "raw_artifact_uri": "file://defra_2025_mini.xlsx",
+      "row_ref": "Sheet=Fuel Conversion;Row=6",
+      "source_publication": "DEFRA UK GHG Conversion Factors",
+      "source_record_id": "Sheet=Fuel Conversion;Row=6",
+      "source_url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025",
+      "source_version": "2025.1"
+    },
+    "factor_id_alias": "EF:DEFRA:fuel_conversion:compressed_natural_gas",
+    "factor_pack_urn": "urn:gl:pack:phase2-alpha:default:v1",
+    "geography_urn": "urn:gl:geo:global:world",
+    "gwp_basis": "ar6",
+    "gwp_horizon": 100,
+    "licence": "CC-BY-4.0",
+    "methodology_urn": "urn:gl:methodology:phase2-default",
+    "name": "DEFRA Fuel Conversion \u2014 compressed_natural_gas",
+    "resolution": "annual",
+    "review": {
+      "approved_by": "human:phase3@greenlang.io",
+      "review_status": "approved",
+      "reviewer": "human:phase3@greenlang.io"
+    },
+    "source_urn": "urn:gl:source:defra-2025",
+    "unit_urn": "urn:gl:unit:kgco2e/kwh",
+    "urn": "urn:gl:factor:phase3-alpha:defra:fuel_conversion:compressed_natural_gas:v1",
+    "value": 2.53718,
+    "vintage_end": "2025-12-31",
+    "vintage_start": "2025-01-01"
+  }
+]

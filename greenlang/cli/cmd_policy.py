@@ -373,8 +373,16 @@ def show_policy(
     location: Path = typer.Option(
         Path.home() / ".greenlang" / "policies", "--location", "-l"
     ),
-    syntax: bool = typer.Option(
-        True, "--syntax/--no-syntax", help="Syntax highlighting"
+    # Phase 3 unblock (2026-04-28): Typer 0.9.0 + Click 8.3 reject the
+    # "--syntax/--no-syntax" two-flag form on bool options because Typer
+    # passes flag_value=None and Click 8.3 then resolves the flag type to
+    # StringParamType, tripping the "Secondary flag is not valid for
+    # non-boolean flag" guard. Switching to a single opt-out "--no-syntax"
+    # flag preserves the original behaviour (highlighting on by default,
+    # users can disable it) and unblocks the entire `gl factors ingest`
+    # tree which previously failed at typer-tree compile time.
+    no_syntax: bool = typer.Option(
+        False, "--no-syntax", help="Disable syntax highlighting"
     ),
 ):
     """Display policy contents"""
@@ -390,6 +398,7 @@ def show_policy(
     with open(policy_file) as f:
         content = f.read()
 
+    syntax = not no_syntax
     if syntax:
         syntax_obj = Syntax(content, "python", theme="monokai", line_numbers=True)
         console.print(Panel(syntax_obj, title=f"Policy: {name}"))

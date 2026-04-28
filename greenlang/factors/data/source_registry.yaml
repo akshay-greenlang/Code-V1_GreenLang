@@ -529,6 +529,18 @@ sources:
     module: tbd.placeholder
     function: tbd_placeholder
     version: 0.0.0
+  # Phase 3 / Wave 1.5 — additive runner-dispatch fields. The unified
+  # ``IngestionPipelineRunner`` reads ``family`` to pick a parser
+  # family (excel | csv_json_xml | pdf_ocr | api_webhook | ecospold_mrio)
+  # and ``parser_module`` / ``parser_function`` to dispatch. Existing
+  # nested ``parser:`` block kept unchanged for the legacy callers.
+  family: excel
+  parser_module: greenlang.factors.ingestion.parsers._phase3_adapters
+  parser_function: parse
+  parser_version: 0.1.0
+  parser_commit_pinned: false
+  owner: methodology-lead@greenlang.io
+  status: alpha_v0_1
 - source_id: eu_cbam
   display_name: EU CBAM default values
   connector_only: false
