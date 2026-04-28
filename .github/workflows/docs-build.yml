@@ -6,12 +6,14 @@ on:
     paths:
       - 'docs/**'
       - '**.md'
+      - '.markdownlint.json'
       - 'mkdocs.yml'
       - '.github/workflows/docs-build.yml'
   pull_request:
     paths:
       - 'docs/**'
       - '**.md'
+      - '.markdownlint.json'
       - 'mkdocs.yml'
 
 jobs:
@@ -110,13 +112,7 @@ jobs:
             !node_modules
             !.venv*
             !test*
-          config: |
-            {
-              "default": true,
-              "MD013": false,
-              "MD033": false,
-              "MD041": false
-            }
+          config: .markdownlint.json
 
       - name: Validate code examples in docs
         run: |

@@ -22,6 +22,7 @@ on:
       - 'greenlang/**'
       - 'requirements*.txt'
       - 'pyproject.toml'
+      - '.github/workflows/docker-build.yml'
     tags:
       - 'v*'
 
@@ -33,6 +34,7 @@ on:
       - 'greenlang/**'
       - 'requirements*.txt'
       - 'pyproject.toml'
+      - '.github/workflows/docker-build.yml'
 
   workflow_dispatch:
     inputs:
