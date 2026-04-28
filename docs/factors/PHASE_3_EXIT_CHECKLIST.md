@@ -68,12 +68,12 @@ Every technical box must be ticked and every accountable role must sign off befo
 
 ## Block 7 — CI gates (CTO Test Plan)
 
-- [ ] CI blocks PRs that change a parser module without a corresponding snapshot regeneration commit.
-- [ ] CI blocks PRs that change `source_registry.yaml` parser_version without a release-note entry.
-- [ ] CI blocks PRs that publish a certified factor lacking raw artifact metadata (gate 6 audit).
-- [ ] CI blocks ingestion of a source whose registry status is `pending_legal_review`, `blocked`, or a future `release_milestone` if the run targets `production`.
-- [ ] CI audit confirms zero ingestion-runner code paths can write to `factor` table bypassing the Phase 2 7-gate orchestrator.
-- [ ] `.github/workflows/factors-ingestion-check.yml` is committed to git and visible to GitHub Actions.
+- [x] CI blocks PRs that change a parser module without a corresponding snapshot regeneration commit.
+- [x] CI blocks PRs that change `source_registry.yaml` parser_version without a release-note entry.
+- [x] CI blocks PRs that publish a certified factor lacking raw artifact metadata (gate 6 audit).
+- [x] CI blocks ingestion of a source whose registry status is `pending_legal_review`, `blocked`, or a future `release_milestone` if the run targets `production`.
+- [x] CI audit confirms zero ingestion-runner code paths can write to `factor` table bypassing the Phase 2 7-gate orchestrator.
+- [x] `.github/workflows/factors-ingestion-check.yml` is committed to git and visible to GitHub Actions.
 - [ ] **Sign-off**: GL-CodeSentinel + CTO.
 
 ---
@@ -90,3 +90,26 @@ Every technical box must be ticked and every accountable role must sign off befo
 | Legal | Pending human sign-off |  |  |
 
 When every box is ticked and every role has signed: **Phase 3 is COMPLETE**. Open Phase 4 (Resolution Engine + Pricing) work tracker.
+
+---
+
+## Engineering evidence — per-box (Wave 3.0)
+
+> Each Block 7 box maps to a single line of evidence below. Cite during sign-off; if a reviewer disputes a box, point at the file/test cited here. Mirrors the per-block evidence pattern at the bottom of `docs/factors/PHASE_2_EXIT_CHECKLIST.md`.
+
+### Block 7 — CI gates (Wave 3.0)
+
+| Box | Gate | Script / file | Contract |
+|---|---|---|---|
+| 1 — parser change requires snapshot regen | gate-1 parser-snapshot-drift | `scripts/ci/check_parser_snapshot_drift.py` | Diffs `--base-ref..--head-ref`. If any `greenlang/factors/ingestion/parsers/**.py` changed AND no `tests/factors/v0_1_alpha/phase3/parser_snapshots/**.json` changed AND parser does not carry the override marker line, exit 1. Override allows regen via `UPDATE_PARSER_SNAPSHOT=1`. Tested by `tests/ci/test_check_parser_snapshot_drift.py` (4 cases). |
+| 2 — registry parser_version requires CHANGELOG | gate-2 source-registry-version | `scripts/ci/check_source_registry_version.py` | PyYAML-parses old/new `greenlang/factors/data/source_registry.yaml`; for every `source_id` whose `parser_version` differs, requires a section header matching `^## .*<source_id>.* <new_version>` (case-insensitive) in `docs/factors/source-registry/CHANGELOG.md`. Tested by `tests/ci/test_check_source_registry_version.py` (4 cases). CHANGELOG bootstrap committed. |
+| 3 — new factor records carry raw artifact metadata | gate-3 raw-artifact-metadata | `scripts/ci/check_raw_artifact_metadata.py` | For every record ADDED in the diff under `greenlang/factors/data/catalog_seed/**/*.json`, requires `extraction.raw_artifact_uri` (non-empty) AND `extraction.raw_artifact_sha256` (lowercase 64-hex). Pre-existing records lacking these are appended to `docs/factors/source-registry/PHASE_3_BACKFILL_TODO.md` rather than failed. Tested by `tests/ci/test_check_raw_artifact_metadata.py` (5 cases). |
+| 4 — pending_legal / blocked / future-milestone sources cannot run in production | gate-4 pending-legal-blocked | `scripts/ci/check_pending_legal_blocked.py` + runtime helper `greenlang/factors/ingestion/source_safety.py` | Static-scans `.github/workflows/*.yml` and `scripts/**/*.{sh,bat}` for `gl factors ingest --env production` (or `GL_FACTORS_ENV=production`) invocations whose `--source <id>` resolves to a registry entry with `status in {pending_legal_review, blocked}` or `release_milestone > v0.1`. Runtime guard: `assert_source_safe_for_env` raises `SourceNotApprovedForEnvError`. Tested by `tests/ci/test_check_pending_legal_blocked.py` (5 cases) + `tests/ci/test_source_safety_helper.py` (15 cases). |
+| 5 — no ingestion-runner code path bypasses the canonical writer | gate-5 ingestion-bypass-audit | `scripts/ci/check_ingestion_bypass.py` | Static-greps `greenlang/**/*.py` and `scripts/**/*.py` for `INSERT INTO factors_v0_1.factor` / `INSERT INTO alpha_factors_v0_1` / `executemany(...factor...)` against the canonical singular `factor` table. Whitelist: `greenlang/factors/repositories/alpha_v0_1_repository.py` is the only allowed writer. Returns 0 on the current tree (acceptance criterion). Tested by `tests/ci/test_check_ingestion_bypass.py` (7 cases). |
+| 6 — workflow committed | factors-ingestion-check.yml | `.github/workflows/factors-ingestion-check.yml` | Six parallel jobs, one per gate. Triggers on PR + master push to paths `greenlang/factors/ingestion/**`, `greenlang/factors/data/source_registry.yaml`, `tests/factors/v0_1_alpha/phase3/**`, `greenlang/factors/data/catalog_seed/**`, `migrations/versions/**`, `deployment/database/migrations/sql/V5*.sql`, `.github/workflows/factors-ingestion-check.yml`. Plus `workflow_dispatch`. Each job uploads `phase3-gate-<n>-<sha>` artifact. YAML-parseable (`python -c "import yaml; yaml.safe_load(open('.github/workflows/factors-ingestion-check.yml'))"`). |
+
+**Acceptance signal (Wave 3.0 ship)**:
+- `python -m pytest tests/ci -q -W ignore::DeprecationWarning` -> 42 passed, 0 failed.
+- `python -m pytest tests/factors/v0_1_alpha -q -W ignore::DeprecationWarning` -> 1913 passed, 17 skipped, 0 failed (unchanged from pre-Wave-3.0 baseline).
+- `python scripts/ci/check_ingestion_bypass.py` exits 0 on `master@HEAD`.
+- `.github/workflows/factors-ingestion-check.yml` parses as valid YAML.

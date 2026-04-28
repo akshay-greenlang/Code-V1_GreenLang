@@ -1,0 +1,228 @@
+# GreenLang Factors - Phase 3 ingestion CI gates (Wave 3.0)
+#
+# Authority: CTO Phase 3 brief 2026-04-28, Block 7 (CI gates).
+# Owner    : GL-Factors Engineering (Wave 3.0).
+#
+# Purpose: enforce the six Phase 3 ingestion guardrails on every PR + master push:
+#   gate-1: parser-snapshot drift (parser change requires snapshot regen)
+#   gate-2: source_registry parser_version requires CHANGELOG entry
+#   gate-3: every NEW catalog seed factor record must carry raw artifact metadata
+#   gate-4: pending_legal / blocked / future-milestone sources cannot run in production
+#   gate-5: no SQL bypasses to the factor table outside the canonical repository
+#   gate-6: ingestion-bypass static audit (factor-table writes outside whitelist)
+#
+# All six gates are scripted as standalone Python modules under scripts/ci/.
+# Every gate also has unit tests under tests/ci/.
+
+name: factors-ingestion-check
+
+on:
+  pull_request:
+    paths:
+      - 'greenlang/factors/ingestion/**'
+      - 'greenlang/factors/data/source_registry.yaml'
+      - 'tests/factors/v0_1_alpha/phase3/**'
+      - 'greenlang/factors/data/catalog_seed/**'
+      - 'migrations/versions/**'
+      - 'deployment/database/migrations/sql/V5*.sql'
+      - '.github/workflows/factors-ingestion-check.yml'
+  push:
+    branches: [master]
+    paths:
+      - 'greenlang/factors/ingestion/**'
+      - 'greenlang/factors/data/source_registry.yaml'
+      - 'tests/factors/v0_1_alpha/phase3/**'
+      - 'greenlang/factors/data/catalog_seed/**'
+      - 'migrations/versions/**'
+      - 'deployment/database/migrations/sql/V5*.sql'
+      - '.github/workflows/factors-ingestion-check.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate-1-parser-snapshot-drift:
+    name: gate-1 parser-snapshot-drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install PyYAML
+        run: pip install pyyaml
+      - name: Determine base ref
+        id: base
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "ref=origin/${{ github.base_ref }}" >> $GITHUB_OUTPUT
+          else
+            echo "ref=HEAD~1" >> $GITHUB_OUTPUT
+          fi
+      - name: Run parser-snapshot-drift gate
+        run: |
+          python scripts/ci/check_parser_snapshot_drift.py \
+            --base-ref ${{ steps.base.outputs.ref }} \
+            --head-ref HEAD \
+            | tee gate-1-output.txt
+      - name: Upload gate-1 output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase3-gate-1-${{ github.sha }}
+          path: gate-1-output.txt
+
+  gate-2-registry-version:
+    name: gate-2 source-registry-version
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install PyYAML
+        run: pip install pyyaml
+      - name: Determine base ref
+        id: base
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "ref=origin/${{ github.base_ref }}" >> $GITHUB_OUTPUT
+          else
+            echo "ref=HEAD~1" >> $GITHUB_OUTPUT
+          fi
+      - name: Run source-registry-version gate
+        run: |
+          python scripts/ci/check_source_registry_version.py \
+            --base-ref ${{ steps.base.outputs.ref }} \
+            --head-ref HEAD \
+            | tee gate-2-output.txt
+      - name: Upload gate-2 output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase3-gate-2-${{ github.sha }}
+          path: gate-2-output.txt
+
+  gate-3-raw-artifact-metadata:
+    name: gate-3 raw-artifact-metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install PyYAML
+        run: pip install pyyaml
+      - name: Determine base ref
+        id: base
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "ref=origin/${{ github.base_ref }}" >> $GITHUB_OUTPUT
+          else
+            echo "ref=HEAD~1" >> $GITHUB_OUTPUT
+          fi
+      - name: Run raw-artifact-metadata gate
+        run: |
+          python scripts/ci/check_raw_artifact_metadata.py \
+            --base-ref ${{ steps.base.outputs.ref }} \
+            --head-ref HEAD \
+            | tee gate-3-output.txt
+      - name: Upload gate-3 output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase3-gate-3-${{ github.sha }}
+          path: gate-3-output.txt
+
+  gate-4-pending-legal-blocked:
+    name: gate-4 pending-legal-blocked
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install PyYAML
+        run: pip install pyyaml
+      - name: Run pending-legal-blocked gate
+        run: |
+          python scripts/ci/check_pending_legal_blocked.py \
+            | tee gate-4-output.txt
+      - name: Upload gate-4 output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase3-gate-4-${{ github.sha }}
+          path: gate-4-output.txt
+
+  gate-5-ingestion-bypass:
+    name: gate-5 ingestion-bypass-audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run ingestion-bypass static-audit gate
+        run: |
+          python scripts/ci/check_ingestion_bypass.py \
+            | tee gate-5-output.txt
+      - name: Upload gate-5 output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase3-gate-5-${{ github.sha }}
+          path: gate-5-output.txt
+
+  gate-6-ci-tests:
+    name: gate-6 ci-tests-suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install PyYAML + pytest
+        run: pip install pyyaml pytest
+      - name: Run tests/ci suite (gate self-tests)
+        run: |
+          python -m pytest tests/ci -q -W ignore::DeprecationWarning \
+            | tee gate-6-output.txt
+      - name: Upload gate-6 output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase3-gate-6-${{ github.sha }}
+          path: gate-6-output.txt

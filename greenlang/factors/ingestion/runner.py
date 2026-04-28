@@ -77,6 +77,9 @@ from greenlang.factors.ingestion.pipeline import (
     stage_for_target_status,
 )
 from greenlang.factors.ingestion.run_repository import IngestionRunRepository
+from greenlang.factors.ingestion.source_safety import (
+    assert_source_safe_for_env,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -209,6 +212,7 @@ class IngestionPipelineRunner:
         fetcher_factory: Optional[Callable[[str], BaseFetcher]] = None,
         diff_root: Optional[Path] = None,
         operator: str = "bot:ingestion-runner",
+        env: str = "dev",
     ) -> None:
         self._run_repo = run_repo
         self._factor_repo = factor_repo
@@ -220,6 +224,11 @@ class IngestionPipelineRunner:
             diff_root or Path.cwd() / ".greenlang" / "factors" / "diffs"
         )
         self._operator = operator
+        # Phase 3 / Wave 3.0 (Block 7 / Gate 4) — environment label used by
+        # ``run()`` and ``publish()`` to call
+        # :func:`assert_source_safe_for_env`. Tests + dev workstations leave
+        # the default ``"dev"``, which is a no-op.
+        self._env = (env or "dev").strip().lower()
 
     # -- helpers ----------------------------------------------------------
 
@@ -720,6 +729,7 @@ class IngestionPipelineRunner:
         *,
         approver: str,
         batch_id: Optional[str] = None,
+        source_entry: Optional[Dict[str, Any]] = None,
     ) -> PublishResult:
         """Stage 7 — flip every staged URN for this run into production.
 
@@ -738,6 +748,12 @@ class IngestionPipelineRunner:
                 current_status=run.status.value,
                 run_id=run_id,
             )
+        # Phase 3 / Wave 3.0 (Block 7 / Gate 4) — last-ditch source-safety check
+        # at production publish time. The ``run()`` convenience already enforces
+        # this at the start of the run, but operators that drive the runner
+        # stage-by-stage land here directly.
+        if self._env == "production" and source_entry is not None:
+            assert_source_safe_for_env(source_entry, self._env)
         started = time.monotonic()
         try:
             staging_urns = [
@@ -830,6 +846,7 @@ class IngestionPipelineRunner:
         auto_publish: bool = False,
         approver: Optional[str] = None,
         allow_cross_source_supersede: bool = False,
+        source_entry: Optional[Dict[str, Any]] = None,
     ) -> IngestionRun:
         """Drive stages 1-6 (default) or 1-7 (with ``approver``) end-to-end.
 
@@ -846,6 +863,12 @@ class IngestionPipelineRunner:
                 current_status=None,
                 run_id=None,
             )
+
+        # Phase 3 / Wave 3.0 (Block 7 / Gate 4) — when this runner targets
+        # ``production``, the source entry MUST clear status + release_milestone
+        # gates. dev/test/staging is a no-op.
+        if self._env == "production" and source_entry is not None:
+            assert_source_safe_for_env(source_entry, self._env)
 
         run = self._run_repo.create(
             source_urn=source_urn,
