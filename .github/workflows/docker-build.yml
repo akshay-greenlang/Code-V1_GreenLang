@@ -56,7 +56,9 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  # OCI image references must be lowercase. Keep this explicit because the
+  # GitHub repository is named `Code-V1_GreenLang`.
+  IMAGE_NAME: akshay-greenlang/code-v1_greenlang
   # Cosign verification settings
   COSIGN_EXPERIMENTAL: "true"
 

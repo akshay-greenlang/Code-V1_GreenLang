@@ -47,8 +47,8 @@ glfactors --help
 
 ## 2. Get an API key
 
-Free Community-tier keys are issued from the
-[Pricing page](/pricing) (rate limit: 60 RPM, 10 burst, 1 export per
+Free Community-tier keys are issued from the pricing page (rate limit:
+60 RPM, 10 burst, 1 export per
 15 minutes — see `greenlang/factors/middleware/rate_limiter.py`).
 
 Pro and higher tiers are purchased via Stripe Checkout from the same page;
@@ -348,4 +348,4 @@ served from `/api/v1/factors/keys` — covered in
   [`docs/factors/commercial_feature_matrix.md`](commercial_feature_matrix.md).
 - **OEM / white-label deployment** —
   [`docs/factors/OEM_DEPLOYMENT.md`](OEM_DEPLOYMENT.md).
-- **Pricing & SKUs** — [Pricing page](/pricing).
+- **Pricing & SKUs** — pricing page.
