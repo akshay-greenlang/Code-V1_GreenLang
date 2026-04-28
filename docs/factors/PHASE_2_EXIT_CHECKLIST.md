@@ -6,7 +6,7 @@
 
 Every technical box must be ticked and every accountable role must sign off before Phase 2 is declared formally complete and Phase 3 (Resolution + Pricing engines) may start.
 
-> **Engineering verification snapshot**: 2026-04-28 (post-commit `6c9b91fd` + branch-coverage tests). Block-by-block audit by parallel Codex agents confirmed **35/35 engineering boxes GREEN**. Phase 2 acceptance runner: `10/10 PASS` in 552s (cold) / ~175s (warm). Full v0.1 alpha suite: **1,789 passed, 15 skipped, 0 failed** in 140.72s. New-module branch coverage: **97.15% total** (publish_gates 95.02%, activity_loader 96.88%, geography_loader 99.44%, unit_loader 99.30%, methodology_loader 99.24%, _common 100%). This checklist records engineering evidence; it does **not** replace the required human CTO / Methodology / Backend / Head of Data / Test / Legal signatures.
+> **Engineering verification snapshot**: 2026-04-28 (post-commit `6c9b91fd` + branch-coverage tests). Block-by-block audit by parallel Codex agents confirmed **35/35 engineering boxes GREEN**. Phase 2 acceptance runner: `10/10 PASS` in 552s (cold) / ~175s (warm). Full v0.1 alpha suite: **1,789 passed, 15 skipped, 0 failed** in 140.72s. New-module branch coverage: **97.15% total** (`publish_gates` 95.02%, `activity_loader` 96.88%, `geography_loader` 99.44%, `unit_loader` 99.30%, `methodology_loader` 99.24%, `_common` 100%). This checklist records engineering evidence; it does **not** replace the required human CTO / Methodology / Backend / Head of Data / Test / Legal signatures.
 
 ---
 
@@ -182,5 +182,5 @@ When every box is ticked and every role has signed: **Phase 2 is COMPLETE**. Ope
 | Box | Evidence |
 |---|---|
 | 10 acceptance suites green | `python scripts/factors/run_phase2_acceptance.py` — 10/10 PASS in 552s cold-cache |
-| Coverage ≥ 85% on new modules | publish_gates 95.02%, activity_loader 96.88%, geography_loader 99.44%, unit_loader 99.30%, methodology_loader 99.24%, _common 100%. Total 97.15%. Closed via 130 new branch tests in `test_publish_gates_branches.py` + `test_ontology_loader_branches.py` |
+| Coverage ≥ 85% on new modules | `publish_gates` 95.02%, `activity_loader` 96.88%, `geography_loader` 99.44%, `unit_loader` 99.30%, `methodology_loader` 99.24%, `_common` 100%. Total 97.15%. Closed via 130 new branch tests in `test_publish_gates_branches.py` + `test_ontology_loader_branches.py` |
 | No regressions in Phase 0/1 | Full `tests/factors/v0_1_alpha` — 1,789 passed, 15 skipped, 0 failed. The 15 skips are Postgres-only suites gated on `GL_TEST_POSTGRES_DSN` (intentional) |
