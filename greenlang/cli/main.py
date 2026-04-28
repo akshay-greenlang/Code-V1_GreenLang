@@ -725,6 +725,56 @@ def factors_ingest_paths(
     console.print(f"[green]Ingested[/green] {n} rows -> {sqlite}")
 
 
+# ---------------------------------------------------------------------------
+# Phase 3 — Click-based `gl factors ingest …` subcommand group.
+#
+# The new ingestion CLI is implemented as a Click group (see
+# greenlang/factors/cli_ingest.py). To expose it under the Typer-based
+# `gl factors` namespace without rewriting every subcommand, we register
+# a forwarding Typer command that delegates argv to the Click group.
+# This keeps help/--help rendering correct at both levels:
+#   * `gl factors ingest --help`           -> Click group help
+#   * `gl factors ingest <sub> --help`     -> Click subcommand help
+# The legacy argparse subcommands (`ingest-builtin`, `ingest-paths`,
+# `bulk-ingest`) are intentionally left in place; Phase 3 does not
+# migrate them.
+#
+# TODO(phase3-cli-bridge): As of 2026-04-28, `gl factors --help` itself
+# fails with `TypeError: Secondary flag is not valid for non-boolean
+# flag.` due to a PRE-EXISTING Typer 0.x compatibility issue in another
+# factors_app command (verified by stashing this block — the error is
+# unchanged). This forwarder is therefore correctly registered but
+# cannot be exercised through `gl factors ingest …` until that
+# unrelated breakage is fixed. Stand-alone invocation works today via
+# `python -m greenlang.factors.cli_ingest <subcommand>`.
+# ---------------------------------------------------------------------------
+@factors_app.command(
+    "ingest",
+    context_settings={
+        "allow_extra_args": True,
+        "ignore_unknown_options": True,
+        "help_option_names": [],  # let Click handle --help downstream
+    },
+    help="Phase 3 raw-ingestion pipeline (fetch / parse / run / diff / stage / publish / rollback / status).",
+)
+def factors_ingest_group(
+    ctx: typer.Context,
+):
+    """Forward to the Click ingest group with the remaining argv."""
+    from greenlang.factors.cli_ingest import ingest_group
+
+    rc = 0
+    try:
+        ingest_group.main(args=list(ctx.args), standalone_mode=False)
+    except SystemExit as exc:
+        rc = exc.code if isinstance(exc.code, int) else (0 if exc.code is None else 1)
+    except Exception as exc:  # noqa: BLE001 — keep CLI resilient
+        console.print(f"[red]ingest error:[/red] {exc}")
+        rc = 2
+    if rc:
+        raise typer.Exit(rc)
+
+
 def main():
     """Main entry point for the gl CLI command"""
     app()
