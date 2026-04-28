@@ -466,7 +466,7 @@ jobs:
         continue-on-error: true
 
       - name: Create incident tracking issue
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const env = '${{ inputs.environment }}';
