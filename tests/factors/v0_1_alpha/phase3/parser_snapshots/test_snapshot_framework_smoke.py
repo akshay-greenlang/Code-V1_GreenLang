@@ -158,3 +158,154 @@ def test_regenerate_if_env_no_op_without_flag(tmp_path: Path, monkeypatch):
         "smoke", "0.1.0", snapshot_dir=tmp_path
     )
     assert not written.exists()
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 audit gap E — impossible-values detector smoke cases.
+# ---------------------------------------------------------------------------
+
+
+def _impossible_value_rules(diffs: List[Dict[str, Any]]) -> List[str]:
+    """Return the ``rule`` field of every impossible_value diff row."""
+    return [d.get("rule") for d in diffs if d.get("kind") == "impossible_value"]
+
+
+def test_impossible_value_negative_outside_allowed_category():
+    """value < 0 fails for category=fuel (not in allow-list)."""
+    parsed = [{"category": "fuel", "value": -0.5, "unit": "kgCO2e/kWh"}]
+    diffs = _helper.diff_impossible_values(parsed, golden=[])
+    assert "negative_value_outside_allowed_categories" in _impossible_value_rules(diffs)
+
+
+def test_impossible_value_negative_allowed_for_sequestration():
+    """value < 0 is OK when category is sequestration / land-use / biogenic."""
+    for cat in (
+        "forestry-and-land-use",
+        "sequestration",
+        "biogenic-removal",
+    ):
+        parsed = [{"category": cat, "value": -1.5, "unit": "kgCO2e/ha"}]
+        diffs = _helper.diff_impossible_values(parsed, golden=[])
+        # Must NOT flag negative_value violation.
+        assert "negative_value_outside_allowed_categories" not in _impossible_value_rules(
+            diffs
+        ), f"unexpected violation for category={cat!r}"
+
+
+def test_impossible_value_zero_outside_cbam_currency_pair():
+    """value == 0 fails for non-CBAM categories regardless of unit."""
+    parsed = [{"category": "fuel", "value": 0.0, "unit": "kgCO2e/kWh"}]
+    diffs = _helper.diff_impossible_values(parsed, golden=[])
+    assert "zero_value_outside_allowed_categories" in _impossible_value_rules(diffs)
+
+
+def test_impossible_value_zero_allowed_for_cbam_currency_unit():
+    """value == 0 is OK for category=cbam_default with currency unit."""
+    for unit in ("kg/usd", "kgCO2e/eur", "kg/USD"):
+        parsed = [{"category": "cbam_default", "value": 0, "unit": unit}]
+        diffs = _helper.diff_impossible_values(parsed, golden=[])
+        assert "zero_value_outside_allowed_categories" not in _impossible_value_rules(
+            diffs
+        ), f"unexpected zero-violation for unit={unit!r}"
+
+
+def test_impossible_value_zero_cbam_with_non_currency_unit_still_flags():
+    """Even cbam_default rows must use currency units when value==0."""
+    parsed = [{"category": "cbam_default", "value": 0, "unit": "kgCO2e/kWh"}]
+    diffs = _helper.diff_impossible_values(parsed, golden=[])
+    assert "zero_value_outside_allowed_categories" in _impossible_value_rules(diffs)
+
+
+def test_impossible_value_gwp_horizon_outside_allowed_set():
+    """gwp_horizon must be one of {20, 100, 500}."""
+    parsed = [
+        {"category": "fuel", "value": 0.5, "unit": "kgCO2e/kWh", "gwp_horizon": 50},
+    ]
+    diffs = _helper.diff_impossible_values(parsed, golden=[])
+    assert "gwp_horizon_outside_allowed_set" in _impossible_value_rules(diffs)
+
+
+def test_impossible_value_gwp_horizon_accepts_canonical_set():
+    """gwp_horizon=20/100/500 is silent."""
+    for h in (20, 100, 500, "100"):
+        parsed = [
+            {
+                "category": "fuel",
+                "value": 0.5,
+                "unit": "kgCO2e/kWh",
+                "gwp_horizon": h,
+            }
+        ]
+        diffs = _helper.diff_impossible_values(parsed, golden=[])
+        assert "gwp_horizon_outside_allowed_set" not in _impossible_value_rules(diffs)
+
+
+def test_impossible_value_vintage_end_before_start():
+    """vintage_end < vintage_start is a violation."""
+    parsed = [
+        {
+            "category": "fuel",
+            "value": 0.5,
+            "unit": "kgCO2e/kWh",
+            "vintage_start": "2024-06-01",
+            "vintage_end": "2024-01-01",
+        }
+    ]
+    diffs = _helper.diff_impossible_values(parsed, golden=[])
+    assert "vintage_end_before_vintage_start" in _impossible_value_rules(diffs)
+
+
+def test_impossible_value_confidence_outside_unit_interval():
+    """confidence < 0 or > 1 is a violation."""
+    for cf in (-0.1, 1.1, 5):
+        parsed = [
+            {
+                "category": "fuel",
+                "value": 0.5,
+                "unit": "kgCO2e/kWh",
+                "confidence": cf,
+            }
+        ]
+        diffs = _helper.diff_impossible_values(parsed, golden=[])
+        assert "confidence_outside_unit_interval" in _impossible_value_rules(diffs)
+
+
+def test_impossible_value_confidence_inside_unit_interval_silent():
+    """confidence in [0, 1] does not trigger the rule."""
+    for cf in (0.0, 0.5, 1.0):
+        parsed = [
+            {
+                "category": "fuel",
+                "value": 0.5,
+                "unit": "kgCO2e/kWh",
+                "confidence": cf,
+            }
+        ]
+        diffs = _helper.diff_impossible_values(parsed, golden=[])
+        assert "confidence_outside_unit_interval" not in _impossible_value_rules(diffs)
+
+
+def test_impossible_value_clean_row_emits_no_diffs():
+    """A row that satisfies every rule emits zero impossible_value diffs."""
+    parsed = [
+        {
+            "category": "fuel",
+            "value": 0.5,
+            "unit": "kgCO2e/kWh",
+            "gwp_horizon": 100,
+            "vintage_start": "2024-01-01",
+            "vintage_end": "2024-12-31",
+            "confidence": 0.9,
+        }
+    ]
+    diffs = _helper.diff_impossible_values(parsed, golden=[])
+    assert diffs == []
+
+
+def test_impossible_value_diff_row_shape_carries_kind_marker():
+    """Every flagged violation emits kind='impossible_value'."""
+    parsed = [{"category": "fuel", "value": -1, "unit": "kgCO2e/kWh"}]
+    diffs = _helper.diff_impossible_values(parsed, golden=[])
+    assert all(d.get("kind") == "impossible_value" for d in diffs)
+    assert all("rule" in d for d in diffs)
+    assert all("row_index" in d for d in diffs)

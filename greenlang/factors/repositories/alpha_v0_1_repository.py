@@ -240,7 +240,11 @@ class AlphaFactorRepository:
         " created_at TIMESTAMPTZ DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),"
         " retired_at TIMESTAMPTZ"
         ")",
-        # V501 mirror — source_artifacts (raw immutable bytes).
+        # V501 + V510 mirror — source_artifacts (raw immutable bytes).
+        # The base 11 columns come from V505. Phase 3 audit gap C extended
+        # the schema to the full 16+ Phase 3 contract row; the additive
+        # columns are appended below so an existing table is migrated by
+        # the post-DDL ALTER TABLE block in :meth:`_ensure_schema`.
         "CREATE TABLE IF NOT EXISTS alpha_source_artifacts_v0_1 ("
         " pk_id INTEGER PRIMARY KEY AUTOINCREMENT,"
         " sha256 TEXT NOT NULL UNIQUE,"
@@ -253,7 +257,17 @@ class AlphaFactorRepository:
         " parser_version TEXT,"
         " parser_commit TEXT,"
         " ingested_at TIMESTAMPTZ DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),"
-        " metadata TEXT"
+        " metadata TEXT,"
+        # V510 additive columns (Phase 3 audit gap C).
+        " source_url TEXT,"
+        " source_publication_date TEXT,"
+        " parser_module TEXT,"
+        " parser_function TEXT,"
+        " operator TEXT,"
+        " licence_class TEXT,"
+        " redistribution_class TEXT,"
+        " ingestion_run_id TEXT,"
+        " status TEXT NOT NULL DEFAULT 'fetched'"
         ")",
         # V503 mirror — provenance_edges (factor URN -> source_artifact).
         "CREATE TABLE IF NOT EXISTS alpha_provenance_edges_v0_1 ("
@@ -458,6 +472,26 @@ class AlphaFactorRepository:
                 conn.execute(ddl)
             for ddl in self._SQLITE_INDEXES:
                 conn.execute(ddl)
+            # Phase 3 audit gap C — additive ALTER TABLE for the
+            # extended source_artifacts contract. ``CREATE TABLE IF NOT
+            # EXISTS`` is a no-op on a pre-existing alpha DB so the
+            # additive columns must be backfilled here. SQLite's ALTER
+            # TABLE ADD COLUMN raises on duplicate; swallow that.
+            for col_ddl in (
+                "ALTER TABLE alpha_source_artifacts_v0_1 ADD COLUMN source_url TEXT",
+                "ALTER TABLE alpha_source_artifacts_v0_1 ADD COLUMN source_publication_date TEXT",
+                "ALTER TABLE alpha_source_artifacts_v0_1 ADD COLUMN parser_module TEXT",
+                "ALTER TABLE alpha_source_artifacts_v0_1 ADD COLUMN parser_function TEXT",
+                "ALTER TABLE alpha_source_artifacts_v0_1 ADD COLUMN operator TEXT",
+                "ALTER TABLE alpha_source_artifacts_v0_1 ADD COLUMN licence_class TEXT",
+                "ALTER TABLE alpha_source_artifacts_v0_1 ADD COLUMN redistribution_class TEXT",
+                "ALTER TABLE alpha_source_artifacts_v0_1 ADD COLUMN ingestion_run_id TEXT",
+                "ALTER TABLE alpha_source_artifacts_v0_1 ADD COLUMN status TEXT NOT NULL DEFAULT 'fetched'",
+            ):
+                try:
+                    conn.execute(col_ddl)
+                except Exception:  # noqa: BLE001 — column may already exist
+                    pass
         finally:
             if self._memory_conn is None:
                 conn.close()

@@ -44,6 +44,10 @@ __all__ = [
     "snapshot_path",
     "DEFAULT_REGEN_ENV_VAR",
     "REQUIRED_PROVENANCE_FIELDS",
+    "diff_impossible_values",
+    "NEGATIVE_VALUE_ALLOWED_CATEGORIES",
+    "ZERO_VALUE_ALLOWED_CATEGORIES",
+    "VALID_GWP_HORIZONS",
 ]
 
 
@@ -180,6 +184,195 @@ def _diff_missing_provenance(
         summary.setdefault(field, []).append(idx)
     lines = [f"  - {field}: rows {indices}" for field, indices in summary.items()]
     return "missing required provenance fields:\n" + "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 audit gap E — impossible-values detector.
+# ---------------------------------------------------------------------------
+
+
+#: Categories where a NEGATIVE numeric ``value`` is semantically valid.
+#: Land-use sequestration / biogenic-removal factors are negative by
+#: design (they REMOVE CO2e); refusing them at the snapshot gate would
+#: block the legitimate downstream parsers.
+NEGATIVE_VALUE_ALLOWED_CATEGORIES: Tuple[str, ...] = (
+    "forestry-and-land-use",
+    "sequestration",
+    "biogenic-removal",
+)
+
+#: Categories where a ZERO numeric ``value`` is semantically valid.
+#: CBAM default factors with currency-denominated units (kg/usd, kg/eur)
+#: legitimately publish zero values for low-carbon imports — refusing
+#: them at the gate would block the EU CBAM family.
+ZERO_VALUE_ALLOWED_CATEGORIES: Tuple[str, ...] = ("cbam_default",)
+
+#: Allowed GWP horizons (per IPCC AR1-AR6). Anything outside this set is
+#: a parser bug — the source publication MUST specify one of these.
+VALID_GWP_HORIZONS: Tuple[int, ...] = (20, 100, 500)
+
+
+def _is_currency_denominated_unit(unit: Any) -> bool:
+    """Return True iff ``unit`` is a string like ``*/usd`` or ``*/eur``."""
+    if not isinstance(unit, str):
+        return False
+    lower = unit.lower()
+    # We accept any unit whose denominator slot ends in usd/eur.
+    return lower.endswith("/usd") or lower.endswith("/eur")
+
+
+def _row_value(row: Dict[str, Any]) -> Any:
+    """Extract a row's numeric value via the canonical or fallback keys."""
+    if "value" in row:
+        return row["value"]
+    return row.get("factor_value")
+
+
+def _row_unit(row: Dict[str, Any]) -> Any:
+    return row.get("unit") or row.get("unit_symbol") or row.get("unit_urn")
+
+
+def _row_category(row: Dict[str, Any]) -> str:
+    cat = row.get("category") or row.get("category_urn") or ""
+    return str(cat).strip().lower()
+
+
+def _diff_impossible_values(
+    parsed: List[Dict[str, Any]],
+    golden: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """Return one diff row per impossible-value violation in ``parsed``.
+
+    Phase 3 audit gap E — flags physically impossible / contractually
+    invalid values that slipped through the parser. Each violation
+    surfaces as a diff row dict with ``kind='impossible_value'`` so the
+    snapshot harness can render a single human-readable failure message
+    when the test fails.
+
+    Rules
+    -----
+    * ``value < 0`` UNLESS row's ``category`` is in
+      :data:`NEGATIVE_VALUE_ALLOWED_CATEGORIES`.
+    * ``value == 0`` UNLESS row's ``category`` is in
+      :data:`ZERO_VALUE_ALLOWED_CATEGORIES` AND ``unit`` is
+      currency-denominated (``*/usd`` or ``*/eur``).
+    * ``gwp_horizon`` not in :data:`VALID_GWP_HORIZONS` (when present).
+    * ``vintage_end < vintage_start`` when both are present.
+    * ``confidence`` outside ``[0, 1]`` (when present).
+
+    The ``golden`` argument is currently unused — the detector evaluates
+    the parsed output in isolation (impossible-value rules are absolute,
+    not relative to the golden). The signature accepts both so future
+    extensions can compare against historical norms.
+    """
+    _ = golden  # currently unused; reserved for future relative checks.
+    diffs: List[Dict[str, Any]] = []
+    for idx, row in enumerate(parsed or []):
+        if not isinstance(row, dict):
+            continue
+        category = _row_category(row)
+        value = _row_value(row)
+        unit = _row_unit(row)
+
+        # Rule 1: negative value outside the allow-list.
+        if isinstance(value, (int, float)) and value < 0:
+            if category not in NEGATIVE_VALUE_ALLOWED_CATEGORIES:
+                diffs.append(
+                    {
+                        "kind": "impossible_value",
+                        "rule": "negative_value_outside_allowed_categories",
+                        "row_index": idx,
+                        "category": category,
+                        "value": value,
+                    }
+                )
+
+        # Rule 2: zero value outside the allow-list / currency-unit pair.
+        if isinstance(value, (int, float)) and value == 0:
+            zero_allowed = (
+                category in ZERO_VALUE_ALLOWED_CATEGORIES
+                and _is_currency_denominated_unit(unit)
+            )
+            if not zero_allowed:
+                diffs.append(
+                    {
+                        "kind": "impossible_value",
+                        "rule": "zero_value_outside_allowed_categories",
+                        "row_index": idx,
+                        "category": category,
+                        "value": value,
+                        "unit": unit,
+                    }
+                )
+
+        # Rule 3: gwp_horizon must be one of {20, 100, 500} when present.
+        gwp = row.get("gwp_horizon")
+        if gwp is not None:
+            try:
+                gwp_int = int(gwp)
+            except (TypeError, ValueError):
+                gwp_int = None
+            if gwp_int is None or gwp_int not in VALID_GWP_HORIZONS:
+                diffs.append(
+                    {
+                        "kind": "impossible_value",
+                        "rule": "gwp_horizon_outside_allowed_set",
+                        "row_index": idx,
+                        "gwp_horizon": gwp,
+                    }
+                )
+
+        # Rule 4: vintage_end < vintage_start when both present.
+        v_start = row.get("vintage_start")
+        v_end = row.get("vintage_end")
+        if v_start is not None and v_end is not None:
+            try:
+                if str(v_end) < str(v_start):
+                    diffs.append(
+                        {
+                            "kind": "impossible_value",
+                            "rule": "vintage_end_before_vintage_start",
+                            "row_index": idx,
+                            "vintage_start": v_start,
+                            "vintage_end": v_end,
+                        }
+                    )
+            except TypeError:
+                # Mixed comparable types — we treat as suspicious.
+                diffs.append(
+                    {
+                        "kind": "impossible_value",
+                        "rule": "vintage_end_uncomparable_to_vintage_start",
+                        "row_index": idx,
+                        "vintage_start": v_start,
+                        "vintage_end": v_end,
+                    }
+                )
+
+        # Rule 5: confidence outside [0, 1] when present.
+        confidence = row.get("confidence")
+        if confidence is not None:
+            try:
+                cf = float(confidence)
+            except (TypeError, ValueError):
+                cf = None
+            if cf is None or cf < 0.0 or cf > 1.0:
+                diffs.append(
+                    {
+                        "kind": "impossible_value",
+                        "rule": "confidence_outside_unit_interval",
+                        "row_index": idx,
+                        "confidence": confidence,
+                    }
+                )
+
+    return diffs
+
+
+# Public alias matching the audit-spec name (the ``_`` prefix is kept
+# on the implementation for module-internal callers; the public name is
+# exported via __all__ for tests + snapshot consumers).
+diff_impossible_values = _diff_impossible_values
 
 
 # ---------------------------------------------------------------------------

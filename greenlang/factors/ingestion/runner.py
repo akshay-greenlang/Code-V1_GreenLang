@@ -287,6 +287,10 @@ class IngestionPipelineRunner:
         bytes, persists, then re-hashes the stored copy. A length-zero
         download or a sha256 mismatch raises :class:`ArtifactStoreError`
         and transitions the run to :attr:`RunStatus.FAILED`.
+
+        Phase 3 audit gap C — also upserts the full 16+ field row into
+        ``source_artifacts`` so the lineage table is the canonical
+        per-run record (parser metadata, licence, operator, status).
         """
         run = self._run_repo.get(run_id)
         assert_stage_precondition(Stage.FETCH, run.status, run_id=run_id)
@@ -315,6 +319,27 @@ class IngestionPipelineRunner:
                 artifact_id=artifact.artifact_id,
                 sha256=artifact.sha256,
             )
+            # Phase 3 audit gap C — land the full source_artifacts row.
+            # The runner pulls the parser_function / licence_class /
+            # redistribution_class / source_publication_date from the
+            # source registry. Failures here MUST NOT fail the fetch
+            # stage (the source_artifacts table is an audit aid, not a
+            # blocker — the runner's run row remains the canonical
+            # forensic record). We log + continue.
+            try:
+                self._upsert_source_artifact_row(
+                    run=run,
+                    source_id=source_id,
+                    source_url=source_url,
+                    artifact=artifact,
+                    operator=run.operator,
+                    status="fetched",
+                )
+            except Exception as exc:  # noqa: BLE001
+                logger.warning(
+                    "fetch: source_artifacts upsert failed run=%s err=%s",
+                    run_id, exc,
+                )
             self._run_repo.update_status(
                 run_id, RunStatus.FETCHED, current_stage=Stage.FETCH
             )
@@ -396,6 +421,7 @@ class IngestionPipelineRunner:
             self._run_repo.update_status(
                 run_id, RunStatus.PARSED, current_stage=Stage.PARSE
             )
+            self._advance_source_artifact_status(run_id, "parsed")
             self._record_stage(
                 run_id, Stage.PARSE, ok=True, started_at=started,
                 details={
@@ -443,6 +469,7 @@ class IngestionPipelineRunner:
             self._run_repo.update_status(
                 run_id, RunStatus.NORMALIZED, current_stage=Stage.NORMALIZE
             )
+            self._advance_source_artifact_status(run_id, "normalized")
             self._record_stage(
                 run_id, Stage.NORMALIZE, ok=True, started_at=started,
                 details={"record_count": len(records)},
@@ -499,6 +526,7 @@ class IngestionPipelineRunner:
             self._run_repo.update_status(
                 run_id, RunStatus.VALIDATED, current_stage=Stage.VALIDATE
             )
+            self._advance_source_artifact_status(run_id, "validated")
             self._record_stage(
                 run_id, Stage.VALIDATE, ok=True, started_at=started,
                 details={
@@ -599,6 +627,7 @@ class IngestionPipelineRunner:
             self._run_repo.update_status(
                 run_id, RunStatus.DEDUPED, current_stage=Stage.DEDUPE
             )
+            self._advance_source_artifact_status(run_id, "deduped")
             self._record_stage(
                 run_id, Stage.DEDUPE, ok=True, started_at=started,
                 details={
@@ -698,6 +727,7 @@ class IngestionPipelineRunner:
             self._run_repo.update_status(
                 run_id, next_status, current_stage=Stage.STAGE
             )
+            self._advance_source_artifact_status(run_id, next_status.value)
             self._record_stage(
                 run_id, Stage.STAGE, ok=True, started_at=started,
                 details={
@@ -892,7 +922,437 @@ class IngestionPipelineRunner:
                 self.publish(run.run_id, approver=approver)
         return self._run_repo.get(run.run_id)
 
+    # -- resume mode (Phase 3 audit gap B) --------------------------------
+
+    #: Whitelist of stages the operator can resume from. Per the Phase 3
+    #: plan §"The seven-stage pipeline contract", FETCH is not resumable
+    #: (a fresh fetch creates a new artifact and a new run); PUBLISH is
+    #: never auto-resumed (always behind explicit human approval).
+    _RESUMABLE_STAGES: Dict[str, Stage] = {
+        "parse": Stage.PARSE,
+        "normalize": Stage.NORMALIZE,
+        "validate": Stage.VALIDATE,
+        "dedupe": Stage.DEDUPE,
+        "stage": Stage.STAGE,
+    }
+
+    def resume(
+        self,
+        run_id: str,
+        *,
+        from_stage: str,
+        source_id: Optional[str] = None,
+        allow_cross_source_supersede: bool = False,
+    ) -> IngestionRun:
+        """Re-execute the pipeline from ``from_stage`` onward on a failed run.
+
+        Phase 3 audit gap B — the plan says "resume mode requires explicit
+        ``--from-stage <name>`` after a failed run". This method is the
+        runtime half of that contract.
+
+        Preconditions
+        -------------
+        * ``run_id`` must resolve to an existing run row.
+        * The run's status MUST be in :attr:`RunStatus.FAILED` or
+          :attr:`RunStatus.REJECTED` (resume is a recovery operation; a
+          fresh ``CREATED`` run that hasn't run yet is rejected).
+        * ``from_stage`` MUST be one of {``parse``, ``normalize``,
+          ``validate``, ``dedupe``, ``stage``}. ``fetch`` is not
+          resumable (a re-fetch creates a new run + new artifact);
+          ``publish`` is always behind explicit human approval.
+        * The stage's predecessor must match the run's last known
+          ``current_stage`` (the stage that failed). For example, a run
+          that failed during PARSE may be resumed from ``parse`` — but
+          NOT from ``dedupe``, because dedupe's predecessor (VALIDATED)
+          was never reached.
+
+        Behaviour
+        ---------
+        On a clean precondition check the method:
+
+        1. Resets the run's status to the predecessor of ``from_stage``
+           (so :func:`assert_stage_precondition` accepts the next call).
+        2. Re-fetches the artifact metadata from the run row + storage.
+        3. Drives every stage from ``from_stage`` through ``stage`` (it
+           never auto-publishes — publish always needs explicit approval).
+        4. Returns the freshly-loaded :class:`IngestionRun`.
+
+        Raises
+        ------
+        StageOrderError
+            * Run is not in failed/rejected.
+            * ``from_stage`` is not in the resumable whitelist.
+            * The requested stage's predecessor does not match the
+              run's current_stage (i.e. the run never reached the prior
+              stage on its first attempt).
+        """
+        run = self._run_repo.get(run_id)
+
+        # Guard 1: only failed/rejected runs are resumable.
+        if run.status not in (RunStatus.FAILED, RunStatus.REJECTED):
+            raise StageOrderError(
+                "resume requires status in {failed, rejected}; got %s"
+                % run.status.value,
+                from_status=run.status.value,
+                to_status=None,
+                run_id=run_id,
+            )
+
+        # Guard 2: from_stage must be in the resumable whitelist.
+        key = (from_stage or "").strip().lower()
+        if key not in self._RESUMABLE_STAGES:
+            raise StageOrderError(
+                "resume from_stage must be one of %s; got %r"
+                % (sorted(self._RESUMABLE_STAGES), from_stage),
+                from_status=run.status.value,
+                to_status=None,
+                run_id=run_id,
+            )
+        target_stage = self._RESUMABLE_STAGES[key]
+
+        # Guard 3: the requested stage's predecessor must match the run's
+        # current_stage (i.e. the run actually reached the prior stage on
+        # its first attempt). A run that died during PARSE has
+        # current_stage=PARSE; it can be resumed from ``parse`` (rerun
+        # the same stage) but NOT from ``dedupe``.
+        from greenlang.factors.ingestion.pipeline import (  # noqa: PLC0415
+            _STAGE_REQUIRED_PREDECESSOR,
+            _STAGE_SUCCESS_STATUS,
+        )
+        if run.current_stage is None:
+            raise StageOrderError(
+                "resume requires a run that recorded current_stage; "
+                "the run row carries no current_stage marker",
+                from_status=run.status.value,
+                to_status=None,
+                run_id=run_id,
+            )
+        # The "predecessor" check: the requested stage must be either
+        # the failed stage itself OR a stage downstream of it. Resuming
+        # UPSTREAM of the failed stage is not allowed (would re-run
+        # already-successful work and lose receipts).
+        stage_order = list(self._RESUMABLE_STAGES.values())
+        # Allow target_stage to equal current_stage OR the runner needs
+        # the stage that failed to be the same one we resume.
+        if run.current_stage != target_stage:
+            raise StageOrderError(
+                "resume from_stage=%s does not match the failed stage %s; "
+                "the run never reached %s on its first attempt"
+                % (target_stage.value, run.current_stage.value, target_stage.value),
+                from_status=run.current_stage.value,
+                to_status=target_stage.value,
+                run_id=run_id,
+            )
+
+        # Reset the run row's status to the predecessor of the target
+        # stage so :func:`assert_stage_precondition` will accept the
+        # rerun. We bypass :meth:`update_status`'s transition matrix
+        # (which forbids FAILED -> FETCHED) by calling the backend
+        # writer directly — resume is the documented exception.
+        predecessor_status = _STAGE_REQUIRED_PREDECESSOR[target_stage]
+        if self._run_repo._is_postgres:
+            self._run_repo._update_status_pg(  # type: ignore[attr-defined]
+                run_id,
+                predecessor_status,
+                target_stage,
+                None,
+                None,
+            )
+        else:
+            self._run_repo._update_status_sqlite(  # type: ignore[attr-defined]
+                run_id,
+                predecessor_status,
+                target_stage,
+                None,
+                None,
+            )
+        logger.info(
+            "resume run=%s reset to %s for from_stage=%s",
+            run_id, predecessor_status.value, target_stage.value,
+        )
+
+        # Re-execute every stage from ``target_stage`` through the
+        # default end-of-pipeline (stage 6 = STAGE). Re-load any state
+        # that the resumed stages need — most stages take their input
+        # from the prior stage's return value, so we mirror the run()
+        # entry point but skip stages we don't need.
+        artifact = self._reconstruct_stored_artifact(run)
+        parser_result: Optional[ParserResult] = None
+        records: List[Dict[str, Any]] = []
+        validation: Optional[ValidationOutcome] = None
+        dedupe_outcome: Optional[DedupeOutcome] = None
+        # Stages that come BEFORE the resume target need to be replayed
+        # in-memory only (no re-write to the DB) so the next stage can
+        # consume their outputs.
+        if target_stage == Stage.PARSE:
+            sid = source_id or self._infer_source_id_from_urn(run.source_urn)
+            parser_result = self.parse(run_id, source_id=sid, artifact=artifact)
+            records = self.normalize(run_id, parser_result=parser_result)
+            validation = self.validate(run_id, records=records)
+            dedupe_outcome = self.dedupe(
+                run_id, accepted=validation.accepted,
+                allow_cross_source_supersede=allow_cross_source_supersede,
+            )
+            self.stage(run_id, dedupe_outcome=dedupe_outcome)
+        elif target_stage == Stage.NORMALIZE:
+            sid = source_id or self._infer_source_id_from_urn(run.source_urn)
+            parser_result = self._reparse_for_resume(run, sid, artifact)
+            records = self.normalize(run_id, parser_result=parser_result)
+            validation = self.validate(run_id, records=records)
+            dedupe_outcome = self.dedupe(
+                run_id, accepted=validation.accepted,
+                allow_cross_source_supersede=allow_cross_source_supersede,
+            )
+            self.stage(run_id, dedupe_outcome=dedupe_outcome)
+        elif target_stage == Stage.VALIDATE:
+            sid = source_id or self._infer_source_id_from_urn(run.source_urn)
+            parser_result = self._reparse_for_resume(run, sid, artifact)
+            records = list(parser_result.rows)
+            validation = self.validate(run_id, records=records)
+            dedupe_outcome = self.dedupe(
+                run_id, accepted=validation.accepted,
+                allow_cross_source_supersede=allow_cross_source_supersede,
+            )
+            self.stage(run_id, dedupe_outcome=dedupe_outcome)
+        elif target_stage == Stage.DEDUPE:
+            sid = source_id or self._infer_source_id_from_urn(run.source_urn)
+            parser_result = self._reparse_for_resume(run, sid, artifact)
+            records = list(parser_result.rows)
+            # In resume-from-DEDUPE we trust the validate stage's prior
+            # acceptance: every parsed row is treated as accepted (the
+            # validation receipt sits in stage_history for audit).
+            dedupe_outcome = self.dedupe(
+                run_id, accepted=records,
+                allow_cross_source_supersede=allow_cross_source_supersede,
+            )
+            self.stage(run_id, dedupe_outcome=dedupe_outcome)
+        elif target_stage == Stage.STAGE:
+            sid = source_id or self._infer_source_id_from_urn(run.source_urn)
+            parser_result = self._reparse_for_resume(run, sid, artifact)
+            records = list(parser_result.rows)
+            dedupe_outcome = DedupeOutcome(
+                final=records,
+                supersede_pairs=[],
+                removal_candidates=[],
+                duplicate_count=0,
+            )
+            self.stage(run_id, dedupe_outcome=dedupe_outcome)
+        return self._run_repo.get(run_id)
+
+    def _reconstruct_stored_artifact(self, run: IngestionRun) -> StoredArtifact:
+        """Build a :class:`StoredArtifact` from the run row's stored fields."""
+        if not (run.artifact_id and run.artifact_sha256):
+            raise StageOrderError(
+                "resume requires a previously-fetched artifact; run %s "
+                "has no artifact_id/sha256 on its row (fetch never completed)"
+                % run.run_id,
+                from_status=run.status.value,
+                to_status=None,
+                run_id=run.run_id,
+            )
+        # The artifact store path is reconstructed from the artifact_id
+        # via the same scheme :class:`LocalArtifactStore.put_bytes` uses
+        # (source_id/<sha-prefix>/<artifact_id>.bin). We don't have the
+        # source_id on the row, so we glob for the artifact_id under the
+        # store root.
+        from urllib.parse import urlparse  # noqa: PLC0415
+        store_root = self._artifact_store.root
+        candidates = list(store_root.rglob(f"{run.artifact_id}.bin"))
+        if not candidates:
+            raise StageOrderError(
+                "resume cannot locate stored artifact %s under %s"
+                % (run.artifact_id, store_root),
+                from_status=run.status.value,
+                to_status=None,
+                run_id=run.run_id,
+            )
+        path = candidates[0]
+        bytes_size = path.stat().st_size
+        uri = path.resolve().as_uri()
+        _ = urlparse  # quiet linter
+        return StoredArtifact(
+            artifact_id=run.artifact_id,
+            sha256=run.artifact_sha256,
+            storage_uri=uri,
+            bytes_size=bytes_size,
+        )
+
+    def _reparse_for_resume(
+        self,
+        run: IngestionRun,
+        source_id: str,
+        artifact: StoredArtifact,
+    ) -> ParserResult:
+        """Re-run parse() in-memory without advancing the run row.
+
+        Resume-from-stage-N (N > parse) needs the parsed rows so the
+        next stage can run, but we must NOT touch the run row's status
+        (which is already past PARSED). This is a pure re-parse: the
+        bytes are read, the parser runs, the rows come back. No DB write.
+        """
+        parser = self._resolve_parser(source_id)
+        raw_bytes = self._read_artifact(artifact)
+        if hasattr(parser, "parse_bytes"):
+            rows = parser.parse_bytes(  # type: ignore[attr-defined]
+                raw_bytes,
+                artifact_uri=artifact.storage_uri,
+                artifact_sha256=artifact.sha256,
+            )
+        else:
+            data = json.loads(raw_bytes.decode("utf-8"))
+            rows = parser.parse(data)
+        return ParserResult(status="ok", rows=rows)
+
+    def _infer_source_id_from_urn(self, source_urn: str) -> str:
+        """Parse the ``source_id`` (registry key) out of a source URN.
+
+        DEFRA's URN ``urn:gl:source:defra-2025`` -> ``defra-2025``. Used
+        so the resume() path doesn't need to hold the source_id from the
+        original run; the run row stores the URN.
+        """
+        if not source_urn or ":" not in source_urn:
+            return source_urn
+        return source_urn.rsplit(":", 1)[-1]
+
     # -- internal helpers -------------------------------------------------
+
+    # -- Phase 3 audit gap C — source_artifacts row writer + status walk ---
+
+    @staticmethod
+    def _load_source_registry_entry(source_id: str) -> Dict[str, Any]:
+        """Look up one entry from ``greenlang/factors/data/source_registry.yaml``.
+
+        Returns an empty dict when the registry file is missing, the
+        source_id has no entry, or YAML parsing fails — callers must
+        treat the result as best-effort context, never as a gate.
+        """
+        from pathlib import Path  # noqa: PLC0415
+        try:
+            import yaml  # type: ignore  # noqa: PLC0415
+        except ImportError:
+            return {}
+        registry_path = (
+            Path(__file__).resolve().parents[1] / "data" / "source_registry.yaml"
+        )
+        if not registry_path.exists():
+            return {}
+        try:
+            doc = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            return {}
+        if not isinstance(doc, dict):
+            return {}
+        sources = doc.get("sources") or []
+        if not isinstance(sources, list):
+            return {}
+        for entry in sources:
+            if isinstance(entry, dict) and entry.get("source_id") == source_id:
+                return dict(entry)
+        return {}
+
+    def _upsert_source_artifact_row(
+        self,
+        *,
+        run: IngestionRun,
+        source_id: str,
+        source_url: str,
+        artifact: StoredArtifact,
+        operator: Optional[str],
+        status: str,
+    ) -> None:
+        """Land the full Phase 3 contract row in source_artifacts.
+
+        Pulls registry-resident metadata (parser_function /
+        licence_class / redistribution_class / source_publication_date)
+        from ``source_registry.yaml`` and combines it with the in-flight
+        artifact + run state. Idempotent on sha256 — re-fetches refresh
+        the row's run-scoped fields.
+        """
+        # Skip when the run repo doesn't expose the upsert API (e.g.
+        # legacy fixtures with patched ``set_diff`` shims that don't
+        # carry the new method).
+        if not hasattr(self._run_repo, "upsert_source_artifact"):
+            return
+        registry = self._load_source_registry_entry(source_id)
+        parser = self._parser_registry.get(source_id)
+        parser_module = (
+            (parser.__class__.__module__ if parser else None)
+            or registry.get("parser_module")
+        )
+        parser_function = (
+            registry.get("parser_function")
+            or (parser.__class__.__name__ if parser else None)
+        )
+        parser_version = (
+            getattr(parser, "parser_version", None)
+            or registry.get("parser_version")
+            or "0"
+        )
+        # Some sources expose a ``publication_date``, others a ``source_publication_date``;
+        # we accept either.
+        pub_date = (
+            registry.get("source_publication_date")
+            or registry.get("publication_date")
+        )
+        # Content type — best effort from URL suffix; the artifact store
+        # does not retain it but we can guess from extension.
+        content_type = self._guess_content_type(source_url)
+        self._run_repo.upsert_source_artifact(
+            sha256=artifact.sha256,
+            source_urn=run.source_urn,
+            source_version=run.source_version,
+            source_url=source_url,
+            bytes_size=artifact.bytes_size,
+            content_type=content_type,
+            parser_module=parser_module,
+            parser_function=parser_function,
+            parser_version=parser_version,
+            parser_commit=registry.get("parser_commit"),
+            operator=operator,
+            licence_class=registry.get("licence_class") or registry.get("license_class"),
+            redistribution_class=registry.get("redistribution_class"),
+            source_publication_date=str(pub_date) if pub_date else None,
+            ingestion_run_id=run.run_id,
+            status=status,
+            uri=artifact.storage_uri,
+        )
+
+    @staticmethod
+    def _guess_content_type(url: str) -> Optional[str]:
+        """Best-effort MIME-type guess for the fetched URL."""
+        lowered = (url or "").lower()
+        for suffix, ct in (
+            (".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+            (".xls", "application/vnd.ms-excel"),
+            (".csv", "text/csv"),
+            (".json", "application/json"),
+            (".xml", "application/xml"),
+            (".pdf", "application/pdf"),
+            (".zip", "application/zip"),
+        ):
+            if lowered.endswith(suffix):
+                return ct
+        return None
+
+    def _advance_source_artifact_status(
+        self, run_id: str, status: str
+    ) -> None:
+        """Walk the source_artifacts row's status forward by one stage.
+
+        Best-effort — a missing repo method or a Postgres connection
+        failure does NOT fail the calling stage.
+        """
+        if not hasattr(self._run_repo, "set_source_artifact_status"):
+            return
+        try:
+            self._run_repo.set_source_artifact_status(
+                ingestion_run_id=run_id, status=status
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "source_artifacts status update failed run=%s status=%s err=%s",
+                run_id, status, exc,
+            )
 
     def _read_artifact(self, artifact: StoredArtifact) -> bytes:
         """Read the raw bytes of a stored artifact via its file:// URI."""

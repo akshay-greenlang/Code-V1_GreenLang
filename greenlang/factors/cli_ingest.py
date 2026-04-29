@@ -372,23 +372,84 @@ def parse_cmd(
     show_default=True,
     help="Operator string.",
 )
+@click.option(
+    "--from-stage",
+    "from_stage",
+    type=click.Choice(
+        ["parse", "normalize", "validate", "dedupe", "stage"],
+        case_sensitive=False,
+    ),
+    default=None,
+    help=(
+        "Resume mode: rerun an existing failed/rejected run starting "
+        "from this stage. Requires --run-id. The stage's predecessor "
+        "must match the failed run's current_stage (Phase 3 audit gap B)."
+    ),
+)
+@click.option(
+    "--run-id",
+    "run_id",
+    default=None,
+    help="Existing run id to resume (only used with --from-stage).",
+)
 @_global_options
 def run_cmd(
     source: str,
     version: str,
     auto_stage: bool,
     operator: str,
+    from_stage: Optional[str],
+    run_id: Optional[str],
     json_mode: bool,
     dsn: Optional[str],
     verbose: bool,
 ) -> None:
-    """Orchestrate stages 1-6. Stage 7 ALWAYS requires explicit publish."""
+    """Orchestrate stages 1-6. Stage 7 ALWAYS requires explicit publish.
+
+    Resume mode (Phase 3 audit gap B): pass ``--from-stage <name>`` plus
+    ``--run-id <existing>`` to re-execute a previously-failed run from
+    the named stage onward. The runner re-validates the stage-precondition
+    matrix and refuses if the run isn't in ``failed`` / ``rejected`` or
+    if the requested stage's predecessor doesn't match the failed
+    ``current_stage``.
+    """
     _configure_logging(verbose)
     try:
         runner, _ = _load_runner(dsn)
     except click.ClickException as exc:
         _emit_error(json_mode=json_mode, error=exc.message, stage="bootstrap")
         sys.exit(5)
+
+    # --- Resume mode (Phase 3 audit gap B) ---
+    if from_stage is not None:
+        if not run_id:
+            _emit_error(
+                json_mode=json_mode,
+                error="--from-stage requires --run-id <existing-run-id>",
+                stage="run",
+            )
+            sys.exit(5)
+        try:
+            run = runner.resume(
+                run_id, from_stage=from_stage, source_id=source
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("resume failed")
+            _emit_error(
+                json_mode=json_mode, error=str(exc), stage="resume", run_id=run_id
+            )
+            sys.exit(2)
+        run_dict = _run_to_dict(run)
+        diff_uri = run_dict.get("diff_uri") or run_dict.get("diff_artifact_uri")
+        payload = {**run_dict, "diff_uri": diff_uri, "resumed_from": from_stage}
+        status = payload.get("status")
+        human = [
+            f"resume: run_id={run_id} from_stage={from_stage}",
+            f"  status   : {status}",
+            f"  diff_uri : {diff_uri}",
+        ]
+        _emit_success(payload, json_mode=json_mode, human_lines=human)
+        sys.exit(_exit_for_status(status))
 
     try:
         run = runner.run(

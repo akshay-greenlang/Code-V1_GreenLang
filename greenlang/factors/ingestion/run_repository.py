@@ -22,13 +22,14 @@ References
   template).
 """
 
+import contextlib
 import json
 import logging
 import sqlite3
 import threading
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 from urllib.parse import unquote
 
 from greenlang.factors.ingestion.pipeline import (
@@ -208,6 +209,54 @@ class IngestionRunRepository:
             except Exception:  # noqa: BLE001
                 pass
 
+    # -- Phase 3 audit gap A: atomic SQLite stage transitions ----------
+    # The original implementation opened the connection in
+    # ``isolation_level=None`` (autocommit), so every ``conn.execute()``
+    # committed immediately. Phase 3 plan §"Run-status enum (formal)"
+    # requires ONE atomic transaction per stage advance — partial writes
+    # on a mid-stage failure would corrupt the run row. The context
+    # manager wraps the (possibly multi-statement) write in an explicit
+    # ``BEGIN; ... COMMIT;`` and rolls back on any exception, matching
+    # the dual-backend semantics the Postgres path enforces via the
+    # ``with conn:`` block.
+    @contextlib.contextmanager
+    def _sqlite_txn(self) -> Iterator[sqlite3.Connection]:
+        """Open a SQLite connection wrapped in a single explicit transaction.
+
+        Yields a live :class:`sqlite3.Connection` after issuing
+        ``BEGIN IMMEDIATE``. Commits on clean exit; rolls back on any
+        exception then re-raises so the runner's ``_mark_failed`` path
+        sees a state-consistent run row (no half-applied stage advance).
+        Closes the connection on exit when the repo is in file-mode
+        (the ``:memory:`` mode reuses ``self._memory_conn``).
+        """
+        conn = self._connect()
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+        except sqlite3.OperationalError:
+            # ``BEGIN`` may fail if a prior statement left an implicit
+            # txn open (e.g. nested call). Roll back defensively and
+            # retry once; if that still fails, propagate so the caller
+            # can decide.
+            try:
+                conn.execute("ROLLBACK")
+            except sqlite3.OperationalError:
+                pass
+            conn.execute("BEGIN IMMEDIATE")
+        try:
+            yield conn
+        except BaseException:
+            try:
+                conn.execute("ROLLBACK")
+            except sqlite3.OperationalError:
+                pass
+            self._maybe_close(conn)
+            raise
+        try:
+            conn.execute("COMMIT")
+        finally:
+            self._maybe_close(conn)
+
     def _ensure_schema(self) -> None:
         """Create the SQLite mirror of the V507 + V508 tables idempotently."""
         if self._is_postgres:
@@ -304,6 +353,119 @@ class IngestionRunRepository:
             status.value,
             current_stage.value if current_stage else "-",
         )
+
+    def upsert_source_artifact(
+        self,
+        *,
+        sha256: str,
+        source_urn: str,
+        source_version: str,
+        source_url: Optional[str],
+        bytes_size: Optional[int],
+        content_type: Optional[str],
+        parser_module: Optional[str],
+        parser_function: Optional[str],
+        parser_version: Optional[str],
+        parser_commit: Optional[str],
+        operator: Optional[str],
+        licence_class: Optional[str],
+        redistribution_class: Optional[str],
+        source_publication_date: Optional[str],
+        ingestion_run_id: str,
+        status: str = "fetched",
+        uri: Optional[str] = None,
+    ) -> None:
+        """Upsert the full Phase 3 contract row into ``source_artifacts``.
+
+        Phase 3 audit gap C — the runner calls this at the end of stage 1
+        (fetch) to land the canonical 16+ field row, then refreshes the
+        ``status`` column at every subsequent stage so a SELECT on the
+        artifact row tracks pipeline progress.
+
+        The ``sha256`` column is UNIQUE so the operation is a true
+        upsert — fetching the same artifact twice does NOT duplicate
+        the row, but DOES refresh status / parser metadata / operator /
+        ingestion_run_id (a new run for the same bytes).
+
+        Args:
+            sha256: SHA-256 hex of the raw fetched bytes (UNIQUE key).
+            source_urn: ``urn:gl:source:<id>``.
+            source_version: registry source_version.
+            source_url: human-readable URL the bytes were fetched from.
+            bytes_size: size of the raw bytes payload.
+            content_type: MIME type if known (``application/...``).
+            parser_module: dotted Python module of the parser class.
+            parser_function: callable / class name of the parser entry.
+            parser_version: parser semver.
+            parser_commit: optional git commit pinning the parser.
+            operator: ``human:<email>`` or ``bot:<id>`` driving the run.
+            licence_class: registry ``licence_class`` enum value.
+            redistribution_class: registry ``redistribution_class`` enum.
+            source_publication_date: ISO-8601 ``YYYY-MM-DD`` or None.
+            ingestion_run_id: the run owning this artifact write.
+            status: pipeline progress marker (``fetched`` initially,
+                advanced through the stage ladder by ``set_artifact_status``).
+            uri: physical storage URI; defaults to ``source_url`` if absent.
+        """
+        if self._is_postgres:
+            self._upsert_source_artifact_pg(
+                sha256=sha256,
+                source_urn=source_urn,
+                source_version=source_version,
+                source_url=source_url,
+                bytes_size=bytes_size,
+                content_type=content_type,
+                parser_module=parser_module,
+                parser_function=parser_function,
+                parser_version=parser_version,
+                parser_commit=parser_commit,
+                operator=operator,
+                licence_class=licence_class,
+                redistribution_class=redistribution_class,
+                source_publication_date=source_publication_date,
+                ingestion_run_id=ingestion_run_id,
+                status=status,
+                uri=uri or source_url or "",
+            )
+        else:
+            self._upsert_source_artifact_sqlite(
+                sha256=sha256,
+                source_urn=source_urn,
+                source_version=source_version,
+                source_url=source_url,
+                bytes_size=bytes_size,
+                content_type=content_type,
+                parser_module=parser_module,
+                parser_function=parser_function,
+                parser_version=parser_version,
+                parser_commit=parser_commit,
+                operator=operator,
+                licence_class=licence_class,
+                redistribution_class=redistribution_class,
+                source_publication_date=source_publication_date,
+                ingestion_run_id=ingestion_run_id,
+                status=status,
+                uri=uri or source_url or "",
+            )
+
+    def set_source_artifact_status(
+        self,
+        *,
+        ingestion_run_id: str,
+        status: str,
+    ) -> None:
+        """Advance the ``status`` of every source_artifact row for a run.
+
+        The Phase 3 plan §"Artifact storage contract" requires the
+        artifact row's status to track pipeline progress: ``fetched``
+        after stage 1, ``parsed`` after stage 2, etc. This is the cheap
+        per-stage update that walks the artifact row through that
+        ladder.
+        """
+        if self._is_postgres:
+            self._set_source_artifact_status_pg(ingestion_run_id, status)
+        else:
+            self._set_source_artifact_status_sqlite(ingestion_run_id, status)
 
     def set_artifact(
         self,
@@ -406,8 +568,10 @@ class IngestionRunRepository:
     # -- SQLite implementations -------------------------------------------
 
     def _insert_sqlite(self, run: IngestionRun) -> None:
-        conn = self._connect()
-        try:
+        # Wrap the single INSERT in an explicit transaction so a crash
+        # between create() and the first stage advance leaves NO partial
+        # state in ingestion_runs (Phase 3 audit gap A).
+        with self._sqlite_txn() as conn:
             conn.execute(
                 "INSERT INTO ingestion_runs ("
                 " run_id, source_urn, source_version, started_at, finished_at,"
@@ -436,8 +600,6 @@ class IngestionRunRepository:
                     run.diff_md_uri,
                 ),
             )
-        finally:
-            self._maybe_close(conn)
 
     def _update_status_sqlite(
         self,
@@ -447,8 +609,8 @@ class IngestionRunRepository:
         error_json: Optional[Dict[str, Any]],
         finished_at: Optional[datetime],
     ) -> None:
-        conn = self._connect()
-        try:
+        # Phase 3 audit gap A: stage transitions MUST be one atomic txn.
+        with self._sqlite_txn() as conn:
             sets = ["status = ?"]
             params: List[Any] = [status.value]
             if current_stage is not None:
@@ -463,8 +625,6 @@ class IngestionRunRepository:
             params.append(run_id)
             sql = "UPDATE ingestion_runs SET " + ", ".join(sets) + " WHERE run_id = ?"
             conn.execute(sql, tuple(params))
-        finally:
-            self._maybe_close(conn)
 
     def _set_artifact_sqlite(
         self,
@@ -475,8 +635,8 @@ class IngestionRunRepository:
         parser_version: Optional[str],
         parser_commit: Optional[str],
     ) -> None:
-        conn = self._connect()
-        try:
+        # Phase 3 audit gap A: atomic stage write.
+        with self._sqlite_txn() as conn:
             conn.execute(
                 "UPDATE ingestion_runs SET artifact_id = ?, artifact_sha256 = ?,"
                 " parser_module = COALESCE(?, parser_module),"
@@ -485,8 +645,153 @@ class IngestionRunRepository:
                 " WHERE run_id = ?",
                 (artifact_id, sha256, parser_module, parser_version, parser_commit, run_id),
             )
-        finally:
-            self._maybe_close(conn)
+
+    # -- Phase 3 audit gap C: source_artifacts upsert + status ladder ---
+
+    def _upsert_source_artifact_sqlite(
+        self,
+        *,
+        sha256: str,
+        source_urn: str,
+        source_version: str,
+        source_url: Optional[str],
+        bytes_size: Optional[int],
+        content_type: Optional[str],
+        parser_module: Optional[str],
+        parser_function: Optional[str],
+        parser_version: Optional[str],
+        parser_commit: Optional[str],
+        operator: Optional[str],
+        licence_class: Optional[str],
+        redistribution_class: Optional[str],
+        source_publication_date: Optional[str],
+        ingestion_run_id: str,
+        status: str,
+        uri: str,
+    ) -> None:
+        """Upsert one row into ``alpha_source_artifacts_v0_1``.
+
+        Atomic via the BEGIN/COMMIT wrapper. Uses ``ON CONFLICT(sha256)``
+        so re-fetching the same bytes refreshes the run-scoped fields
+        (operator / ingestion_run_id / status) without duplicating the
+        row.
+        """
+        with self._sqlite_txn() as conn:
+            conn.execute(
+                "INSERT INTO alpha_source_artifacts_v0_1 ("
+                " sha256, source_urn, source_version, uri, content_type, size_bytes,"
+                " parser_id, parser_version, parser_commit, ingested_at,"
+                " source_url, source_publication_date, parser_module,"
+                " parser_function, operator, licence_class, redistribution_class,"
+                " ingestion_run_id, status"
+                ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                " ON CONFLICT(sha256) DO UPDATE SET"
+                " source_url = COALESCE(excluded.source_url, source_url),"
+                " bytes_size_dummy_skip_via_size_bytes = bytes_size_dummy_skip_via_size_bytes",
+                # The ON CONFLICT clause above is rewritten below — SQLite
+                # doesn't accept the synthetic placeholder, so we run a
+                # follow-up UPDATE on conflict instead. The INSERT above
+                # is wrapped in INSERT OR IGNORE-style logic via the next
+                # statement to keep the upsert semantics simple.
+                (
+                    sha256,
+                    source_urn,
+                    source_version,
+                    uri,
+                    content_type,
+                    bytes_size,
+                    parser_function or parser_module,  # legacy parser_id slot
+                    parser_version,
+                    parser_commit,
+                    now_utc().isoformat(),
+                    source_url,
+                    source_publication_date,
+                    parser_module,
+                    parser_function,
+                    operator,
+                    licence_class,
+                    redistribution_class,
+                    ingestion_run_id,
+                    status,
+                ),
+            ) if False else None  # disabled — see follow-up logic
+            # Simpler upsert: try INSERT OR IGNORE; then UPDATE the
+            # run-scoped fields by sha256 unconditionally.
+            conn.execute(
+                "INSERT OR IGNORE INTO alpha_source_artifacts_v0_1 ("
+                " sha256, source_urn, source_version, uri, content_type, size_bytes,"
+                " parser_id, parser_version, parser_commit, ingested_at,"
+                " source_url, source_publication_date, parser_module,"
+                " parser_function, operator, licence_class, redistribution_class,"
+                " ingestion_run_id, status"
+                ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (
+                    sha256,
+                    source_urn,
+                    source_version,
+                    uri,
+                    content_type,
+                    bytes_size,
+                    parser_function or parser_module,
+                    parser_version,
+                    parser_commit,
+                    now_utc().isoformat(),
+                    source_url,
+                    source_publication_date,
+                    parser_module,
+                    parser_function,
+                    operator,
+                    licence_class,
+                    redistribution_class,
+                    ingestion_run_id,
+                    status,
+                ),
+            )
+            conn.execute(
+                "UPDATE alpha_source_artifacts_v0_1 SET"
+                " source_url = COALESCE(?, source_url),"
+                " content_type = COALESCE(?, content_type),"
+                " size_bytes = COALESCE(?, size_bytes),"
+                " parser_id = COALESCE(?, parser_id),"
+                " parser_version = COALESCE(?, parser_version),"
+                " parser_commit = COALESCE(?, parser_commit),"
+                " parser_module = COALESCE(?, parser_module),"
+                " parser_function = COALESCE(?, parser_function),"
+                " source_publication_date = COALESCE(?, source_publication_date),"
+                " operator = COALESCE(?, operator),"
+                " licence_class = COALESCE(?, licence_class),"
+                " redistribution_class = COALESCE(?, redistribution_class),"
+                " ingestion_run_id = COALESCE(?, ingestion_run_id),"
+                " status = COALESCE(?, status)"
+                " WHERE sha256 = ?",
+                (
+                    source_url,
+                    content_type,
+                    bytes_size,
+                    parser_function or parser_module,
+                    parser_version,
+                    parser_commit,
+                    parser_module,
+                    parser_function,
+                    source_publication_date,
+                    operator,
+                    licence_class,
+                    redistribution_class,
+                    ingestion_run_id,
+                    status,
+                    sha256,
+                ),
+            )
+
+    def _set_source_artifact_status_sqlite(
+        self, ingestion_run_id: str, status: str
+    ) -> None:
+        with self._sqlite_txn() as conn:
+            conn.execute(
+                "UPDATE alpha_source_artifacts_v0_1 SET status = ? "
+                "WHERE ingestion_run_id = ?",
+                (status, ingestion_run_id),
+            )
 
     def _set_diff_sqlite(
         self,
@@ -495,8 +800,11 @@ class IngestionRunRepository:
         diff_md_uri: Optional[str],
         summary_json: Optional[Dict[str, Any]],
     ) -> None:
-        conn = self._connect()
-        try:
+        # Phase 3 audit gap A: atomic stage write — both rows commit
+        # together or neither does. A mid-write crash must NOT leave
+        # the run row carrying a diff URI pointer with no matching
+        # ingestion_run_diffs summary row.
+        with self._sqlite_txn() as conn:
             conn.execute(
                 "UPDATE ingestion_runs SET diff_json_uri = ?, diff_md_uri = ? WHERE run_id = ?",
                 (diff_json_uri, diff_md_uri, run_id),
@@ -517,24 +825,20 @@ class IngestionRunRepository:
                     now_utc().isoformat(),
                 ),
             )
-        finally:
-            self._maybe_close(conn)
 
     def _set_publish_sqlite(
         self, run_id: str, batch_id: str, approved_by: str
     ) -> None:
-        conn = self._connect()
-        try:
+        # Phase 3 audit gap A: atomic stage write.
+        with self._sqlite_txn() as conn:
             conn.execute(
                 "UPDATE ingestion_runs SET batch_id = ?, approved_by = ? WHERE run_id = ?",
                 (batch_id, approved_by, run_id),
             )
-        finally:
-            self._maybe_close(conn)
 
     def _append_stage_sqlite(self, run_id: str, row: Dict[str, Any]) -> None:
-        conn = self._connect()
-        try:
+        # Phase 3 audit gap A: atomic stage write.
+        with self._sqlite_txn() as conn:
             conn.execute(
                 "INSERT INTO ingestion_run_stage_history ("
                 " run_id, stage, ok, duration_s, error, details_json,"
@@ -551,8 +855,6 @@ class IngestionRunRepository:
                     row.get("finished_at"),
                 ),
             )
-        finally:
-            self._maybe_close(conn)
 
     def _get_sqlite(self, run_id: str) -> Optional[Dict[str, Any]]:
         conn = self._connect()
@@ -664,6 +966,88 @@ class IngestionRunRepository:
                     " parser_commit = COALESCE(%s, parser_commit)"
                     " WHERE run_id = %s",
                     (artifact_id, sha256, parser_module, parser_version, parser_commit, run_id),
+                )
+            conn.commit()
+
+    def _upsert_source_artifact_pg(
+        self,
+        *,
+        sha256: str,
+        source_urn: str,
+        source_version: str,
+        source_url: Optional[str],
+        bytes_size: Optional[int],
+        content_type: Optional[str],
+        parser_module: Optional[str],
+        parser_function: Optional[str],
+        parser_version: Optional[str],
+        parser_commit: Optional[str],
+        operator: Optional[str],
+        licence_class: Optional[str],
+        redistribution_class: Optional[str],
+        source_publication_date: Optional[str],
+        ingestion_run_id: str,
+        status: str,
+        uri: str,
+    ) -> None:
+        """Postgres path for the Phase 3 audit gap C upsert."""
+        with self._pg_connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO factors_v0_1.source_artifacts ("
+                    " sha256, source_urn, source_version, uri, content_type, size_bytes,"
+                    " parser_id, parser_version, parser_commit,"
+                    " source_url, source_publication_date, parser_module,"
+                    " parser_function, operator, licence_class, redistribution_class,"
+                    " ingestion_run_id, status"
+                    ") VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                    " ON CONFLICT (sha256) DO UPDATE SET"
+                    "  source_url = COALESCE(EXCLUDED.source_url, factors_v0_1.source_artifacts.source_url),"
+                    "  content_type = COALESCE(EXCLUDED.content_type, factors_v0_1.source_artifacts.content_type),"
+                    "  size_bytes = COALESCE(EXCLUDED.size_bytes, factors_v0_1.source_artifacts.size_bytes),"
+                    "  parser_id = COALESCE(EXCLUDED.parser_id, factors_v0_1.source_artifacts.parser_id),"
+                    "  parser_version = COALESCE(EXCLUDED.parser_version, factors_v0_1.source_artifacts.parser_version),"
+                    "  parser_commit = COALESCE(EXCLUDED.parser_commit, factors_v0_1.source_artifacts.parser_commit),"
+                    "  parser_module = COALESCE(EXCLUDED.parser_module, factors_v0_1.source_artifacts.parser_module),"
+                    "  parser_function = COALESCE(EXCLUDED.parser_function, factors_v0_1.source_artifacts.parser_function),"
+                    "  source_publication_date = COALESCE(EXCLUDED.source_publication_date, factors_v0_1.source_artifacts.source_publication_date),"
+                    "  operator = COALESCE(EXCLUDED.operator, factors_v0_1.source_artifacts.operator),"
+                    "  licence_class = COALESCE(EXCLUDED.licence_class, factors_v0_1.source_artifacts.licence_class),"
+                    "  redistribution_class = COALESCE(EXCLUDED.redistribution_class, factors_v0_1.source_artifacts.redistribution_class),"
+                    "  ingestion_run_id = EXCLUDED.ingestion_run_id,"
+                    "  status = EXCLUDED.status",
+                    (
+                        sha256,
+                        source_urn,
+                        source_version,
+                        uri,
+                        content_type,
+                        bytes_size,
+                        parser_function or parser_module,
+                        parser_version,
+                        parser_commit,
+                        source_url,
+                        source_publication_date,
+                        parser_module,
+                        parser_function,
+                        operator,
+                        licence_class,
+                        redistribution_class,
+                        ingestion_run_id,
+                        status,
+                    ),
+                )
+            conn.commit()
+
+    def _set_source_artifact_status_pg(
+        self, ingestion_run_id: str, status: str
+    ) -> None:
+        with self._pg_connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE factors_v0_1.source_artifacts SET status = %s "
+                    "WHERE ingestion_run_id = %s",
+                    (status, ingestion_run_id),
                 )
             conn.commit()
 
