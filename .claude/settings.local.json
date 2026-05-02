@@ -461,7 +461,14 @@
       "Read(//c/Users/aksha/AppData/Local/Temp/claude/C--Users-aksha-Code-V1-GreenLang/fb5b7336-fbdd-422c-8260-8ed7fddd8019/tasks/**)",
       "Bash(UPDATE_OPENAPI_SNAPSHOT=1 python -m pytest tests/factors/v0_1_alpha/test_alpha_api_contract.py::test_openapi_alpha_v0_1_matches_snapshot -W ignore::DeprecationWarning)",
       "Bash(git *)",
-      "Bash(npm list *)"
+      "Bash(npm list *)",
+      "Bash(PYTHONIOENCODING=utf-8 python -c \"from typer.testing import CliRunner; from greenlang.cli.main import app; r=CliRunner\\(\\).invoke\\(app, ['factors','--help']\\); print\\('exit',r.exit_code\\); print\\(r.stdout\\)\")",
+      "Bash(PYTHONIOENCODING=utf-8 python -c \"from typer.testing import CliRunner; from greenlang.cli.main import app; r=CliRunner\\(\\).invoke\\(app, ['factors','ingest','--help']\\); print\\('exit',r.exit_code\\); print\\(r.stdout\\)\")",
+      "Bash(PYTHONIOENCODING=utf-8 python -c \"from typer.testing import CliRunner; from greenlang.cli.main import app; r=CliRunner\\(\\).invoke\\(app, ['policy-graph','show','--help']\\); print\\('exit',r.exit_code\\); print\\(r.stdout\\)\")",
+      "Bash(UPDATE_PARSER_SNAPSHOT=1 python -m pytest tests/factors/v0_1_alpha/phase3/test_defra_reference_e2e.py::test_defra_parser_snapshot_matches_committed_golden -v -W ignore::DeprecationWarning)",
+      "Bash(UPDATE_PARSER_SNAPSHOT=1 python -m pytest tests/factors/v0_1_alpha/phase3/test_excel_family_e2e.py -q -W ignore::DeprecationWarning -k snapshot)",
+      "Bash(UPDATE_PARSER_SNAPSHOT=1 python -m pytest tests/factors/v0_1_alpha/phase3/test_csv_json_xml_family_e2e.py::test_csv_json_xml_parser_snapshot_matches_golden -q)",
+      "Read(//tmp/**)"
     ],
     "deny": [],
     "ask": []
