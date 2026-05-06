@@ -42,7 +42,7 @@ jobs:
           echo "Scanning $TARGET_URL"
 
       - name: Run ZAP baseline
-        uses: zaproxy/action-baseline@v0.12.0
+        uses: zaproxy/action-baseline@v0.15.0
         with:
           target: ${{ inputs.target_url }}
           cmd_options: "-a -j -m 5"
